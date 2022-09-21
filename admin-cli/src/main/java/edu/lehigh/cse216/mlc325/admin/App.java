@@ -63,7 +63,7 @@ public class App {
      * Ask the user to enter a String message
      * 
      * @param in A BufferedReader, for reading from the keyboard
-     * @param message A content to display when asking for input
+     * @param message A message to display when asking for input
      * 
      * @return The string that the user provided.  May be "".
      */
@@ -83,14 +83,14 @@ public class App {
      * Ask the user to enter an integer
      * 
      * @param in A BufferedReader, for reading from the keyboard
-     * @param content A content to display when asking for input
+     * @param message A message to display when asking for input
      * 
      * @return The integer that the user provided.  On error, it will be -1
      */
-    static int getInt(BufferedReader in, String content) {
+    static int getInt(BufferedReader in, String message) {
         int i = -1;
         try {
-            System.out.print(content + " :> ");
+            System.out.print(message + " :> ");
             i = Integer.parseInt(in.readLine());
         } catch (IOException e) {
             e.printStackTrace();
@@ -172,7 +172,8 @@ public class App {
         Database.DataRow res = db.selectOne(id);
         if (res != null) {
             System.out.println("  [" + res.mId + "] " + res.mTitle);
-            System.out.println("  --> " + res.mContent);
+            System.out.println("  --> " + res.mMessage);
+            System.out.println("  votes: " + res.mVotes);
         }
     }
 
@@ -199,10 +200,10 @@ public class App {
 
     private static void addRow(Database db, BufferedReader in){
         String title = getString(in, "Enter the title");
-        String content = getString(in, "Enter the content");
-        if (title.equals("") || content.equals(""))
+        String message = getString(in, "Enter the message");
+        if (title.equals("") || message.equals(""))
             return;
-        int res = db.insertRow(title, content);
+        int res = db.insertRow(title, message);
         System.out.println(res + " rows added");
     }
 
@@ -210,8 +211,8 @@ public class App {
         int id = getInt(in, "Enter the row ID :> ");
         if (id == -1)
             return;
-        String newContent = getString(in, "Enter the new content");
-        int res = db.updateOne(id, newContent);
+        String newMessage = getString(in, "Enter the new message");
+        int res = db.updateOne(id, newMessage);
         if (res == -1)
             return;
         System.out.println("  " + res + " rows updated");

@@ -56,7 +56,7 @@ public class Database {
 
     /**
  * DataRow holds a row of information.  A row of information consists of
- * an identifier, strings for a "title" and "content", and a creation date.
+ * an identifier, strings for a "title" and "message", and a creation date.
  * 
  * Because we will ultimately be converting instances of this object into JSON
  * directly, we need to make the fields public.  That being the case, we will
@@ -76,9 +76,9 @@ public class DataRow {
     public String mTitle;
 
     /**
-     * The content for this row of data
+     * The message for this row of data
      */
-    public String mContent;
+    public String mMessage;
 
     /**
      * The creation date for this row of data.  Once it is set, it cannot be 
@@ -87,7 +87,12 @@ public class DataRow {
     public final Date mCreated;
 
     /**
-     * Create a new DataRow with the provided id and title/content, and a 
+     * The sum of votes for the idea
+     */
+    public int mVotes;
+
+    /**
+     * Create a new DataRow with the provided id and title/message, and a 
      * creation date based on the system clock at the time the constructor was
      * called
      * 
@@ -96,12 +101,13 @@ public class DataRow {
      * 
      * @param title The title string for this row of data
      * 
-     * @param content The content string for this row of data
+     * @param message The message string for this row of data
      */
-    DataRow(int id, String title, String content) {
+    DataRow(int id, String title, String message, int votes) {
         mId = id;
         mTitle = title;
-        mContent = content;
+        mMessage = message;
+        mVotes=votes;
         mCreated = new Date();
     }
 
@@ -112,7 +118,8 @@ public class DataRow {
         mId = data.mId;
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
         mTitle = data.mTitle;
-        mContent = data.mContent;
+        mMessage = data.mMessage;
+        mVotes = data.mVotes;
         mCreated = data.mCreated;
     }
 }
@@ -176,15 +183,15 @@ public class DataRow {
             // creation/deletion, so multiple executions will cause an exception
             db.mCreateTable = db.mConnection.prepareStatement(
                     "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(50) "
-                    + "NOT NULL, content VARCHAR(500) NOT NULL)");
+                    + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL)");
             db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
 
             // Standard CRUD operations
             db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
-            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?)");
+            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0)");
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET content = ? WHERE id = ?");
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -223,15 +230,15 @@ public class DataRow {
      * Insert a row into the database
      * 
      * @param title The title for this new row
-     * @param content The content for this new row
+     * @param message The message for this new row
      * 
      * @return The number of rows that were inserted
      */
-    int insertRow(String title, String content) {
+    int insertRow(String title, String message) {
         int count = 0;
         try {
             mInsertOne.setString(1, title);
-            mInsertOne.setString(2, content);
+            mInsertOne.setString(2, message);
             count += mInsertOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -249,7 +256,7 @@ public class DataRow {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), null));
+                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), null, 0));
             }
             rs.close();
             return res;
@@ -272,7 +279,7 @@ public class DataRow {
             mSelectOne.setInt(1, id);
             ResultSet rs = mSelectOne.executeQuery();
             if (rs.next()) {
-                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("content"));
+                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -299,17 +306,17 @@ public class DataRow {
     }
 
     /**
-     * Update the content for a row in the database
+     * Update the message for a row in the database
      * 
      * @param id The id of the row to update
-     * @param content The new content
+     * @param message The new mesaage
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String content) {
+    int updateOne(int id, String message) {
         int res = -1;
         try {
-            mUpdateOne.setString(1, content);
+            mUpdateOne.setString(1, message);
             mUpdateOne.setInt(2, id);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
