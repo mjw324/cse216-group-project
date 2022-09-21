@@ -1,4 +1,4 @@
-## authors
+## Authors
 - Aarushi Singh
 - Mattias Culbertson
 - Micah Worth
@@ -44,10 +44,24 @@ So I can see what my colleagues think of the ideat (manual)
 ## Entity relationship diagram of the database table and fields
 ![Artifacts-5](artifacts/Artifacts-5.jpg)
 
+# Unit Tests
+## Backend:
+- Code actually updates or subtracts 1 for like or dislike
+- Records can be added to database
+- Connects to postgres
 
 
+## Frontend:
+- Add button on press -> goes to text field
+- Submit button adds idea field onto list
+- Upvote button adds to vote counter
+- Downvote button subtracts from vote counter (votes > 1)
+- Downvote button does not subtract from vote counter for no votes
 
-
+## Admin:
+- Test that database was created correctly
+- Test that database was deleted correctly
+- Test that rows were removed correctly
 
 Trello invite link:
 https://trello.com/invite/cse216mlcc325/08e8c14c1250d96b2bdec08825a8fc0b
