@@ -49,3 +49,5 @@ Now that you're more familiar with your Bitbucket repository, go ahead and add a
 
 Trello invite link:
 https://trello.com/invite/cse216mlcc325/08e8c14c1250d96b2bdec08825a8fc0b
+
+Link to Artifacts: https://drive.google.com/drive/folders/14MgCyhsXa-BpG6CLXMrBIzS634x5uggR?usp=sharing 
