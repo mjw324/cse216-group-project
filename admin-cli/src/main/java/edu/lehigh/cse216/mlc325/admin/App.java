@@ -157,6 +157,9 @@ public class App {
         db.disconnect();
     }
 
+
+    //methods to handle admin actions
+
     private static void createTable(Database db){
         db.createTable();
     }

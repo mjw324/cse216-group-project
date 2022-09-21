@@ -102,6 +102,8 @@ public class DataRow {
      * @param title The title string for this row of data
      * 
      * @param message The message string for this row of data
+     * 
+     * @param votes The number of votes for this row of data
      */
     DataRow(int id, String title, String message, int votes) {
         mId = id;
