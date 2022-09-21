@@ -31,7 +31,17 @@ public class AppTest
     /**
      * Rigourous Test :-)
      */
-    public void testApp()
+    public void testCreateTable()
+    {
+        assertTrue( true );
+    }
+
+    public void testDropTable()
+    {
+        assertTrue( true );
+    }
+    
+    public void testRemoveEntry()
     {
         assertTrue( true );
     }
