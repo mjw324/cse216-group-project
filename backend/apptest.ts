@@ -6,6 +6,7 @@ var expect: any;
 //Took this form the unit testing tutorial, a very good structure to test if
 //likes and dislikes are actually accounted for in the database
 describe("Tests of if like counter works", function() {
+    
     it("Adding 1 should work", function() {
         var foo = 0;
         foo += 1;
