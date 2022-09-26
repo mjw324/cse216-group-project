@@ -18,6 +18,7 @@ public class DataRowLite {
      * The title string for this row of data; see DataRow.mTitle
      */
     public String mTitle;
+    public int mlikes;
 
     /**
      * Create a DataRowLite by copying fields from a DataRow
@@ -25,5 +26,6 @@ public class DataRowLite {
     public DataRowLite(DataRow data) {
         this.mId = data.mId;
         this.mTitle = data.mTitle;
+        this.mlikes = data.mlikes;
     }
 }
