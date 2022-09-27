@@ -339,6 +339,19 @@ public class DataRow {
         return res;
     }
 
+    int updateOne(int likes) {
+        int res = -1;
+        try {
+            mUpdateOne.setInt(1, likes);
+            //mUpdateOne.setInt(2, likes);
+            //mUpdateOne.setInt(3,likes);
+            res = mUpdateOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
     /**
      * Create tblData.  If it already exists, this will print an error
      */

@@ -321,13 +321,24 @@ public class DataRow {
         return res;
     }
 
+    int updateOne(int id, int likes) {
+        int res = -1;
+        try {
+            mUpdateOne.setInt(1, likes);
+            mUpdateOne.setInt(2,id);
+            res = mUpdateOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
     //Likes
     int updateOne(int id, String content, int likes) {
         int res = -1;
         try {
             mUpdateOne.setString(1, content);
             mUpdateOne.setInt(2, likes);
-            mUpdateOne.setInt(3,likes);
+            mUpdateOne.setInt(3,id);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
