@@ -77,7 +77,7 @@ public class DataStore {
  * @param content The new content for the row
  * @return a copy of the data in the row, if it exists, or null otherwise
  */
-public synchronized DataRow updateOne(int id, String title, String content) {
+public synchronized DataRow updateOne(int id, String title, String content, int likes) {
     // Do not update if we don't have valid data
     if (title == null || content == null)
         return null;
@@ -90,6 +90,7 @@ public synchronized DataRow updateOne(int id, String title, String content) {
     // Update and then return a copy of the data, as a DataRow
     data.mTitle = title;
     data.mContent = content;
+    data.mlikes = likes;
     return new DataRow(data);
 }
 

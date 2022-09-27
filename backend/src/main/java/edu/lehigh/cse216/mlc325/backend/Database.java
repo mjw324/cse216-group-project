@@ -186,7 +186,7 @@ public class DataRow {
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?)");
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET content = ? WHERE id = ?");
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET content = ?, likes = ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -322,11 +322,12 @@ public class DataRow {
     }
 
     //Likes
-    int updateOne(int id, int likes) {
+    int updateOne(int id, String content, int likes) {
         int res = -1;
         try {
-            mUpdateOne.setInt(1, likes);
-            mUpdateOne.setInt(2, id);
+            mUpdateOne.setString(1, content);
+            mUpdateOne.setInt(2, likes);
+            mUpdateOne.setInt(3,likes);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

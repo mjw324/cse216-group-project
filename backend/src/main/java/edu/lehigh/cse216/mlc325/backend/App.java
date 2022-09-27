@@ -147,12 +147,14 @@ public class App {
         Spark.put("/messages/:id/upvotes", (request, response) -> {
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
+            //System.out.println("inside");
             int idx = Integer.parseInt(request.params("id"));
             SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.updateOne(idx, req.mlikes+1);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes+1);
+            System.out.println(result);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
@@ -168,7 +170,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.updateOne(idx, req.mlikes-1);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes-1);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
