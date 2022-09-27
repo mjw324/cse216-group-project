@@ -99,11 +99,11 @@ public class DataRow {
      * 
      * @param content The content string for this row of data
      */
-    DataRow(int id, String title, String content){//, int likes) {
+    DataRow(int id, String title, String content, int likes) {
         mId = id;
         mTitle = title;
         mContent = content;
-        //mlikes = likes;
+        mlikes = likes;
         mCreated = new Date();
     }
 
@@ -115,7 +115,7 @@ public class DataRow {
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
         mTitle = data.mTitle;
         mContent = data.mContent;
-        //mlikes=data.mlikes;
+        mlikes=data.mlikes;
         mCreated = data.mCreated;
     }
 }
@@ -251,7 +251,7 @@ public class DataRow {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("title")));//, rs.getInt("likes")));
+                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("title"), rs.getInt("likes")));
             }
             rs.close();
             return res;
@@ -266,6 +266,7 @@ public class DataRow {
      * 
      * @param id The id of the row being requested
      * 
+     *
      * @return The data for the requested row, or null if the ID was invalid
      */
     DataRow selectOne(int id) {
@@ -274,7 +275,7 @@ public class DataRow {
             mSelectOne.setInt(1, id);
             ResultSet rs = mSelectOne.executeQuery();
             if (rs.next()) {
-                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("content"));//, rs.getInt("likes"));
+                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("content"), rs.getInt("likes"));
             }
         } catch (SQLException e) {
             e.printStackTrace();

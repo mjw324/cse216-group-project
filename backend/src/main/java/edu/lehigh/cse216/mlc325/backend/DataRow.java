@@ -62,6 +62,7 @@ public class DataRow {
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
         mTitle = data.mTitle;
         mContent = data.mContent;
+        mlikes = data.mlikes;
         mCreated = data.mCreated;
     }
 }

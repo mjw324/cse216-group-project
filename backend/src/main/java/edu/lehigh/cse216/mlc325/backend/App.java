@@ -118,6 +118,7 @@ public class App {
             response.type("application/json");
             // NB: createEntry checks for null title and message
             int newId = db.insertRow(req.mTitle, req.mMessage);
+            System.out.println(newId);
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
@@ -143,7 +144,7 @@ public class App {
             }
         });
 
-        /*Spark.put("/ideas/:id/upvotes", (request, response) -> {
+        Spark.put("/messages/:id/upvotes", (request, response) -> {
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
@@ -159,7 +160,7 @@ public class App {
             }
         });
 
-        Spark.put("/ideas/:id/downvotes", (request, response) -> {
+        Spark.put("/messages/:id/downvotes", (request, response) -> {
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
@@ -173,7 +174,7 @@ public class App {
             } else {
                 return gson.toJson(new StructuredResponse("ok", null, result));
             }
-        });*/
+        });
 
         // DELETE route for removing a row from the database
         Spark.delete("/messages/:id", (request, response) -> {
