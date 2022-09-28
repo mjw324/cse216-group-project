@@ -63,7 +63,7 @@ public class Database {
  * not bother with having getters and setters... instead, we will allow code to
  * interact with the fields directly.
  */
-public class DataRow {
+public static class DataRow {
     /**
      * The unique identifier associated with this element.  It's final, because
      * we never want to change it.
