@@ -46,11 +46,11 @@ public class DataRow {
      * 
      * @param content The content string for this row of data
      */
-    DataRow(int id, String title, String content, int like) {
+    DataRow(int id, String title, String content){//, int like) {
         mId = id;
         mTitle = title;
         mContent = content;
-        mlikes = like;
+        //mlikes = like;
         mCreated = new Date();
     }
 
@@ -62,7 +62,7 @@ public class DataRow {
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
         mTitle = data.mTitle;
         mContent = data.mContent;
-        mlikes = data.mlikes;
+        //mlikes = data.mlikes;
         mCreated = data.mCreated;
     }
 }

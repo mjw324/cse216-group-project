@@ -178,7 +178,7 @@ public class DataRow {
             // creation/deletion, so multiple executions will cause an exception
             db.mCreateTable = db.mConnection.prepareStatement(
                     "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(50) "
-                    + "NOT NULL, content VARCHAR(500) NOT NULL)");
+                    + "NOT NULL, content VARCHAR(500) NOT NULL)"); //add likes to this
             db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
 
             // Standard CRUD operations
@@ -186,7 +186,7 @@ public class DataRow {
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?)");
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET content = ?, likes = ? WHERE id = ?");
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET content = ? WHERE id = ?"); //Add likes to this
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -251,7 +251,7 @@ public class DataRow {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("title"), rs.getInt("likes")));
+                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("content"), rs.getInt("like")));//rs.getString("content"),
             }
             rs.close();
             return res;
@@ -321,7 +321,7 @@ public class DataRow {
         return res;
     }
 
-    int updateOne(int id, int likes) {
+    int updateOneLike(int id, int likes) {
         int res = -1;
         try {
             mUpdateOne.setInt(1, likes);
@@ -332,7 +332,7 @@ public class DataRow {
         }
         return res;
     }
-    //Likes
+
     int updateOne(int id, String content, int likes) {
         int res = -1;
         try {

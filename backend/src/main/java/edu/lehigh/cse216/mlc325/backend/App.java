@@ -6,6 +6,8 @@ import spark.Spark;
 
 // Import Google's JSON library
 import com.google.gson.*;
+
+import java.sql.ResultSetMetaData;
 import java.util.Map;
 
 /**
@@ -155,9 +157,9 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = req.mlikes;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes);
-            System.out.println(result);
-            if (result < 0) {
+            int result = db.updateOne(idx, req.mMessage, req.mlikes+1);
+            //System.out.println(result);
+            if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", null, result));
@@ -173,7 +175,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = 2;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes-1);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {

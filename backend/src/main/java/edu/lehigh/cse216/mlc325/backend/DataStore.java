@@ -36,7 +36,7 @@ public class DataStore {
         // NB: we can safely assume that id is greater than the largest index in 
         //     mRows, and thus we can use the index-based add() method
         int id = mCounter++;
-        DataRow data = new DataRow(id, title, content,0);
+        DataRow data = new DataRow(id, title, content);//,0);
         mRows.add(id, data);
         return id;
     }
