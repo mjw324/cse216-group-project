@@ -191,9 +191,9 @@ public static class DataRow {
             // Standard CRUD operations
             db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0)");
-            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title FROM tblData");
+            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ? WHERE id = ?");
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -258,7 +258,7 @@ public static class DataRow {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), null, 0));
+                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes")));
             }
             rs.close();
             return res;
@@ -315,11 +315,12 @@ public static class DataRow {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String message) {
+    int updateOne(int id, String message, int votes) {
         int res = -1;
         try {
             mUpdateOne.setString(1, message);
             mUpdateOne.setInt(2, id);
+            mUpdateOne.setInt(3, votes);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

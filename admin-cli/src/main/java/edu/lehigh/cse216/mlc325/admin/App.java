@@ -108,7 +108,7 @@ public class App {
      */
     public static void main(String[] argv) {
         // get the Postgres configuration from the environment
-        Map<String, String> env = System.getenv();
+        //Map<String, String> env = System.getenv();
         // String ip = env.get("POSTGRES_IP");
         // String port = env.get("POSTGRES_PORT");
         // String user = env.get("POSTGRES_USER");
@@ -215,9 +215,10 @@ public class App {
     public static void updateRow(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID :> ");
         if (id == -1)
-            return;
+        return;
         String newMessage = getString(in, "Enter the new message");
-        int res = db.updateOne(id, newMessage);
+        int votes = getInt(in, "Enter the new votes :> ");
+        int res = db.updateOne(id, newMessage, votes);
         if (res == -1)
             return;
         System.out.println("  " + res + " rows updated");
