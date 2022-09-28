@@ -110,7 +110,7 @@ public class App {
         // object, extract the title and message, insert them, and return the 
         // ID of the newly created row.
         Spark.post("/messages", (request, response) -> {
-            System.out.println("inside");
+            //System.out.println("inside");
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
@@ -121,7 +121,7 @@ public class App {
             response.type("application/json");
             // NB: createEntry checks for null title and message
             int newId = db.insertRow(req.mTitle, req.mMessage);
-            System.out.println(newId);
+            //System.out.println(newId);
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
@@ -157,7 +157,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = req.mlikes;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes+1);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes);
             //System.out.println(result);
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
@@ -175,7 +175,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = 2;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes-1);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {

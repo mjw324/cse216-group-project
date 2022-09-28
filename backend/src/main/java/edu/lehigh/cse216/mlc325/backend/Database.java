@@ -221,6 +221,7 @@ public static class DataRow {
         return true;
     }
 
+
     /**
      * Insert a row into the database
      * 
@@ -313,7 +314,7 @@ public static class DataRow {
         int res = -1;
         try {
             mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(2, likes);
+            mUpdateOne.setInt(2, (++likes));
             mUpdateOne.setInt(3, id);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
@@ -322,19 +323,7 @@ public static class DataRow {
         return res;
     }
 
-    /*int updateOneLike(int id, int likes) {
-        int res = -1;
-        try {
-            mUpdateOne.setInt(1, likes);
-            mUpdateOne.setInt(2,id);
-            res = mUpdateOne.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return res;
-    }
-
-    int updateOne(int id, String message, int likes) {
+    /*int updateOne(int id, String message, int likes) {
         int res = -1;
         try {
             mUpdateOne.setString(1, message);
