@@ -63,7 +63,7 @@ public class Database {
  * not bother with having getters and setters... instead, we will allow code to
  * interact with the fields directly.
  */
-public class DataRow {
+public static class DataRow {
     /**
      * The unique identifier associated with this element.  It's final, because
      * we never want to change it.
@@ -78,8 +78,8 @@ public class DataRow {
     /**
      * The content for this row of data
      */
-    public String mContent;
-    public int mlikes;
+    public String mMessage;
+    public int mVotes;
 
     /**
      * The creation date for this row of data.  Once it is set, it cannot be 
@@ -99,11 +99,11 @@ public class DataRow {
      * 
      * @param content The content string for this row of data
      */
-    DataRow(int id, String title, String content, int likes) {
+    DataRow(int id, String title, String message, int likes) {
         mId = id;
         mTitle = title;
-        mContent = content;
-        mlikes = likes;
+        mMessage = message;
+        mVotes = likes;
         mCreated = new Date();
     }
 
@@ -114,8 +114,8 @@ public class DataRow {
         mId = data.mId;
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
         mTitle = data.mTitle;
-        mContent = data.mContent;
-        mlikes=data.mlikes;
+        mMessage = data.mMessage;
+        mVotes=data.mVotes;
         mCreated = data.mCreated;
     }
 }
@@ -178,15 +178,15 @@ public class DataRow {
             // creation/deletion, so multiple executions will cause an exception
             db.mCreateTable = db.mConnection.prepareStatement(
                     "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(50) "
-                    + "NOT NULL, content VARCHAR(500) NOT NULL)"); //add likes to this
+                    + "NOT NULL, message VARCHAR(500) NOT NULL, votes INT NOT NULL)"); //add likes to this
             db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
 
             // Standard CRUD operations
             db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
-            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?)");
-            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title FROM tblData");
+            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0)");
+            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET content = ? WHERE id = ?"); //Add likes to this
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes = ? WHERE id = ?"); //Add likes to this
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -229,11 +229,11 @@ public class DataRow {
      * 
      * @return The number of rows that were inserted
      */
-    int insertRow(String title, String content) {
+    int insertRow(String title, String message) {
         int count = 0;
         try {
             mInsertOne.setString(1, title);
-            mInsertOne.setString(2, content);
+            mInsertOne.setString(2, message);
             count += mInsertOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -251,7 +251,7 @@ public class DataRow {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("content"), rs.getInt("like")));//rs.getString("content"),
+                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes")));
             }
             rs.close();
             return res;
@@ -275,7 +275,7 @@ public class DataRow {
             mSelectOne.setInt(1, id);
             ResultSet rs = mSelectOne.executeQuery();
             if (rs.next()) {
-                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("content"), rs.getInt("likes"));
+                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -309,11 +309,12 @@ public class DataRow {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String content) {
+    int updateOne(int id, String message, int likes) {
         int res = -1;
         try {
-            mUpdateOne.setString(1, content);
-            mUpdateOne.setInt(2, id);
+            mUpdateOne.setString(1, message);
+            mUpdateOne.setInt(2, likes);
+            mUpdateOne.setInt(3, id);
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -321,7 +322,7 @@ public class DataRow {
         return res;
     }
 
-    int updateOneLike(int id, int likes) {
+    /*int updateOneLike(int id, int likes) {
         int res = -1;
         try {
             mUpdateOne.setInt(1, likes);
@@ -333,10 +334,10 @@ public class DataRow {
         return res;
     }
 
-    int updateOne(int id, String content, int likes) {
+    int updateOne(int id, String message, int likes) {
         int res = -1;
         try {
-            mUpdateOne.setString(1, content);
+            mUpdateOne.setString(1, message);
             mUpdateOne.setInt(2, likes);
             mUpdateOne.setInt(3,id);
             res = mUpdateOne.executeUpdate();
@@ -344,7 +345,7 @@ public class DataRow {
             e.printStackTrace();
         }
         return res;
-    }
+    }*/
 
     /**
      * Create tblData.  If it already exists, this will print an error

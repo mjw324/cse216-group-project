@@ -7,7 +7,7 @@ import spark.Spark;
 // Import Google's JSON library
 import com.google.gson.*;
 
-import java.sql.ResultSetMetaData;
+//import java.sql.ResultSetMetaData;
 import java.util.Map;
 
 /**
@@ -139,7 +139,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.updateOne(idx, req.mMessage);
+            int result = db.updateOne(idx, req.mMessage, 0);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
