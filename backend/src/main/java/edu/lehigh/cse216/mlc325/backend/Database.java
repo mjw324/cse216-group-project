@@ -44,6 +44,9 @@ public class Database {
      */
     private PreparedStatement mUpdateOne;
 
+    private PreparedStatement mLikeOne;
+    private PreparedStatement mDislikeOne;
+
     /**
      * A prepared statement for creating the table in our database
      */
@@ -187,6 +190,9 @@ public static class DataRow {
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes = ? WHERE id = ?"); //Add likes to this
+
+            db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
+            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -302,31 +308,40 @@ public static class DataRow {
         return res;
     }
 
-    /**
-     * Update the content for a row in the database
-     * 
-     * @param id The id of the row to update
-     * @param content The new content
-     * 
-     * @return The number of rows that were updated.  -1 indicates an error.
-     */
-    int updateOne(int id, String message, int likes, boolean liked) {
+    int oneLike(int id) {
         int res = -1;
         try {
-            mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(3, id);
-            if(liked){
-                mUpdateOne.setInt(2, (++likes));
-            }
-            else{
-                mUpdateOne.setInt(2, (--likes));
-            }
-            res = mUpdateOne.executeUpdate();
+            mLikeOne.setInt(1, id);
+            res = mLikeOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return res;
     }
+
+    int oneDislike(int id) {
+        int res = -1;
+        try {
+            mDislikeOne.setInt(1, id);
+            res = mDislikeOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    /*int updateOne(int id, String message) {
+        int res = -1;
+        try {
+            mUpdateOne.setString(1, message);
+            mUpdateOne.setInt(2, 0);
+            mUpdateOne.setInt(3,id);
+            res = mUpdateOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }*/
 
     int updateOne(int id, String message, int likes) {
         int res = -1;
@@ -340,6 +355,7 @@ public static class DataRow {
         }
         return res;
     }
+
 
     /**
      * Create tblData.  If it already exists, this will print an error

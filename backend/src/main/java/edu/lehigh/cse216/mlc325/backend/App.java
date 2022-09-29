@@ -27,7 +27,7 @@ public class App {
         // String pass = env.get("POSTGRES_PASS");
 
         // String db_url = env.get("DATABASE_URL");
-        String db_url = "postgres://dxgjiydakfuneq:ce4091b5f863fb730062bca05e57b8f956f2dabb87831c89dda1879e143ffa85@ec2-44-207-133-100.compute-1.amazonaws.com:5432/d13d7g38hbhod0";
+        String db_url = "postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m";
 
         // Get a fully-configured connection to the database, or exit 
         // immediately
@@ -139,7 +139,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.updateOne(idx, req.mMessage, 0);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
@@ -157,7 +157,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = req.mlikes;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes, true);
+            int result = db.oneLike(idx);
             //System.out.println(result);
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
@@ -175,7 +175,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = 2;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes, false);
+            int result = db.oneDislike(idx);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {

@@ -44,6 +44,8 @@ public class Database {
      */
     private PreparedStatement mUpdateOne;
 
+    private PreparedStatement mLikeOne;
+    private PreparedStatement mDislikeOne;
     /**
      * A prepared statement for creating the table in our database
      */
@@ -188,6 +190,9 @@ public class DataRow {
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes = ? WHERE id = ?");
+
+            db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
+            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -315,6 +320,28 @@ public class DataRow {
             mUpdateOne.setString(1, content);
             mUpdateOne.setInt(2, id);
             res = mUpdateOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int oneLike(int id) {
+        int res = -1;
+        try {
+            mLikeOne.setInt(1, id);
+            res = mLikeOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int oneDislike(int id) {
+        int res = -1;
+        try {
+            mDislikeOne.setInt(1, id);
+            res = mDislikeOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
