@@ -114,7 +114,7 @@ public class App {
         // String user = env.get("POSTGRES_USER");
         // String pass = env.get("POSTGRES_PASS");
 
-        String db_url = "postgres://dxgjiydakfuneq:ce4091b5f863fb730062bca05e57b8f956f2dabb87831c89dda1879e143ffa85@ec2-44-207-133-100.compute-1.amazonaws.com:5432/d13d7g38hbhod0";
+        String db_url = "postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m";
         // String db_url = env.get("DATABASE_URL");
         db_url = db_url + "?sslmode=require";
 

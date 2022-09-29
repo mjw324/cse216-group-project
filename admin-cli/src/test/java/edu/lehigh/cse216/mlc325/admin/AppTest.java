@@ -16,7 +16,7 @@ import junit.framework.TestSuite;
 public class AppTest 
     extends TestCase
 {
-    Database db = Database.getDatabase("postgres://dxgjiydakfuneq:ce4091b5f863fb730062bca05e57b8f956f2dabb87831c89dda1879e143ffa85@ec2-44-207-133-100.compute-1.amazonaws.com:5432/d13d7g38hbhod0?sslmode=require");
+    Database db = Database.getDatabase("postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m?sslmode=require");
     /**
      * Create the test case
      *
