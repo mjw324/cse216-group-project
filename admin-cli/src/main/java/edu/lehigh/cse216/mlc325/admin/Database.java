@@ -45,6 +45,16 @@ public class Database {
     private PreparedStatement mUpdateOne;
 
     /**
+     * A prepared statement for upvoting a single row in the database
+     */
+    private PreparedStatement mLikeOne;
+
+    /**
+     * A prepared statement for downvoting a single row in the database
+     */
+    private PreparedStatement mDislikeOne;
+
+    /**
      * A prepared statement for creating the table in our database
      */
     private PreparedStatement mCreateTable;
@@ -194,6 +204,8 @@ public static class DataRow {
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes ? WHERE id = ?");
+            db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
+            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
