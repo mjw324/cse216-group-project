@@ -310,12 +310,17 @@ public static class DataRow {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String message, int likes) {
+    int updateOne(int id, String message, int likes, boolean liked) {
         int res = -1;
         try {
             mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(2, (++likes));
             mUpdateOne.setInt(3, id);
+            if(liked){
+                mUpdateOne.setInt(2, (++likes));
+            }
+            else{
+                mUpdateOne.setInt(2, (--likes));
+            }
             res = mUpdateOne.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -323,7 +328,7 @@ public static class DataRow {
         return res;
     }
 
-    /*int updateOne(int id, String message, int likes) {
+    int updateOne(int id, String message, int likes) {
         int res = -1;
         try {
             mUpdateOne.setString(1, message);
@@ -334,7 +339,7 @@ public static class DataRow {
             e.printStackTrace();
         }
         return res;
-    }*/
+    }
 
     /**
      * Create tblData.  If it already exists, this will print an error

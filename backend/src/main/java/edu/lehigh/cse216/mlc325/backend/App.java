@@ -157,7 +157,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = req.mlikes;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes, true);
             //System.out.println(result);
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
@@ -175,7 +175,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             //int liked = 2;
-            int result = db.updateOne(idx, req.mMessage, req.mlikes);
+            int result = db.updateOne(idx, req.mMessage, req.mlikes, false);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
