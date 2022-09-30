@@ -330,19 +330,6 @@ public static class DataRow {
         return res;
     }
 
-    /*int updateOne(int id, String message) {
-        int res = -1;
-        try {
-            mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(2, 0);
-            mUpdateOne.setInt(3,id);
-            res = mUpdateOne.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return res;
-    }*/
-
     int updateOne(int id, String message, int likes) {
         int res = -1;
         try {
@@ -355,7 +342,6 @@ public static class DataRow {
         }
         return res;
     }
-
 
     /**
      * Create tblData.  If it already exists, this will print an error
