@@ -1,45 +1,28 @@
 // Import test pkg and main.dart
+import 'package:my_app/ideapage.dart';
 import 'package:my_app/main.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test("Add button on press should display a text field", () {
+  test("IdeaObj class should accurately capture idea attributes", () {
     // Arrange
-
+    int id = 123;
+    String title = "Hello";
+    String message = "World";
+    int votes = 50;
+    String createdAt = "Nov 30, 2022, 5:19:48 PM";
     // Act
-
+    final IdeaObj idea = IdeaObj(
+        id: id,
+        title: title,
+        message: message,
+        votes: votes,
+        createdAt: createdAt);
     // Assert
-  });
-  test("Submit button on press should add idea to idea list", () {
-    // Arrange
-
-    // Act
-
-    // Assert
-  });
-  test("Upvote button on press should increment vote counter on idea", () {
-    // Arrange
-
-    // Act
-
-    // Assert
-  });
-  test(
-      "Downvote button on press should decrement vote counter on idea (votes > 1)",
-      () {
-    // Arrange
-
-    // Act
-
-    // Assert
-  });
-  test(
-      "Downvote button on press should NOT decrement vote counter on idea with no votes",
-      () {
-    // Arrange
-
-    // Act
-
-    // Assert3
+    expect(idea.id, id);
+    expect(idea.title, title);
+    expect(idea.message, message);
+    expect(idea.votes, votes);
+    expect(idea.createdAt, createdAt);
   });
 }
