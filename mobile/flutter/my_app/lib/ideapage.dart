@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -28,8 +25,54 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _titleController = TextEditingController();
   final _ideaController = TextEditingController();
+  bool changesMade = false;
   String title = '';
   String idea = '';
+  Widget ideasList(bool changesMade) {
+    var fb = FutureBuilder<List<IdeaObj>>(
+      future: fetchIdeas(),
+      builder: (BuildContext context, AsyncSnapshot<List<IdeaObj>> snapshot) {
+        Widget child;
+
+        if (snapshot.hasData) {
+          // developer.log('`using` ${snapshot.data}', name: 'my.app.category');
+          // create  listview to show one row per array element of json response
+          child = ListView.builder(
+              shrinkWrap:
+                  true, //expensive! consider refactoring. https://api.flutter.dev/flutter/widgets/ScrollView/shrinkWrap.html
+              padding: const EdgeInsets.all(16.0),
+              itemCount: snapshot.data!.length,
+              itemBuilder: /*1*/ (context, i) {
+                return Column(
+                  children: <Widget>[
+                    ListTile(
+                        // pass idea id through for updating votes
+                        leading: VoteButtonWidget(id: snapshot.data![i].id),
+                        title: Text(
+                          snapshot.data![i].title,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        subtitle: Text(
+                          snapshot.data![i].message,
+                        )),
+                    const Divider(height: 1.0),
+                  ],
+                );
+              });
+        } else if (snapshot.hasError) {
+          // newly added
+          child = Text('${snapshot.error}');
+        } else {
+          // awaiting snapshot data, return simple text widget
+          // child = Text('Calculating answer...');
+          child = const CircularProgressIndicator(); //show a loading spinner.
+        }
+        return child;
+      },
+    );
+
+    return fb;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,17 +112,21 @@ class _MyHomePageState extends State<MyHomePage> {
               if (_titleController.text != '' && _ideaController.text != '') {
                 title = _titleController.text;
                 idea = _ideaController.text;
-                Future<String> mMessage = addIdea(title, idea);
+                Future<String> mMessage = addIdea(title,
+                    idea); // Currently mMessage isn't being used, but will be useful in the future for error handling
                 _ideaController.clear();
                 _titleController.clear();
+                setState(() {
+                  // Not the cleanest way to update the ideasList widget, but it works and don't know how to do otherwise
+                  changesMade = !changesMade;
+                });
               }
-              // updating idea list
             },
             color: Colors.brown,
             child: const Text('Add', style: TextStyle(color: Colors.white)),
           ),
         ),
-        const HttpReqIdeas(),
+        ideasList(changesMade),
       ]),
     );
   }
@@ -134,6 +181,15 @@ Future<String> addIdea(String title, String message) async {
   return res['mMessage'];
 }
 
+Future<int> voteIdea(int idx, bool isUpvote) async {
+  String vote = isUpvote ? 'upvotes' : 'downvotes';
+  final response = await http.put(Uri.parse(
+      'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'));
+  var res = jsonDecode(response.body);
+  print(res);
+  return res['mData'];
+}
+
 // Takes the /ideas route JSON response and converts it into a list of Idea Objects
 Future<List<IdeaObj>> fetchIdeas() async {
   final response = await http
@@ -165,78 +221,9 @@ Future<List<IdeaObj>> fetchIdeas() async {
   }
 }
 
-class HttpReqIdeas extends StatefulWidget {
-  const HttpReqIdeas({Key? key}) : super(key: key);
-
-  @override
-  State<HttpReqIdeas> createState() => _HttpReqIdeasState();
-}
-
-class _HttpReqIdeasState extends State<HttpReqIdeas> {
-  late Future<List<IdeaObj>> _future_list_ideas;
-
-  final _biggerFont = const TextStyle(fontSize: 18);
-  @override
-  void initState() {
-    super.initState();
-    _future_list_ideas = fetchIdeas();
-  }
-
-  void _retry() {
-    setState(() {
-      _future_list_ideas = fetchIdeas();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var fb = FutureBuilder<List<IdeaObj>>(
-      future: _future_list_ideas,
-      builder: (BuildContext context, AsyncSnapshot<List<IdeaObj>> snapshot) {
-        Widget child;
-
-        if (snapshot.hasData) {
-          // developer.log('`using` ${snapshot.data}', name: 'my.app.category');
-          // create  listview to show one row per array element of json response
-          child = ListView.builder(
-              shrinkWrap:
-                  true, //expensive! consider refactoring. https://api.flutter.dev/flutter/widgets/ScrollView/shrinkWrap.html
-              padding: const EdgeInsets.all(16.0),
-              itemCount: snapshot.data!.length,
-              itemBuilder: /*1*/ (context, i) {
-                return Column(
-                  children: <Widget>[
-                    ListTile(
-                        leading: const VoteButtonWidget(),
-                        title: Text(
-                          snapshot.data![i].title,
-                          style: _biggerFont,
-                        ),
-                        subtitle: Text(
-                          snapshot.data![i].message,
-                        )),
-                    const Divider(height: 1.0),
-                  ],
-                );
-              });
-        } else if (snapshot.hasError) {
-          // newly added
-          child = Text('${snapshot.error}');
-        } else {
-          // awaiting snapshot data, return simple text widget
-          // child = Text('Calculating answer...');
-          child = const CircularProgressIndicator(); //show a loading spinner.
-        }
-        return child;
-      },
-    );
-
-    return fb;
-  }
-}
-
 class VoteButtonWidget extends StatefulWidget {
-  const VoteButtonWidget({super.key});
+  final int idx;
+  const VoteButtonWidget({required int id}) : idx = id;
 
   @override
   State<VoteButtonWidget> createState() => _VoteButtonWidgetState();
@@ -266,16 +253,20 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                           // Will have to upvote twice to make up for previous downvote
                           _downvotePressed = false,
                           _upvotePressed = true,
+                          voteIdea(widget.idx, true),
+                          voteIdea(widget.idx, true),
                         }
                       else if (_upvotePressed)
                         {
                           // Will remove upvote if already upvoted
                           _upvotePressed = false,
+                          voteIdea(widget.idx, false),
                         }
                       else
                         {
                           // Will upvote if it hasn't been downvoted or upvoted
                           _upvotePressed = true,
+                          voteIdea(widget.idx, true),
                         }
                     })
               },
@@ -296,16 +287,20 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                           // Will have to downvote twice to make up for previous upvote
                           _upvotePressed = false,
                           _downvotePressed = true,
+                          voteIdea(widget.idx, false),
+                          voteIdea(widget.idx, false),
                         }
                       else if (_downvotePressed)
                         {
                           // Will remove downvote if already downvoted
                           _downvotePressed = false,
+                          voteIdea(widget.idx, true),
                         }
                       else
                         {
                           // Will downvote if it hasn't been downvoted or upvoted
                           _downvotePressed = true,
+                          voteIdea(widget.idx, false),
                         }
                     })
               },
