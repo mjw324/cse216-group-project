@@ -235,12 +235,12 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: 60,
+        width: 100,
         child: Row(
           children: [
             MaterialButton(
-              minWidth: 10,
-              height: 40,
+              minWidth: 20,
+              height: 20,
               color: _upvotePressed ? Colors.red[300] : Colors.grey[850],
               child: const Text(
                 '↑',
@@ -273,8 +273,8 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
             ),
             const SizedBox(width: 4), // Invis. Box between Upvote and Downvote
             MaterialButton(
-              minWidth: 10,
-              height: 40,
+              minWidth: 20,
+              height: 20,
               color: _downvotePressed ? Colors.indigo[300] : Colors.grey[850],
               child: const Text(
                 '↓',
