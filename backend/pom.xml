@@ -32,7 +32,7 @@
         <version>3.0.3</version>
         <configuration>
           <jdkVersion>17.0.4</jdkVersion>
-          <appName>calm-stream-34500</appName>
+          <appName>whispering-sands-78580</appName>
           <processTypes>
             <web>java -jar ./target/backend-1.0-SNAPSHOT-jar-with-dependencies.jar</web>
           </processTypes>
