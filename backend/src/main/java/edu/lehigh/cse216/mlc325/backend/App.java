@@ -27,7 +27,7 @@ public class App {
         // String pass = env.get("POSTGRES_PASS");
 
         // String db_url = env.get("DATABASE_URL");
-        String db_url = "postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m";
+        String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
 
         // Get a fully-configured connection to the database, or exit 
         // immediately
@@ -174,6 +174,40 @@ public class App {
             response.status(200);
             response.type("application/json");
             int result = db.oneDislike(idx);
+            if (result == -1) {
+                return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", null, result));
+            }
+        });
+
+        Spark.put("/messages/:id/upvotes/:num", (request, response) -> {
+            // If we can't get an ID or can't parse the JSON, Spark will send
+            // a status 500
+            int idx = Integer.parseInt(request.params("id"));
+            int num = Integer.parseInt(request.params("num"));
+            SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
+            // ensure status 200 OK, with a MIME type of JSON
+            response.status(200);
+            response.type("application/json");
+            int result = db.numLike(idx, num);
+            if (result < 0) {
+                return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", null, result));
+            }
+        });
+
+        Spark.put("/messages/:id/downvotes/:num", (request, response) -> {
+            // If we can't get an ID or can't parse the JSON, Spark will send
+            // a status 500
+            int idx = Integer.parseInt(request.params("id"));
+            int num = Integer.parseInt(request.params("num"));
+            SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
+            // ensure status 200 OK, with a MIME type of JSON
+            response.status(200);
+            response.type("application/json");
+            int result = db.numDislike(idx, num);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
