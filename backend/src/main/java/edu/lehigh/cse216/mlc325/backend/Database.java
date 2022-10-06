@@ -328,14 +328,16 @@ public static class DataRow {
     int oneDislike(int id) {
         int res = -1;
         try {
-            mSelectOne.setInt(1, id);
+            mDislikeOne.setInt(1, id);
+            res = mDislikeOne.executeUpdate();
+            /*mSelectOne.setInt(1, id);
             ResultSet rs = mSelectOne.executeQuery();
             if(rs.getInt("votes") > 0){
                 mDislikeOne.setInt(1, id);
                 res = mDislikeOne.executeUpdate();
             }else{
                 System.err.println("No");
-            }
+            }*/
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -360,6 +362,15 @@ public static class DataRow {
             mDislikeNum.setInt(1, numVotes);
             mDislikeNum.setInt(2, id);
             res = mDislikeNum.executeUpdate();
+            /*mSelectOne.setInt(1, id);
+            ResultSet rs = mSelectOne.executeQuery();
+            if(rs.getInt("votes") > 0){
+                mDislikeNum.setInt(1, numVotes);
+                mDislikeNum.setInt(2, id);
+                res = mDislikeNum.executeUpdate();
+            }else{
+                System.err.println("No");
+            }*/
         } catch (SQLException e) {
             e.printStackTrace();
         }
