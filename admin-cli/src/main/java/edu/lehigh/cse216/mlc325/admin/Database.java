@@ -194,7 +194,7 @@ public static class DataRow {
             // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
             // creation/deletion, so multiple executions will cause an exception
             db.mCreateTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(50) "
+                    "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(128) "
                     + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL)");
             db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
 
