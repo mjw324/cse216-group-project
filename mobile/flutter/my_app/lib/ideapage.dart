@@ -46,8 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Column(
                   children: <Widget>[
                     ListTile(
-                        // pass idea id through for updating votes
-                        leading: VoteButtonWidget(id: snapshot.data![i].id),
+                        leading: VoteButtonWidget(
+                            idx: snapshot.data![i].id,
+                            votes: snapshot.data![i].votes),
                         title: Text(
                           snapshot.data![i].title,
                           style: const TextStyle(fontSize: 16),
@@ -65,7 +66,12 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           // awaiting snapshot data, return simple text widget
           // child = Text('Calculating answer...');
-          child = const CircularProgressIndicator(); //show a loading spinner.
+          child = const Center(
+              child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child:
+                      CircularProgressIndicator())); //show a loading spinner.
         }
         return child;
       },
@@ -112,12 +118,12 @@ class _MyHomePageState extends State<MyHomePage> {
               if (_titleController.text != '' && _ideaController.text != '') {
                 title = _titleController.text;
                 idea = _ideaController.text;
-                Future<String> mMessage = addIdea(title,
-                    idea); // Currently mMessage isn't being used, but will be useful in the future for error handling
+                // Currently mMessage isn't being used, but will be useful in future for error handling
+                Future<String> mMessage = addIdea(title, idea);
                 _ideaController.clear();
                 _titleController.clear();
                 setState(() {
-                  // Not the cleanest way to update the ideasList widget, but it works and don't know how to do otherwise
+                  // Not the best practice for updating ideasList widget, but it works for now. Consider refactoring ideasList widget
                   changesMade = !changesMade;
                 });
               }
@@ -161,8 +167,11 @@ class IdeaObj {
 
   factory IdeaObj.fromJson(Map<String, dynamic> json) {
     print(json);
-    // {'id':INT, 'title':STRING, message:STRING, votes:INT, createdAt:STRING}
+    // Map's String dynamic pair is the JSON key value pair
+    // The following is what this idea factory receives as input
+    // {'mId':INT, 'mTitle':STRING, mMessage:STRING, mVotes:INT, mCreatedAt:STRING}
     return IdeaObj(
+      // Format - value = json['key']
       id: json['mId'],
       title: json['mTitle'],
       message: json['mMessage'],
@@ -182,11 +191,12 @@ Future<String> addIdea(String title, String message) async {
 }
 
 Future<int> voteIdea(int idx, bool isUpvote) async {
+  // isUpvote boolean determines which vote route to HTTP PUT
   String vote = isUpvote ? 'upvotes' : 'downvotes';
   final response = await http.put(Uri.parse(
       'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'));
+  // res (response) should decode two key value pairs: mStatus and mData
   var res = jsonDecode(response.body);
-  print(res);
   return res['mData'];
 }
 
@@ -198,11 +208,12 @@ Future<List<IdeaObj>> fetchIdeas() async {
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response, then parse the JSON.
     final List<IdeaObj> returnData;
-    developer.log(response.body);
     var res = jsonDecode(response.body);
-    print('json decode: $res');
-    print('The keys are: ${res.keys}');
-    print('The values are: ${res.values}');
+    // Coded out lines are to debug/print response
+    //developer.log(response.body);
+    //developer.log('json decode: $res');
+    //developer.log('The keys are: ${res.keys}');
+    //developer.log('The values are: ${res.values}');
     var ideas = res['mData'];
     if (ideas is List) {
       returnData = ideas.map((x) => IdeaObj.fromJson(x)).toList();
@@ -222,25 +233,46 @@ Future<List<IdeaObj>> fetchIdeas() async {
 }
 
 class VoteButtonWidget extends StatefulWidget {
+  const VoteButtonWidget({Key? key, required this.idx, required this.votes})
+      : super(key: key);
   final int idx;
-  const VoteButtonWidget({required int id}) : idx = id;
+  final int votes;
+  // Constructor that requires widget instance to pass through idea id (needed for vote routes)
 
   @override
   State<VoteButtonWidget> createState() => _VoteButtonWidgetState();
 }
 
 class _VoteButtonWidgetState extends State<VoteButtonWidget> {
-  bool _upvotePressed = false; // used to change color of upvote
-  bool _downvotePressed = false; // used to change color of upvote
+  String _votes = "-";
+  // Both of these boolean values are used to determine state of vote buttons
+  bool _upvotePressed = false;
+  bool _downvotePressed = false;
+  _VoteButtonWidgetState() {
+    // voteCounter(widget.idx).then((val) => setState((() {
+    //       _votes = val;
+    //     })));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    int votes = widget.votes;
+    voteCounter(widget.idx).then((val) => setState((() {
+          _votes = val;
+        })));
+    return SizedBox(
         width: 100,
         child: Row(
           children: [
+            SizedBox(
+                width: 30,
+                child: Center(
+                    child: Text(_votes,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)))),
             MaterialButton(
-              minWidth: 20,
-              height: 20,
+              minWidth: 40,
+              height: 50,
               color: _upvotePressed ? Colors.red[300] : Colors.grey[850],
               child: const Text(
                 '↑',
@@ -255,26 +287,29 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                           _upvotePressed = true,
                           voteIdea(widget.idx, true),
                           voteIdea(widget.idx, true),
+                          votes = votes + 2,
                         }
                       else if (_upvotePressed)
                         {
                           // Will remove upvote if already upvoted
                           _upvotePressed = false,
                           voteIdea(widget.idx, false),
+                          votes--,
                         }
                       else
                         {
                           // Will upvote if it hasn't been downvoted or upvoted
                           _upvotePressed = true,
                           voteIdea(widget.idx, true),
+                          votes++,
                         }
                     })
               },
             ),
             const SizedBox(width: 4), // Invis. Box between Upvote and Downvote
             MaterialButton(
-              minWidth: 20,
-              height: 20,
+              minWidth: 40,
+              height: 50,
               color: _downvotePressed ? Colors.indigo[300] : Colors.grey[850],
               child: const Text(
                 '↓',
@@ -289,18 +324,21 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                           _downvotePressed = true,
                           voteIdea(widget.idx, false),
                           voteIdea(widget.idx, false),
+                          votes = votes - 2,
                         }
                       else if (_downvotePressed)
                         {
                           // Will remove downvote if already downvoted
                           _downvotePressed = false,
                           voteIdea(widget.idx, true),
+                          votes++,
                         }
                       else
                         {
                           // Will downvote if it hasn't been downvoted or upvoted
                           _downvotePressed = true,
                           voteIdea(widget.idx, false),
+                          votes--,
                         }
                     })
               },
@@ -308,4 +346,13 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
           ],
         ));
   }
+}
+
+Future<String> voteCounter(int idx) async {
+  final response = await http.get(
+      Uri.parse('https://whispering-sands-78580.herokuapp.com/messages/$idx'));
+  // res (response) should decode two key value pairs: mStatus and mData. mData has the idea key value pairs we need
+  var res = jsonDecode(response.body);
+  IdeaObj idea = IdeaObj.fromJson(res['mData']);
+  return (idea.votes).toString();
 }
