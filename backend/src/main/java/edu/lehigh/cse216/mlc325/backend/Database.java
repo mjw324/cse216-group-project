@@ -314,6 +314,14 @@ public static class DataRow {
         return res;
     }
 
+    /**
+     * Like post, by ID
+     * 
+     * @param id The id of the row being requested
+     * 
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
     int oneLike(int id) {
         int res = -1;
         try {
@@ -325,6 +333,14 @@ public static class DataRow {
         return res;
     }
 
+    /**
+     * Dislike post, by ID
+     * 
+     * @param id The id of the row being requested
+     * 
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
     int oneDislike(int id) {
         int res = -1;
         try {
@@ -343,7 +359,16 @@ public static class DataRow {
         }
         return res;
     }
-
+    
+    /**
+     * Dislike post, by ID
+     * 
+     * @param id The id of the row being requested
+     * @param numVotes number of votes
+     * 
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
     int numLike(int id, int numVotes) {
         int res = -1;
         try {
@@ -356,6 +381,14 @@ public static class DataRow {
         return res;
     }
 
+    /**
+     * Number of Dislikes posts not just 1, by ID
+     * 
+     * @param id The id of the row being requested
+     * @param numVotes number of votes
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
     int numDislike(int id, int numVotes) {
         int res = -1;
         try {
@@ -376,6 +409,7 @@ public static class DataRow {
         }
         return res;
     }
+
 
     int updateOne(int id, String message, int likes) {
         int res = -1;
