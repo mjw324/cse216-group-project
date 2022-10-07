@@ -41,6 +41,9 @@ public class AppTest
     //This functionality will have to be tested manually
 
 
+    /**
+     * Ensure that adding an entry works correctly
+     */
     public void testAddEntry()
     {
         assertFalse(db==null);
@@ -50,6 +53,9 @@ public class AppTest
         assertTrue( App.addRow(db, input) == 1 );
     }
     
+    /**
+     * Ensure that removing an entry works correctly
+     */
     public void testRemoveEntry()
     {
         ArrayList<Database.DataRow> res = db.selectAll();

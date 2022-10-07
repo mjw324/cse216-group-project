@@ -108,15 +108,11 @@ public class App {
      */
     public static void main(String[] argv) {
         // get the Postgres configuration from the environment
-        //Map<String, String> env = System.getenv();
-        // String ip = env.get("POSTGRES_IP");
-        // String port = env.get("POSTGRES_PORT");
-        // String user = env.get("POSTGRES_USER");
-        // String pass = env.get("POSTGRES_PASS");
+        Map<String, String> env = System.getenv();
 
-        String db_url = "postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m";
-        // String db_url = env.get("DATABASE_URL");
-        db_url = db_url + "?sslmode=require";
+        // String db_url = "postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m";
+        // db_url = db_url + "?sslmode=require";
+        String db_url = env.get("DATABASE_URL");
 
         // Get a fully-configured connection to the database, or exit 
         // immediately
@@ -128,9 +124,6 @@ public class App {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             // Get the user's request, and do it
-            //
-            // NB: for better testability, each action should be a separate
-            //     function call
             char action = prompt(in);
             if (action == '?') {
                 menu();
@@ -160,14 +153,33 @@ public class App {
 
     //methods to handle admin actions
 
+    /**
+     * Create table tblData
+     * Uses prepared statements in admin/database
+     * 
+     * @param db the database in which to create the new table
+     */
     public static void createTable(Database db){
         db.createTable();
     }
 
+    /**
+     * Drop table tblData
+     * Uses prepared statements in admin/database
+     * 
+     * @param db the database in which to drop the table
+     */
     public static void dropTable(Database db){
         db.dropTable();
     }
 
+    
+    /**
+     * Query a specific row in the database
+     * 
+     * @param db the database to query a rwo from
+     * @param in the bufferedreader to input the row id
+     */
     public static void query(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID");
         if (id == -1)
@@ -180,6 +192,11 @@ public class App {
         }
     }
 
+    /**
+     * Query all rows of a database
+     * 
+     * @param db the database to query from
+     */
     public static void queryAll(Database db){
         ArrayList<Database.DataRow> res = db.selectAll();
         if (res == null)
@@ -191,17 +208,30 @@ public class App {
         }
     }
 
+    /**
+     * Delete a row from the database 
+     * 
+     * @param db the database
+     * @param in the bufferedReader to input the row id
+     * @return the number of rows deleted (expected 1)
+     */
     public static int deleteRow(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID");
         if (id == -1)
             return-1;
         int res = db.deleteRow(id);
-        if (res == -1)
-            return -1;
-        System.out.println("  " + res + " rows deleted");
+        if (res != -1) 
+            System.out.println("  " + res + " rows deleted");
         return res;
     }
 
+    /**
+     * Add a row from the database 
+     * 
+     * @param db the database
+     * @param in the bufferedReader to input the row id
+     * @return the number of rows added (expected 1)
+     */
     public static int addRow(Database db, BufferedReader in){
         String title = getString(in, "Enter the title");
         String message = getString(in, "Enter the message");
@@ -212,16 +242,23 @@ public class App {
         return res;
     }
 
-    public static void updateRow(Database db, BufferedReader in){
+    /**
+     * Update a row from the database
+     * 
+     * @param db the database
+     * @param in the bufferedReader to input the row id and updates
+     * @return the number of rows updated (expected 1)
+     */
+    public static int updateRow(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID :> ");
         if (id == -1)
-        return;
+        return -1;
         String newMessage = getString(in, "Enter the new message");
         int votes = getInt(in, "Enter the new votes :> ");
         int res = db.updateOne(id, newMessage, votes);
-        if (res == -1)
-            return;
-        System.out.println("  " + res + " rows updated");
+        if (res != -1)
+            System.out.println("  " + res + " rows updated");
+        return res;
     }
 
 }
