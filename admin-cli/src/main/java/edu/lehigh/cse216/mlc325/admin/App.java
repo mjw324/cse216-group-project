@@ -108,13 +108,13 @@ public class App {
      */
     public static void main(String[] argv) {
         // get the Postgres configuration from the environment
-        Map<String, String> env = System.getenv();
+        //Map<String, String> env = System.getenv();
         // String ip = env.get("POSTGRES_IP");
         // String port = env.get("POSTGRES_PORT");
         // String user = env.get("POSTGRES_USER");
         // String pass = env.get("POSTGRES_PASS");
 
-        String db_url = "postgres://dxgjiydakfuneq:ce4091b5f863fb730062bca05e57b8f956f2dabb87831c89dda1879e143ffa85@ec2-44-207-133-100.compute-1.amazonaws.com:5432/d13d7g38hbhod0";
+        String db_url = "postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m";
         // String db_url = env.get("DATABASE_URL");
         db_url = db_url + "?sslmode=require";
 
@@ -160,15 +160,15 @@ public class App {
 
     //methods to handle admin actions
 
-    private static void createTable(Database db){
+    public static void createTable(Database db){
         db.createTable();
     }
 
-    private static void dropTable(Database db){
+    public static void dropTable(Database db){
         db.dropTable();
     }
 
-    private static void query(Database db, BufferedReader in){
+    public static void query(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID");
         if (id == -1)
             return;
@@ -180,42 +180,45 @@ public class App {
         }
     }
 
-    private static void queryAll(Database db){
+    public static void queryAll(Database db){
         ArrayList<Database.DataRow> res = db.selectAll();
         if (res == null)
             return;
         System.out.println("  Current Database Contents");
         System.out.println("  -------------------------");
-        for (Database.DataRow rd : res) {
-            System.out.println("  [" + rd.mId + "] " + rd.mTitle);
+        for (Database.DataRow dr : res) {
+            System.out.println("  [" + dr.mId + "] " + dr.mTitle);
         }
     }
 
-    private static void deleteRow(Database db, BufferedReader in){
+    public static int deleteRow(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID");
         if (id == -1)
-            return;
+            return-1;
         int res = db.deleteRow(id);
         if (res == -1)
-            return;
+            return -1;
         System.out.println("  " + res + " rows deleted");
+        return res;
     }
 
-    private static void addRow(Database db, BufferedReader in){
+    public static int addRow(Database db, BufferedReader in){
         String title = getString(in, "Enter the title");
         String message = getString(in, "Enter the message");
         if (title.equals("") || message.equals(""))
-            return;
+            return -1;
         int res = db.insertRow(title, message);
         System.out.println(res + " rows added");
+        return res;
     }
 
-    private static void updateRow(Database db, BufferedReader in){
+    public static void updateRow(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID :> ");
         if (id == -1)
-            return;
+        return;
         String newMessage = getString(in, "Enter the new message");
-        int res = db.updateOne(id, newMessage);
+        int votes = getInt(in, "Enter the new votes :> ");
+        int res = db.updateOne(id, newMessage, votes);
         if (res == -1)
             return;
         System.out.println("  " + res + " rows updated");
