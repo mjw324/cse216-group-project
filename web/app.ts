@@ -10,7 +10,7 @@ var $: any;
 var newEntryForm: NewEntryForm;
 
 // This constant indicates the path to our backend server (change to your own)
-const backendUrl = "https://calm-stream-34500.herokuapp.com";
+const backendUrl = "https://whispering-sands-78580.herokuapp.com";
 
 /**
  * NewEntryForm encapsulates all of the code for the form for adding an entry
@@ -143,7 +143,7 @@ class ElementList {
                 console.log(data);
             }).catch( (error) => {
                 console.warn('Something went wrong.', error);
-                window.alert("Unspecified error 3");
+                window.alert("Unspecified error 34");
             });
         }
 
