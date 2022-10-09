@@ -21,6 +21,10 @@ Frontend: F5
 - made sure the name of the page is whispering-sands-78580
 - data clips allow us to check the database from heroku
 
+## Code Documentation
+- [Admin Doc](artifacts/Admin-Javadocs/index-all.html)
+
+
 ## User Stories
 1. As an anonymous user
 I want the ability to share ideas
@@ -28,7 +32,7 @@ So I can get my idea to other colleagues (automated)
 
 2. As an anonymous user
 I want to be able to up or downvote
-So I can give feedback to other colleagues� ideas (automated)
+So I can give feedback to other colleagues ideas (automated)
 
 3. As an anonymous user
 I want to be able to anonymously share my opinion
