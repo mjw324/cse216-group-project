@@ -4,6 +4,8 @@ import 'dart:async';
 import 'routes.dart';
 import 'addidea.dart';
 import 'ideaslist.dart';
+import 'schedule.dart';
+import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -24,9 +26,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-  
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called
@@ -34,17 +33,20 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: ListView(children: const [
-        AddIdeaWidget(),
-        IdeasListWidget(),
-      ],)
-    );
+    return ChangeNotifierProvider(
+        create: (context) => MySchedule(),
+        child: Scaffold(
+            appBar: AppBar(
+              // Here we take the value from the MyHomePage object that was created by
+              // the App.build method, and use it to set our appbar title.
+              title: Text(widget.title),
+            ),
+            body: const CustomScrollView(
+              // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
+              slivers: <Widget>[
+                AddIdeaWidget(),
+                IdeasListWidget(),
+              ],
+            )));
   }
-} 
-
+}

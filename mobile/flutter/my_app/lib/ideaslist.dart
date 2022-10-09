@@ -13,82 +13,101 @@ class IdeasListWidget extends StatefulWidget {
 }
 
 class _IdeasListWidgetState extends State<IdeasListWidget> {
-  late Future<List<IdeaObj>> _list_ideas;
+  late Future<List<IdeaObj>> _listIdeas;
   final _biggerFont = const TextStyle(fontSize: 16);
 
+  // This is called when IdeasListWidget is first initialized. The _listIdeas variable is initialized with fetchIdeas() in routes.dart
   @override
   void initState() {
     super.initState();
-    _list_ideas = fetchIdeas();
+    _listIdeas = fetchIdeas();
+  }
+
+  void retry() {
+    setState(() {
+      _listIdeas = fetchIdeas();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<IdeaObj>>(
-      future: _list_ideas,
-      builder: ((BuildContext context, AsyncSnapshot<List<IdeaObj>> snapshot) {
-        Widget child;
-        if(snapshot.hasData) {
-          child = ListView.builder(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(16),
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, i) {
-            return Column(
-              children: <Widget>[
-                ListTile(
-                    leading: VoteButtonWidget(
-                        idx: snapshot.data![i].id,
-                        votes: snapshot.data![i].votes),
-                    title: Text(
-                      snapshot.data![i].title,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    subtitle: Text(
-                      snapshot.data![i].message,
-                    )),
-                const Divider(height: 1.0),
-              ],
-            );
-          });
-        } else if (snapshot.hasError) {
-          child = Text('${snapshot.error}');
-        } else {
-          child = const Center(child: SizedBox(width: 30, height: 30, child: CircularProgressIndicator()));
-        }
-        return child;
-    }));
-    
+    // We need to create a schedule in order to access MySchedule (check to see if instance of Consumer and Provider concurrently is code smell)
+    final schedule = Provider.of<MySchedule>(context);
+    // Creates scheduleList to access current ideas list stored in schedule
+    List<IdeaObj> scheduleList = schedule.ideas;
+    // If it isn't empty, we create our IdeasListWidget from the scheduleList.
+    // This will need to be refactored because schedule.ideas only updates when 1) it is initialized in else block 2) we make updates to it on app
+    // *It does not take into account new ideas from other clients after it has been initialized*
+    if (scheduleList.isNotEmpty) {
+      // Whenever MySchedule notifiesListeners(), the consumers update state
+      return Consumer<MySchedule>(
+          builder: (context, schedule, _) => SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                (context, i) {
+                  IdeaObj idea = scheduleList[i];
+                  return Column(
+                    children: <Widget>[
+                      ListTile(
+                          leading: VoteButtonWidget(
+                              idx: idea.id, liked: idea.userVotes),
+                          title: Text(
+                            idea.title,
+                            style: _biggerFont,
+                          ),
+                          subtitle: Text(
+                            idea.message,
+                          )),
+                      const Divider(height: 1.0),
+                    ],
+                  );
+                },
+                childCount: scheduleList.length,
+              )));
+    } else {
+      return Consumer<MySchedule>(
+          builder: (context, schedule, _) => FutureBuilder<List<IdeaObj>>(
+              future: _listIdeas,
+              builder: ((BuildContext context,
+                  AsyncSnapshot<List<IdeaObj>> snapshot) {
+                Widget child;
+                if (snapshot.hasData) {
+                  List<IdeaObj> list = snapshot.data!;
+                  schedule.ideasList = list;
+                  child = SliverList(
+                      //padding: const EdgeInsets.all(16),
+                      delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      IdeaObj idea = list[i];
+                      return Column(
+                        children: <Widget>[
+                          ListTile(
+                              leading: VoteButtonWidget(
+                                  idx: idea.id, liked: idea.userVotes),
+                              title: Text(
+                                idea.title,
+                                style: _biggerFont,
+                              ),
+                              subtitle: Text(
+                                idea.message,
+                              )),
+                          const Divider(height: 1.0),
+                        ],
+                      );
+                    },
+                    childCount: list.length,
+                  ));
+                } else if (snapshot.hasError) {
+                  child = Text('${snapshot.error}');
+                } else {
+                  child = const SliverToBoxAdapter(
+                      child: Center(
+                          child: SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: CircularProgressIndicator())));
+                }
+                return child;
+              })));
+    }
   }
 }
-
-  //   child = const Center(
-  //       child: SizedBox(
-  //           width: 50,
-  //           height: 50,
-  //           child:
-  //               CircularProgressIndicator())); //show a loading spinner.
-  // }
-  // return child;
-
-
-  // padding: const EdgeInsets.all(16.0),
-  // itemCount: _list_ideas.length,
-  // itemBuilder: /*1*/ (context, i) {
-  //   return Column(
-  //     children: <Widget>[
-  //       ListTile(
-  //           leading: VoteButtonWidget(
-  //               idx: _list_ideas[i].id,
-  //               votes: _list_ideas[i].votes),
-  //           title: Text(
-  //             _list_ideas[i].title,
-  //             style: const TextStyle(fontSize: 16),
-  //           ),
-  //           subtitle: Text(
-  //             _list_ideas[i].message,
-  //           )),
-  //       const Divider(height: 1.0),
-  //     ],
-  //   );
-  // });

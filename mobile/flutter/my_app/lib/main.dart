@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'ideapage.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
+
+// TODO:
+// Update addidea.dart once backend fixes POST /messages
+// ideaslist.dart was hard to optimize, it needs some more work
+// Convert stateful widgets to stateless (except for votebutton), since MySchedule takes care of the state.
 // Simple app state management https://docs.flutter.dev/development/data-and-backend/state-mgmt/simple
 // Debug Build with F5
 // Try running your application with "flutter run"

@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'dart:convert';
 import 'ideaobj.dart';
 
-
+// POST /messages route given a new idea with title and messages, should return String of new ID
 Future<String> addIdea(String title, String message) async {
   final response = await http.post(
     Uri.parse('https://whispering-sands-78580.herokuapp.com/messages'),
@@ -13,18 +13,28 @@ Future<String> addIdea(String title, String message) async {
   return res['mMessage'];
 }
 
+// Returns an IdeaObj from GET /messages/:id given its id
+Future<IdeaObj> fetchIdea(int idx) async {
+  final response = await http.get(
+      Uri.parse('https://whispering-sands-78580.herokuapp.com/messages/$idx'));
+  var res = jsonDecode(response.body);
+  print(res);
+  return res['mData'];
+}
+
 // Perform PUT on /messages/:id/[upvotes or downvotes]
 Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
   // isUpvote boolean determines which vote route to HTTP PUT
   String vote = isUpvote ? 'upvotes' : 'downvotes';
   // ignore: prefer_typing_uninitialized_variables
   final response;
-  if(voteCount > 1) { // If front ends needs to increment/decrement votes more than once, we specify the route with an addition /voteCount
+  if (voteCount > 1) {
+    // If front ends needs to increment/decrement votes more than once, we specify the route with an addition /voteCount
     response = await http.put(Uri.parse(
-      'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote/$voteCount'));
+        'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote/$voteCount'));
   } else {
     response = await http.put(Uri.parse(
-      'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'));
+        'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'));
   }
 
   // res (response) should decode two key value pairs: mStatus and mData
@@ -64,7 +74,7 @@ Future<List<IdeaObj>> fetchIdeas() async {
   }
 }
 
-
+// Returns how many votes an idea has. This could probably be removed given the refactoring
 Future<String> voteCounter(int idx) async {
   final response = await http.get(
       Uri.parse('https://whispering-sands-78580.herokuapp.com/messages/$idx'));
