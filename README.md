@@ -1,7 +1,9 @@
 # **The Buzz**
 ## Authors
 - Aarushi Singh
+    -aas620
 - Mattias Culbertson
+    - mlc325
 - Micah Worth
     - mjw324
 - Yiannis Karamitros
@@ -37,11 +39,7 @@ So I can get my idea to other colleagues (automated)
 
 2. As an anonymous user
 I want to be able to up or downvote
-<<<<<<< HEAD
-So I can give feedback to other colleagues� ideas (automated)
-=======
 So I can give feedback to other colleagues ideas (automated)
->>>>>>> pre-master
 
 3. As an anonymous user
 I want to be able to anonymously share my opinion
@@ -66,11 +64,7 @@ So I can see what my colleagues think of the ideat (manual)
 ## System drawing showing the major components and their location
 ![Artifacts-2](artifacts/Artifacts-2.jpg)
 
-<<<<<<< HEAD
 ### Drawing of the state machine for the anonymous user persona�s interaction with the application
-=======
-### Drawing of the state machine for the anonymous user persona�s interaction with the application
->>>>>>> pre-master
 ![Artifacts-3](artifacts/Artifacts-3.jpg)
 
 ## Listing of the routes, their purpose, and the format of any passed object
@@ -97,7 +91,4 @@ So I can see what my colleagues think of the ideat (manual)
 - Test that database was created correctly
 - Test that database was deleted correctly
 - Test that rows were removed correctly
-
-Trello invite link:
-https://trello.com/invite/cse216mlcc325/08e8c14c1250d96b2bdec08825a8fc0b
 
