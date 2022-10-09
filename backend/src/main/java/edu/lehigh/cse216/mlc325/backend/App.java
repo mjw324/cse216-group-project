@@ -31,7 +31,7 @@ public class App {
 
         // Get a fully-configured connection to the database, or exit 
         // immediately
-        Database db = Database.getDatabase(db_url);
+        Database db = Database.getDatabase(db_url); 
         if (db == null)
             return;
 
