@@ -1,4 +1,4 @@
-# The Buzz
+# **The Buzz**
 ## Authors
 - Aarushi Singh
     - aas620
@@ -26,7 +26,11 @@ Frontend: F5
     - website: file:///C:/Users/Aarus/small-data-group-repo/artifacts/Admin-Javadocs/index-all.html
 - [Backend Doc HTML](artifacts/Backend-JavaDoc/index.html)
     - website: file:///C:/Users/Aarus/small-data-group-repo/artifacts/Backend-JavaDoc/edu/lehigh/cse216/mlc325/backend/package-summary.html
-
+- [Frontend Doc HTML](artifacts/Frontend-Javadocs/api/index.html)
+    - to access: 
+        - dart pub global activate dhttpd
+        - dhttpd --path doc/api
+# Project Design and Planning Artifacts
 
 ## User Stories
 1. As an anonymous user
