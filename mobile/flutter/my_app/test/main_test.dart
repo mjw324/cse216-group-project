@@ -2,6 +2,7 @@
 import 'package:my_app/ideapage.dart';
 import 'package:my_app/main.dart';
 import 'package:test/test.dart';
+import 'package:my_app/ideaobj.dart';
 
 void main() {
   test("IdeaObj class should accurately capture idea attributes", () {
@@ -11,18 +12,21 @@ void main() {
     String message = "World";
     int votes = 50;
     String createdAt = "Nov 30, 2022, 5:19:48 PM";
+    int userVotes = 1;
     // Act
-    final IdeaObj idea = IdeaObj(
+    IdeaObj idea = IdeaObj(
         id: id,
         title: title,
         message: message,
         votes: votes,
-        createdAt: createdAt);
+        createdAt: createdAt,
+        userVotes: userVotes);
     // Assert
     expect(idea.id, id);
     expect(idea.title, title);
     expect(idea.message, message);
     expect(idea.votes, votes);
     expect(idea.createdAt, createdAt);
+    expect(idea.userVotes, userVotes);
   });
 }

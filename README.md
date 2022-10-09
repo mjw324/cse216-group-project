@@ -1,9 +1,7 @@
-# The Buzz
+# **The Buzz**
 ## Authors
 - Aarushi Singh
-    - aas620
 - Mattias Culbertson
-    - mlc325
 - Micah Worth
     - mjw324
 - Yiannis Karamitros
@@ -21,6 +19,17 @@ Frontend: F5
 - made sure the name of the page is whispering-sands-78580
 - data clips allow us to check the database from heroku
 
+## Code Documentation
+- [Admin Doc HTML](artifacts/Admin-Javadocs/index.html)
+    - website: file:///C:/Users/Aarus/small-data-group-repo/artifacts/Admin-Javadocs/index-all.html
+- [Backend Doc HTML](artifacts/Backend-JavaDoc/index.html)
+    - website: file:///C:/Users/Aarus/small-data-group-repo/artifacts/Backend-JavaDoc/edu/lehigh/cse216/mlc325/backend/package-summary.html
+- [Frontend Doc HTML](artifacts/Frontend-Javadocs/api/index.html)
+    - to access: 
+        - dart pub global activate dhttpd
+        - dhttpd --path doc/api
+# Project Design and Planning Artifacts
+
 ## User Stories
 1. As an anonymous user
 I want the ability to share ideas
@@ -28,7 +37,11 @@ So I can get my idea to other colleagues (automated)
 
 2. As an anonymous user
 I want to be able to up or downvote
-So I can give feedback to other colleagues’ ideas (automated)
+<<<<<<< HEAD
+So I can give feedback to other colleaguesï¿½ ideas (automated)
+=======
+So I can give feedback to other colleagues ideas (automated)
+>>>>>>> pre-master
 
 3. As an anonymous user
 I want to be able to anonymously share my opinion
@@ -53,7 +66,11 @@ So I can see what my colleagues think of the ideat (manual)
 ## System drawing showing the major components and their location
 ![Artifacts-2](artifacts/Artifacts-2.jpg)
 
-### Drawing of the state machine for the anonymous user persona’s interaction with the application
+<<<<<<< HEAD
+### Drawing of the state machine for the anonymous user personaï¿½s interaction with the application
+=======
+### Drawing of the state machine for the anonymous user personaï¿½s interaction with the application
+>>>>>>> pre-master
 ![Artifacts-3](artifacts/Artifacts-3.jpg)
 
 ## Listing of the routes, their purpose, and the format of any passed object
