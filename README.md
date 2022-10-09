@@ -22,7 +22,11 @@ Frontend: F5
 - data clips allow us to check the database from heroku
 
 ## Code Documentation
-- <a href="file:///C:/Users/Aarus/small-data-group-repo/artifacts/Admin-Javadocs/index-all.html" target="_blank">Admin Doc</a>
+- [Admin Doc HTML](artifacts/Admin-Javadocs/index.html)
+    - website: file:///C:/Users/Aarus/small-data-group-repo/artifacts/Admin-Javadocs/index-all.html
+- [Backend Doc HTML](artifacts/Backend-JavaDoc/index.html)
+    - website: file:///C:/Users/Aarus/small-data-group-repo/artifacts/Backend-JavaDoc/edu/lehigh/cse216/mlc325/backend/package-summary.html
+
 
 ## User Stories
 1. As an anonymous user
