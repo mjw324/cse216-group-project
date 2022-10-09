@@ -1,7 +1,7 @@
 # **The Buzz**
 ## Authors
 - Aarushi Singh
-    -aas620
+    - aas620
 - Mattias Culbertson
     - mlc325
 - Micah Worth
