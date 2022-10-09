@@ -47,6 +47,9 @@ public class Database {
     private PreparedStatement mLikeOne;
     private PreparedStatement mDislikeOne;
 
+    private PreparedStatement mLikeNum;
+    private PreparedStatement mDislikeNum;
+
     /**
      * A prepared statement for creating the table in our database
      */
@@ -193,6 +196,9 @@ public static class DataRow {
 
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
+
+            db.mLikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + ? WHERE id = ?");
+            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -251,12 +257,12 @@ public static class DataRow {
     /**
      * Query the database for a list of all titles and their IDs
      * 
-     * @return All rows, as an ArrayList
+     * @return All rows, as an ArrayList f
      */
     ArrayList<DataRow> selectAll() {
         ArrayList<DataRow> res = new ArrayList<DataRow>();
         try {
-            ResultSet rs = mSelectAll.executeQuery();
+            ResultSet rs = mSelectAll.executeQuery(); 
             while (rs.next()) {
                 res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes")));
             }
@@ -308,6 +314,14 @@ public static class DataRow {
         return res;
     }
 
+    /**
+     * Like post, by ID
+     * 
+     * @param id The id of the row being requested
+     * 
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
     int oneLike(int id) {
         int res = -1;
         try {
@@ -319,16 +333,83 @@ public static class DataRow {
         return res;
     }
 
+    /**
+     * Dislike post, by ID
+     * 
+     * @param id The id of the row being requested
+     * 
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
     int oneDislike(int id) {
         int res = -1;
         try {
             mDislikeOne.setInt(1, id);
             res = mDislikeOne.executeUpdate();
+            /*mSelectOne.setInt(1, id);
+            ResultSet rs = mSelectOne.executeQuery();
+            if(rs.getInt("votes") > 0){
+                mDislikeOne.setInt(1, id);
+                res = mDislikeOne.executeUpdate();
+            }else{
+                System.err.println("No");
+            }*/
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return res;
     }
+    
+    /**
+     * Dislike post, by ID
+     * 
+     * @param id The id of the row being requested
+     * @param numVotes number of votes
+     * 
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
+    int numLike(int id, int numVotes) {
+        int res = -1;
+        try {
+            mLikeNum.setInt(1, numVotes);
+            mLikeNum.setInt(2, id);
+            res = mLikeNum.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    /**
+     * Number of Dislikes posts not just 1, by ID
+     * 
+     * @param id The id of the row being requested
+     * @param numVotes number of votes
+     *
+     * @return The data for the requested row, or null if the ID was invalid
+     */
+    int numDislike(int id, int numVotes) {
+        int res = -1;
+        try {
+            mDislikeNum.setInt(1, numVotes);
+            mDislikeNum.setInt(2, id);
+            res = mDislikeNum.executeUpdate();
+            /*mSelectOne.setInt(1, id);
+            ResultSet rs = mSelectOne.executeQuery();
+            if(rs.getInt("votes") > 0){
+                mDislikeNum.setInt(1, numVotes);
+                mDislikeNum.setInt(2, id);
+                res = mDislikeNum.executeUpdate();
+            }else{
+                System.err.println("No");
+            }*/
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
 
     int updateOne(int id, String message, int likes) {
         int res = -1;
