@@ -4,7 +4,9 @@ import 'ideapage.dart';
 void main() {
   runApp(const MyApp());
 }
-
+// Simple app state management https://docs.flutter.dev/development/data-and-backend/state-mgmt/simple
+// Debug Build with F5
+// Try running your application with "flutter run"
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -16,17 +18,10 @@ class MyApp extends StatelessWidget {
       // this is to hide the pesky-no-good debug banner. Not very tasteful
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
+        // This is the theme of the application.
         primarySwatch: Colors.brown,
       ),
+      // home is the default route of the app, consider it '/' in web routes
       home: const MyHomePage(title: 'The Buzz Idea Page'),
     );
   }

@@ -1,13 +1,18 @@
 import 'package:flutter/foundation.dart';
+import 'ideaobj.dart';
+import 'routes.dart';
 
+// Resource for schedule functionality: 
+// https://brewyourtech.com/complete-guide-to-changenotifier-in-flutter/
 class MySchedule with ChangeNotifier {
-  double _stateManagementTime = 0.5;
+  List<IdeaObj> _ideas = <IdeaObj>[];
+
   // getter
-  double get stateManagementTime => _stateManagementTime;
+  List<IdeaObj> get ideas => _ideas;
 
   // setter
-  set stateManagementTime(double newValue) {
-    _stateManagementTime = newValue;
+  set ideasList(List<IdeaObj> list) {
+    _ideas = list;
     notifyListeners(); // Notifies widgets affected by state change
   }
 }
