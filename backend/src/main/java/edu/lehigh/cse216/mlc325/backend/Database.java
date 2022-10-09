@@ -257,12 +257,12 @@ public static class DataRow {
     /**
      * Query the database for a list of all titles and their IDs
      * 
-     * @return All rows, as an ArrayList
+     * @return All rows, as an ArrayList f
      */
     ArrayList<DataRow> selectAll() {
         ArrayList<DataRow> res = new ArrayList<DataRow>();
         try {
-            ResultSet rs = mSelectAll.executeQuery();
+            ResultSet rs = mSelectAll.executeQuery(); 
             while (rs.next()) {
                 res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes")));
             }
