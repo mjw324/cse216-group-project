@@ -54,6 +54,10 @@ public class Database {
      */
     private PreparedStatement mDislikeOne;
 
+    private PreparedStatement mDislikeNum;
+
+    private PreparedStatement mLikeNum;
+
     /**
      * A prepared statement for creating the table in our database
      */
@@ -206,6 +210,9 @@ public static class DataRow {
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes ? WHERE id = ?");
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
+
+            db.mLikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + votes = ? WHERE id = ?");
+            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - votes = ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
