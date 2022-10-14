@@ -33,29 +33,51 @@ Frontend: F5
 # Project Design and Planning Artifacts
 
 ## User Stories
-1. As an anonymous user
+1. As a user
 I want the ability to share ideas
 So I can get my idea to other colleagues (automated)
 
-2. As an anonymous user
+2. As a user
 I want to be able to up or downvote
 So I can give feedback to other colleagues ideas (automated)
 
-3. As an anonymous user
-I want to be able to anonymously share my opinion
-So I can give anonymous feedback to other colleagues ideas (automated)
+3. As a user
+I want to be able to share my idea
+So I can give my opinion (manual)
 
-4. As an administrator
+4. As a user
+I want to be able to comment on ideas
+So I can give feedback to other colleagues ideas (manual)
+
+5. As a user
+I want to be able to edit my comments
+So I can revise any mistakes (manual)
+
+6. As a user
+I want to be able to create a profile
+So my ideas can be associated with my profile (manual)
+
+7. As a user
+I want to view my profile
+So I can see all attributes are correct (manual)
+
+8. As a user
+I want to be able to view the amount of up and downvotes on an idea
+So I can see what my colleagues think of the idea (manual)
+
+9. As an admin
 I want to be able to create or delete tables
 So that I can set up or clear the app (automated)
 
-5. As an administrator
+10. As an admin
 I want to be able to remove entries
 So I can remove inappropriate ideas (automated)
 
-6. As an anonymous user
-I want to be able to view the amount of up and downvotes on an idea
-So I can see what my colleagues think of the ideat (manual)
+11. As an admin
+I want to be able to associate comments with the respective user and idea
+So I can manage the 
+
+
 
 
 ## Mock web/mobile user interface
@@ -79,13 +101,14 @@ So I can see what my colleagues think of the ideat (manual)
 - Records can be added to database
 - Connects to postgres
 
-
 ### Frontend:
 - Add button on press -> goes to text field
 - Submit button adds idea field onto list
 - Upvote button adds to vote counter
 - Downvote button subtracts from vote counter (votes > 1)
 - Downvote button does not subtract from vote counter for no votes
+- Comment button successfully
+- Edit Profile successfully
 
 ### Admin:
 - Test that database was created correctly
