@@ -33,73 +33,87 @@ Frontend: F5
 # Project Design and Planning Artifacts
 
 ## User Stories
-1. As a user
+1. As an authenticated user
 I want the ability to share ideas
 So I can get my idea to other colleagues (automated)
 
-2. As a user
+2. As an authenticated user
 I want to be able to up or downvote
 So I can give feedback to other colleagues ideas (automated)
 
-3. As a user
+3. As an authenticated user
 I want to be able to share my idea
 So I can give my opinion (manual)
 
-4. As a user
+4. As an authenticated user
 I want to be able to comment on ideas
 So I can give feedback to other colleagues ideas (manual)
 
-5. As a user
+5. As an authenticated user
 I want to be able to edit my comments
 So I can revise any mistakes (manual)
 
-6. As a user
+6. As an authenticated user
 I want to be able to create a profile
 So my ideas can be associated with my profile (manual)
 
-7. As a user
+7. As an authenticated user
 I want to view my profile
 So I can see all attributes are correct (manual)
 
-8. As a user
+8. As an authenticated user
 I want to be able to view the amount of up and downvotes on an idea
 So I can see what my colleagues think of the idea (manual)
 
-9. As an admin
+9. As an authenticated user
+I want to be able to sign in with my google account
+So I can access the buzz app
+
+10. As an admin
 I want to be able to create or delete tables
 So that I can set up or clear the app (automated)
 
-10. As an admin
+11. As an admin
 I want to be able to remove entries
 So I can remove inappropriate ideas (automated)
 
-11. As an admin
+12. As an admin
 I want to be able to associate comments with the respective user and idea
-So I can manage the 
+So I can manage comments
 
 
 
 
-## Mock web/mobile user interface
-
+## Mock Web/Mobile UI
 ![Artifacts-1](artifacts/Artifacts-1.jpg)
-## System drawing showing the major components and their location
+
+## System Architecture Diagram
 ![Artifacts-2](artifacts/Artifacts-2.jpg)
 
-### Drawing of the state machine for the anonymous user persona�s interaction with the application
+### State Machine of Authenticated User Interface
 ![Artifacts-3](artifacts/Artifacts-3.jpg)
 
-## Listing of the routes, their purpose, and the format of any passed object
+## State Machine of Idea Functionality
 ![Artifacts-4](artifacts/Artifacts-4.jpg)
 
-## Entity relationship diagram of the database table and fields
+## ER Diagram
 ![Artifacts-5](artifacts/Artifacts-5.jpg)
+
+## Flutter State and Widget Management 
+![Artifacts-6](artifacts/Artifacts-6.jpg)
+![Artifacts-6.5](artifacts/Artifacts-6.5.jpg)
+
+## REST API Routes
+![Artifacts-7](artifacts/Artifacts-7.jpg)
+
+
 
 ## Unit Tests
 ### Backend:
 - Code actually updates or subtracts 1 for like or dislike
 - Records can be added to database
 - Connects to postgres
+- User with lehigh.edu google account passes authorization
 
 ### Frontend:
 - Add button on press -> goes to text field
@@ -107,8 +121,8 @@ So I can manage the
 - Upvote button adds to vote counter
 - Downvote button subtracts from vote counter (votes > 1)
 - Downvote button does not subtract from vote counter for no votes
-- Comment button successfully
-- Edit Profile successfully
+- Comment button adds comment on idea
+- Edit profile buttons successfully change fields that were edited
 
 ### Admin:
 - Test that database was created correctly
