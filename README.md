@@ -114,6 +114,7 @@ So I can manage comments
 - Records can be added to database
 - Connects to postgres
 - User with lehigh.edu google account passes authorization
+- Make sure POST routes successfully add comments
 
 ### Frontend:
 - Add button on press -> goes to text field
