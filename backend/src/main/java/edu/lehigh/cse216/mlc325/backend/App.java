@@ -13,6 +13,12 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+
+import java.util.Collections;
+
+
 import java.util.Hashtable;
 //import java.sql.ResultSetMetaData;
 import java.util.Map;
@@ -43,8 +49,10 @@ public class App {
 
         Hashtable<Integer, String> usersHT = new Hashtable<>();
 
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory).setAudience(Collections.singletonList(CLIENT_ID)).build();
-
+        final String CLIENT_ID = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList(CLIENT_ID)).build();
+        
+        
         // Get a fully-configured connection to the database, or exit 
         // immediately
         Database db = Database.getDatabase(db_url); 
@@ -132,7 +140,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.DataRow data = db.selectOne(tableName, idx); // TODO change to different datarow
+            Database.DataRow data = db.selectOneIdea(idx); // TODO change to different datarow
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -171,7 +179,31 @@ public class App {
             response.status(200);
             response.type("application/json");
             //System.out.println(newId);
-            if (newId == -1) {
+            GoogleIdToken idToken = verifier.verify(tokenString);
+            if (idToken != null) {
+                Payload payload = idToken.getPayload();
+                
+                // Print user identifier
+                String userId = payload.getSubject();
+                System.out.println("User ID: " + userId);
+
+                // Get profile information from payload
+                String email = payload.getEmail();
+                boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
+                String name = (String) payload.get("name");
+                String pictureUrl = (String) payload.get("picture");
+                String locale = (String) payload.get("locale");
+                String familyName = (String) payload.get("family_name");
+                String givenName = (String) payload.get("given_name");
+
+                // Use or store profile information
+                // ...
+
+            } else {
+                System.out.println("Invalid ID token.");
+            }
+
+            if (true) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", tokenString, null));

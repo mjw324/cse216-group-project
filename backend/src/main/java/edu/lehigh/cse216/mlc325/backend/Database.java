@@ -273,9 +273,9 @@ public static class DataRow {
     int insertRow(String title, String message) {
         int count = 0;
         try {
-            mInsertOne.setString(1, title);
-            mInsertOne.setString(2, message);
-            count += mInsertOne.executeUpdate();
+            mInsertOneIdea.setString(1, title);
+            mInsertOneIdea.setString(2, message);
+            count += mInsertOneIdea.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
