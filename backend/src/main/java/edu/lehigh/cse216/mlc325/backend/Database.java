@@ -25,9 +25,21 @@ public class Database {
     private PreparedStatement mSelectAll;
 
     /**
-     * A prepared statement for getting one row from the database
+     * A prepared statement for getting one idea from the idea table
      */
-    private PreparedStatement mSelectOne;
+    private PreparedStatement mSelectOneIdea;
+    /**
+     * A prepared statement for getting one profile from the profile table
+     */
+    private PreparedStatement mSelectOneUser;
+    /**
+     * A prepared statement for getting one comment from the comment table
+     */
+    private PreparedStatement mSelectOneComment;
+    /**
+     * A prepared statement for getting one comment from the comment table
+     */
+    private PreparedStatement mSelectOneVote;
 
     /**
      * A prepared statement for deleting a row from the database
@@ -35,9 +47,21 @@ public class Database {
     private PreparedStatement mDeleteOne;
 
     /**
-     * A prepared statement for inserting into the database
+     * A prepared statement for inserting into the idea database
      */
-    private PreparedStatement mInsertOne;
+    private PreparedStatement mInsertOneIdea;
+    /**
+     * A prepared statement for inserting into the votes database
+     */
+    private PreparedStatement mInsertOneVote;
+    /**
+     * A prepared statement for inserting into the comment database
+     */
+    private PreparedStatement mInsertOneComment;
+    /**
+     * A prepared statement for inserting into the user database
+     */
+    private PreparedStatement mInsertOneUser;
 
     /**
      * A prepared statement for updating a single row in the database
@@ -147,6 +171,11 @@ public static class DataRow {
         // Create an un-configured Database object
         Database db = new Database();
 
+        String userTable = "profileTable";
+        String ideaTable = "ideasTable";
+        String commentTable = "commentTable";
+        String votesTable = "votesTable";
+
         // Give the Database object a connection, fail if we cannot get one
         try {
             Class.forName("org.postgresql.Driver");
@@ -175,30 +204,29 @@ public static class DataRow {
         // Attempt to create all of our prepared statements.  If any of these 
         // fail, the whole getDatabase() call should fail
         try {
-            // NB: we can easily get ourselves in trouble here by typing the
-            //     SQL incorrectly.  We really should have things like "tblData"
-            //     as constants, and then build the strings for the statements
-            //     from those constants.
-
-            // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
-            // creation/deletion, so multiple executions will cause an exception
-            db.mCreateTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(50) "
-                    + "NOT NULL, message VARCHAR(500) NOT NULL, votes INT NOT NULL)"); //add likes to this
-            db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
 
             // Standard CRUD operations
-            db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
-            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0)");
+
+            //TODO update the params
+            db.mInsertOneIdea = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0)");
+            db.mInsertOneUser = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (default, ?, ?, 0)");
+            db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, 0)");
+            db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (default, ?, ?, 0)");
+            
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
-            db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
+            
+            db.mSelectOneIdea = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE id=?");
+            db.mSelectOneUser = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE id=?");
+            db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from " + commentTable + " WHERE id=?");
+            db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from " + votesTable + " WHERE id=?");
+            
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes = ? WHERE id = ?"); //Add likes to this
 
-            db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
-            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
+            db.mLikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + 1 WHERE id = ?");
+            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - 1 WHERE id = ?");
 
-            db.mLikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + ? WHERE id = ?");
-            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - ? WHERE id = ?");
+            db.mLikeNum = db.mConnection.prepareStatement("UPDATE "+ ideaTable + " SET votes = votes + ? WHERE id = ?");
+            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE "+ ideaTable + " SET votes = votes - ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -282,11 +310,11 @@ public static class DataRow {
      *
      * @return The data for the requested row, or null if the ID was invalid
      */
-    DataRow selectOne(int id) {
+    DataRow selectOneIdea(int id) {
         DataRow res = null;
         try {
-            mSelectOne.setInt(1, id);
-            ResultSet rs = mSelectOne.executeQuery();
+            mSelectOneIdea.setInt(1, id);
+            ResultSet rs = mSelectOneIdea.executeQuery();
             if (rs.next()) {
                 res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"));
             }
@@ -422,28 +450,5 @@ public static class DataRow {
             e.printStackTrace();
         }
         return res;
-    }
-
-    /**
-     * Create tblData.  If it already exists, this will print an error
-     */
-    void createTable() {
-        try {
-            mCreateTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Remove tblData from the database.  If it does not exist, this will print
-     * an error.
-     */
-    void dropTable() {
-        try {
-            mDropTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 }

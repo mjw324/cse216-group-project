@@ -4,9 +4,16 @@ package edu.lehigh.cse216.mlc325.backend;
 // create an HTTP GET route
 import spark.Spark;
 
+
+
 // Import Google's JSON library
 import com.google.gson.*;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+
+import java.util.Hashtable;
 //import java.sql.ResultSetMetaData;
 import java.util.Map;
 
@@ -28,6 +35,15 @@ public class App {
 
         // String db_url = env.get("DATABASE_URL");
         String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
+        
+        String userTable = "profileTable";
+        String ideaTable = "ideasTable";
+        String commentTable = "commentTable";
+        String votesTable = "votesTable";
+
+        Hashtable<Integer, String> usersHT = new Hashtable<>();
+
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory).setAudience(Collections.singletonList(CLIENT_ID)).build();
 
         // Get a fully-configured connection to the database, or exit 
         // immediately
@@ -97,7 +113,26 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.DataRow data = db.selectOne(idx);
+            Database.DataRow data = db.selectOneIdea(idx);
+            if (data == null) {
+                return gson.toJson(new StructuredResponse("error", idx + " not found", null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", null, data));
+            }
+        });
+
+        // GET route that returns your profile information
+        // The ":id" suffix in the first parameter to get() becomes 
+        // request.params("id"), so that we can get the requested user ID.  If 
+        // ":id" isn't a number, Spark will reply with a status 500 Internal
+        // Server Error.  Otherwise, we have an integer, and the only possible 
+        // error is that it doesn't correspond to a row with data.
+        Spark.get("/profile/:id", (request, response) -> {
+            int idx = Integer.parseInt(request.params("id"));
+            // ensure status 200 OK, with a MIME type of JSON
+            response.status(200);
+            response.type("application/json");
+            Database.DataRow data = db.selectOne(tableName, idx); // TODO change to different datarow
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -110,7 +145,6 @@ public class App {
         // object, extract the title and message, insert them, and return the 
         // ID of the newly created row.
         Spark.post("/messages", (request, response) -> {
-            //System.out.println("inside");
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
@@ -126,6 +160,21 @@ public class App {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", "" + newId, null));
+            }
+        });
+        
+        // POST route for retreving the user token
+        Spark.post("/signin/:token", (request, response) -> {
+            String tokenString = request.params("token");
+            SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
+            // ensure status 200 OK, with a MIME type of JSON
+            response.status(200);
+            response.type("application/json");
+            //System.out.println(newId);
+            if (newId == -1) {
+                return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", tokenString, null));
             }
         });
 
