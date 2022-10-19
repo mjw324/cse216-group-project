@@ -136,6 +136,81 @@ public static class DataRow {
     }
 }
 
+public static class ProfileData {
+    public final int mId;
+    public String mSO;
+    public String mGI;
+    public String mEmail;
+    public String mUsername;
+    public String mNote;
+    public final Date mCreated;
+
+    ProfileData(int id, String SO, String GI, String email, String username, String note) {
+        mId = id;
+        mSO = SO;
+        mGI = GI;
+        mEmail = email;
+        mUsername = username;
+        mNote = note;
+        mCreated = new Date();
+    }
+
+    ProfileData(ProfileData data) {
+        mId = data.mId;
+        mSO = data.mSO;
+        mGI = data.mGI;
+        mEmail = data.mEmail;
+        mUsername = data.mUsername;
+        mNote = data.mNote;
+        mCreated = data.mCreated;
+    }
+}
+
+public static class CommentData {
+    public final int mPostId;
+    public int mCommentId;
+    public int mUserId;
+    public String mComment;
+    public final Date mCreated;
+
+    CommentData(int postId, int commentId, int userId, String comment) {
+        mPostId = postId;
+        mCommentId = commentId;
+        mUserId = userId;
+        mComment = comment;
+        mCreated = new Date();
+    }
+
+    CommentData(CommentData data) {
+        mPostId = data.mPostId;
+        mCommentId = data.mCommentId;
+        mUserId = data.mUserId;
+        mComment = data.mComment;
+        mCreated = data.mCreated;
+    }
+}
+
+public static class UserVotesData {
+    public final int mPostId;
+    public int mUserId;
+    public int mVotes;
+    public final Date mCreated;
+
+    UserVotesData(int postId, int userId, int votes) {
+        mPostId = postId;
+        mUserId = userId;
+        mVotes = votes;
+        mCreated = new Date();
+    }
+
+    UserVotesData(UserVotesData data) {
+        mPostId = data.mPostId;
+        mUserId = data.mUserId;
+        mVotes = data.mVotes;
+        mCreated = data.mCreated;
+    }
+}
+
     /**
      * The Database constructor is private: we only create Database objects 
      * through the getDatabase() method.
@@ -206,6 +281,7 @@ public static class DataRow {
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes ? WHERE id = ?");
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
+
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();

@@ -110,8 +110,8 @@ public class App {
         // get the Postgres configuration from the environment
         Map<String, String> env = System.getenv();
 
-        // String db_url = "postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m";
-        // db_url = db_url + "?sslmode=require";
+        //String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
+        //db_url = db_url + "?sslmode=require";
         String db_url = env.get("DATABASE_URL");
 
         // Get a fully-configured connection to the database, or exit 
