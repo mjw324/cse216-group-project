@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'ideapage.dart';
+import 'loginpage.dart';
 
 void main() async {
-  runApp(const MyApp());
+  //runApp(const MyApp());
+  runApp(
+    const MaterialApp(
+      title: 'Google Sign In',
+      home: SignInDemo(),
+    ),
+  );
 }
 
 // TODO:
@@ -27,7 +34,33 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.brown,
       ),
       // home is the default route of the app, consider it '/' in web routes
-      home: const MyHomePage(title: 'The Buzz Idea Page'),
+      //change this to login
+      home: const SignInDemo(),
     );
   }
 }
+
+class FirstRoute extends StatelessWidget {
+  const FirstRoute({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login Page'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          child: const Text('Login'),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MyHomePage(title: 'The Buzz Idea Page')),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+

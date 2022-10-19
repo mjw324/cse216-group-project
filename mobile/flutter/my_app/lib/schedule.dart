@@ -29,12 +29,12 @@ class MySchedule with ChangeNotifier {
     notifyListeners();
   }
 
-  void setVotes(int idx, int voteChange) {
+  void setVotes(int idx, int voteChange, int userVote) {
     for (var idea in _ideas) {
       if (idea.id == idx) {
         idea.votes += voteChange;
         // voteChange can't be equal to userVotes. Ex: voteChange is -2 from selecting upvote to downvote, but userVotes is -1 (downvote)
-        idea.userVotes = voteChange == 0 ? 0 : (voteChange < 0 ? -1 : 1);
+        idea.userVotes = userVote;
       }
     }
     notifyListeners(); // notify has all widgets who consume the schedule update their state

@@ -1,7 +1,61 @@
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 import 'dart:convert';
+import 'dart:io';
 import 'ideaobj.dart';
+
+Future<http.Response> createAlbum(String title) {
+  return http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/token'),
+    headers: <String, String>{
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+
+  );
+}
+
+Future<String> sendToken(String? id_token) async {
+  final response = await http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/signin/token'),
+    body: jsonEncode(<String, String?>{'token': id_token}),
+  );
+  var res = jsonDecode(response.body);
+  return res['mStatus'];
+}
+
+
+Future<Album> fetchAlbum() async {
+  final response = await http.get(
+    Uri.parse('https://apis.google.com/js/platform.js'),
+    // Send authorization headers to the backend.
+    headers: {
+      HttpHeaders.authorizationHeader: 'Basic your_api_token_here',
+    },
+  );
+  final responseJson = jsonDecode(response.body);
+
+  return Album.fromJson(responseJson);
+}
+
+class Album {
+  final int userId;
+  final int id;
+  final String title;
+
+  const Album({
+    required this.userId,
+    required this.id,
+    required this.title,
+  });
+
+  factory Album.fromJson(Map<String, dynamic> json) {
+    return Album(
+      userId: json['userId'],
+      id: json['id'],
+      title: json['title'],
+    );
+  }
+}
 
 // POST /messages route given a new idea with title and messages, should return String of new ID
 Future<String> addIdea(String title, String message) async {
@@ -21,6 +75,7 @@ Future<IdeaObj> fetchIdea(int idx) async {
   print(res);
   return res['mData'];
 }
+
 
 // Perform PUT on /messages/:id/[upvotes or downvotes]
 Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
