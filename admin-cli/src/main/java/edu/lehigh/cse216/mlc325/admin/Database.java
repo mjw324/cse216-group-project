@@ -61,12 +61,18 @@ public class Database {
     /**
      * A prepared statement for creating the table in our database
      */
-    private PreparedStatement mCreateTable;
+    private PreparedStatement mCreatePostTable;
+    private PreparedStatement mCreateProfileTable;
+    private PreparedStatement mCreateCommentTable;
+    private PreparedStatement mCreateVotesTable;
 
     /**
      * A prepared statement for dropping the table in our database
      */
-    private PreparedStatement mDropTable;
+    private PreparedStatement mDropPostTable;
+    private PreparedStatement mDropProfileTable;
+    private PreparedStatement mDropCommentTable;
+    private PreparedStatement mDropVotesTable;
 
     /**
  * DataRow holds a row of information.  A row of information consists of
@@ -244,6 +250,7 @@ public static class UserVotesData {
             String username = dbUri.getUserInfo().split(":")[0];
             String password = dbUri.getUserInfo().split(":")[1];
             String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+            System.out.println(dbUrl);
             Connection conn = DriverManager.getConnection(dbUrl, username, password);
             if (conn == null) {
                 System.err.println("Error: DriverManager.getConnection() returned a null object");
@@ -272,10 +279,23 @@ public static class UserVotesData {
 
             // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
             // creation/deletion, so multiple executions will cause an exception
-            db.mCreateTable = db.mConnection.prepareStatement(
-                    "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(128) "
-                    + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL)");
-            db.mDropTable = db.mConnection.prepareStatement("DROP TABLE tblData");
+            db.mCreatePostTable = db.mConnection.prepareStatement(
+                "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(128) "
+                + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL)");
+            db.mCreateProfileTable = db.mConnection.prepareStatement(
+                "CREATE TABLE profileTable (id SERIAL PRIMARY KEY, SO VARCHAR(128) "
+                + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL)");
+            db.mCreateCommentTable = db.mConnection.prepareStatement(
+                "CREATE TABLE commentTable (id SERIAL PRIMARY KEY, userid INT "
+                + "NOT NULL, commentid INT NOT NULL, comment VARCHAR(1024) NOT NULL)");
+            db.mCreateVotesTable = db.mConnection.prepareStatement(
+                "CREATE TABLE votesTable (id SERIAL PRIMARY KEY, votesid INT "
+                + "NOT NULL, votes INT NOT NULL)");
+            
+            db.mDropPostTable = db.mConnection.prepareStatement("DROP TABLE tblData");
+            db.mDropProfileTable = db.mConnection.prepareStatement("DROP TABLE profileTable");
+            db.mDropCommentTable = db.mConnection.prepareStatement("DROP TABLE commentTable");
+            db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votesTable");
 
             // Standard CRUD operations
             db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
@@ -425,9 +445,30 @@ public static class UserVotesData {
     /**
      * Create tblData.  If it already exists, this will print an error
      */
-    void createTable() {
+    void createPostTable() {
         try {
-            mCreateTable.execute();
+            mCreatePostTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    void createProfileTable() {
+        try {
+            mCreateProfileTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    void createCommentTable() {
+        try {
+            mCreateCommentTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    void createVotesTable() {
+        try {
+            mCreateVotesTable.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -437,9 +478,30 @@ public static class UserVotesData {
      * Remove tblData from the database.  If it does not exist, this will print
      * an error.
      */
-    void dropTable() {
+    void dropPostTable() {
         try {
-            mDropTable.execute();
+            mDropPostTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    void dropProfileTable() {
+        try {
+            mDropProfileTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    void dropCommentTable() {
+        try {
+            mDropCommentTable.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    void dropVotesTable() {
+        try {
+            mDropVotesTable.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }

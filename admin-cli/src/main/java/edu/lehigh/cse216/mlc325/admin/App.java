@@ -19,7 +19,13 @@ public class App {
     static void menu() {
         System.out.println("Main Menu");
         System.out.println("  [T] Create tblData");
+        System.out.println("  [P] Create profileTable");
+        System.out.println("  [C] Create commentTable");
+        System.out.println("  [V] Create votesTable");
         System.out.println("  [D] Drop tblData");
+        System.out.println("  [U] Drop profileTable");
+        System.out.println("  [S] Drop commentTable");
+        System.out.println("  [K] Drop votesTable");
         System.out.println("  [1] Query for a specific row");
         System.out.println("  [*] Query for all rows");
         System.out.println("  [-] Delete a row");
@@ -38,7 +44,7 @@ public class App {
      */
     static char prompt(BufferedReader in) {
         // The valid actions:
-        String actions = "TD1*-+~q?";
+        String actions = "TPCVDUSK1*-+~q?";
 
         // We repeat until a valid single-character option is selected        
         while (true) {
@@ -110,9 +116,10 @@ public class App {
         // get the Postgres configuration from the environment
         Map<String, String> env = System.getenv();
 
-        //String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
+        String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
+        db_url = db_url + "?sslmode=require";
+        //String db_url = env.get("DATABASE_URL");
         //db_url = db_url + "?sslmode=require";
-        String db_url = env.get("DATABASE_URL");
 
         // Get a fully-configured connection to the database, or exit 
         // immediately
@@ -130,9 +137,21 @@ public class App {
             } else if (action == 'q') {
                 break;
             } else if (action == 'T') {
-                createTable(db);
+                createPostTable(db);
+            } else if (action == 'P') {
+                createProfileTable(db);
+            } else if (action == 'C') {
+                createCommentTable(db);
+            } else if (action == 'V') {
+                createVotesTable(db);
             } else if (action == 'D') {
-                dropTable(db);
+                dropPostTable(db);
+            } else if (action == 'U') {
+                dropProfileTable(db);
+            } else if (action == 'S') {
+                dropCommentTable(db);
+            } else if (action == 'K') {
+                dropVotesTable(db);
             } else if (action == '1') {
                 query(db, in);
             } else if (action == '*') {
@@ -159,18 +178,35 @@ public class App {
      * 
      * @param db the database in which to create the new table
      */
-    public static void createTable(Database db){
-        db.createTable();
+    public static void createPostTable(Database db){
+        db.createPostTable();
     }
-
+    public static void createProfileTable(Database db){
+        db.createProfileTable();
+    }
+    public static void createCommentTable(Database db){
+        db.createCommentTable();
+    }
+    public static void createVotesTable(Database db){
+        db.createVotesTable();
+    }
     /**
      * Drop table tblData
      * Uses prepared statements in admin/database
      * 
      * @param db the database in which to drop the table
      */
-    public static void dropTable(Database db){
-        db.dropTable();
+    public static void dropPostTable(Database db){
+        db.dropPostTable();
+    }
+    public static void dropProfileTable(Database db){
+        db.dropProfileTable();
+    }
+    public static void dropCommentTable(Database db){
+        db.dropCommentTable();
+    }
+    public static void dropVotesTable(Database db){
+        db.dropVotesTable();
     }
 
     
