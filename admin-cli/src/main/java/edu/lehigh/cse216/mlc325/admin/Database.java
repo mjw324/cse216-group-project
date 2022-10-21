@@ -23,11 +23,14 @@ public class Database {
      * A prepared statement for getting all data in the database
      */
     private PreparedStatement mSelectAll;
+    private PreparedStatement mSelectAllProfile;
+    private PreparedStatement mSelectAllComment;
 
     /**
      * A prepared statement for getting one row from the database
      */
     private PreparedStatement mSelectOne;
+    private PreparedStatement mSelectOneProfile;
 
     /**
      * A prepared statement for deleting a row from the database
@@ -299,11 +302,20 @@ public static class UserVotesData {
 
             // Standard CRUD operations
             db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
+
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0)");
+
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
+            db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT id, SO, GI, email, username, note FROM profileTable");
+            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT id, userid, commentid, comment FROM tblData");
+
             db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
+            db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from profileTable WHERE id=?");
+
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes ? WHERE id = ?");
+
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
+            
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
 
             db.mLikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + votes = ? WHERE id = ?");
@@ -367,7 +379,52 @@ public static class UserVotesData {
      * 
      * @return All rows, as an ArrayList
      */
-    ArrayList<DataRow> selectAll() {
+    ArrayList<DataRow> selectAllPosts() {
+        ArrayList<DataRow> res = new ArrayList<DataRow>();
+        try {
+            ResultSet rs = mSelectAll.executeQuery();
+            while (rs.next()) {
+                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes")));
+            }
+            rs.close();
+            return res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    ArrayList<ProfileData> selectAllProfile() {
+        ArrayList<ProfileData> res = new ArrayList<ProfileData>();
+        try {
+            ResultSet rs = mSelectAllProfile.executeQuery();
+            while (rs.next()) {
+                res.add(new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note")));
+            }
+            rs.close();
+            return res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    ArrayList<CommentData> selectAllComments() {
+        ArrayList<CommentData> res = new ArrayList<CommentData>();
+        try {
+            ResultSet rs = mSelectAllComment.executeQuery();
+            while (rs.next()) {
+                res.add(new CommentData(rs.getInt("id"), rs.getInt("userid"), rs.getInt("commentid"), rs.getString("comment")));
+            }
+            rs.close();
+            return res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    ArrayList<DataRow> selectAllVotes() {
         ArrayList<DataRow> res = new ArrayList<DataRow>();
         try {
             ResultSet rs = mSelectAll.executeQuery();
@@ -396,6 +453,20 @@ public static class UserVotesData {
             ResultSet rs = mSelectOne.executeQuery();
             if (rs.next()) {
                 res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    ProfileData selectOneProfile(int id) {
+        ProfileData res = null;
+        try {
+            mSelectOneProfile.setInt(1, id);
+            ResultSet rs = mSelectOneProfile.executeQuery();
+            if (rs.next()) {
+                res = new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"));
             }
         } catch (SQLException e) {
             e.printStackTrace();

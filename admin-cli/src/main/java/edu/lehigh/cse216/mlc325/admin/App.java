@@ -22,12 +22,22 @@ public class App {
         System.out.println("  [P] Create profileTable");
         System.out.println("  [C] Create commentTable");
         System.out.println("  [V] Create votesTable");
+
         System.out.println("  [D] Drop tblData");
         System.out.println("  [U] Drop profileTable");
         System.out.println("  [S] Drop commentTable");
         System.out.println("  [K] Drop votesTable");
-        System.out.println("  [1] Query for a specific row");
-        System.out.println("  [*] Query for all rows");
+
+        System.out.println("  [1] Query for a specific row of tblData");
+        System.out.println("  [2] Query for a specific row of profileTable");
+        System.out.println("  [3] Query for a specific row of commentTable");
+        System.out.println("  [4] Query for a specific row of votesTable");
+
+        System.out.println("  [*] Query for all rows: tblData");
+        System.out.println("  [&] Query for all rows: profileTable");
+        System.out.println("  [$] Query for all rows: commentTable");
+        System.out.println("  [!] Query for all rows: votesTable");
+
         System.out.println("  [-] Delete a row");
         System.out.println("  [+] Insert a new row");
         System.out.println("  [~] Update a row");
@@ -44,7 +54,7 @@ public class App {
      */
     static char prompt(BufferedReader in) {
         // The valid actions:
-        String actions = "TPCVDUSK1*-+~q?";
+        String actions = "TPCVDUSK1234*&$!-+~q?";
 
         // We repeat until a valid single-character option is selected        
         while (true) {
@@ -155,7 +165,9 @@ public class App {
             } else if (action == '1') {
                 query(db, in);
             } else if (action == '*') {
-                queryAll(db);
+                queryAllPosts(db);
+            } else if (action == '&') {
+                queryAllProfile(db);
             } else if (action == '-') {
                 deleteRow(db, in);
             } else if (action == '+') {
@@ -209,6 +221,7 @@ public class App {
         db.dropVotesTable();
     }
 
+    //class DataRow, ProfileData, CommentData, UserVotesData
     
     /**
      * Query a specific row in the database
@@ -228,21 +241,79 @@ public class App {
         }
     }
 
+    public static void queryProfile(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return;
+        Database.ProfileData res = db.selectOneProfile(id);
+        if (res != null) {
+            System.out.println("  [" + res.mId + "] " + res.mUsername);
+            System.out.println("  --> " + res.mEmail);
+            System.out.println("  SO: " + res.mSO);
+            System.out.println("  GI: " + res.mGI);
+            System.out.println("  Note: " + res.mNote);
+        }
+    }
+    /*public static void queryComment(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return;
+        Database.DataRow res = db.selectOne(id);
+        if (res != null) {
+            System.out.println("  [" + res.mId + "] " + res.mTitle);
+            System.out.println("  --> " + res.mMessage);
+            System.out.println("  votes: " + res.mVotes);
+        }
+    }*/
+
     /**
      * Query all rows of a database
      * 
      * @param db the database to query from
      */
-    public static void queryAll(Database db){
-        ArrayList<Database.DataRow> res = db.selectAll();
+    public static void queryAllPosts(Database db){
+        ArrayList<Database.DataRow> res = db.selectAllPosts();
         if (res == null)
             return;
-        System.out.println("  Current Database Contents");
+        System.out.println("  Current tblData Contents");
         System.out.println("  -------------------------");
         for (Database.DataRow dr : res) {
             System.out.println("  [" + dr.mId + "] " + dr.mTitle);
         }
     }
+
+    public static void queryAllProfile(Database db){
+        ArrayList<Database.ProfileData> res = db.selectAllProfile();
+        if (res == null)
+            return;
+        System.out.println("  Current profileTable Contents");
+        System.out.println("  -------------------------");
+        for (Database.ProfileData dr : res) {
+            System.out.println("  [" + dr.mId + "] " + dr.mUsername);
+        }
+    }
+
+    public static void queryAllComment(Database db){
+        ArrayList<Database.CommentData> res = db.selectAllComments();
+        if (res == null)
+            return;
+        System.out.println("  Current commentTable Contents");
+        System.out.println("  -------------------------");
+        for (Database.CommentData dr : res) {
+            System.out.println("  [" + dr.mPostId + "] " + dr.mCommentId);
+        }
+    }
+
+    /*public static void queryAllVotes(Database db){
+        ArrayList<Database.ProfileData> res = db.selectAllVotes();
+        if (res == null)
+            return;
+        System.out.println("  Current votesTable Contents");
+        System.out.println("  -------------------------");
+        for (Database.ProfileData dr : res) {
+            System.out.println("  [" + dr.mId + "] " + dr.mUsername);
+        }
+    }*/
 
     /**
      * Delete a row from the database 
