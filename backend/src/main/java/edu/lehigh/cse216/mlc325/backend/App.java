@@ -41,13 +41,15 @@ public class App {
 
         // String db_url = env.get("DATABASE_URL");
         String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
-        
+        db_url += "?sslmode=require";
+
         String userTable = "profileTable";
         String ideaTable = "ideasTable";
         String commentTable = "commentTable";
         String votesTable = "votesTable";
 
-        Hashtable<Integer, String> usersHT = new Hashtable<>();
+        //key is user id from google, value is generated session id
+        Hashtable<String, Integer> usersHT = new Hashtable<>(); 
 
         final String CLIENT_ID = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList(CLIENT_ID)).build();
@@ -162,7 +164,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int newId = db.insertRow(req.mTitle, req.mMessage);
+            int newId = db.insertIdeaRow(req.mTitle, req.mMessage);
             //System.out.println(newId);
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
@@ -183,30 +185,31 @@ public class App {
             if (idToken != null) {
                 Payload payload = idToken.getPayload();
                 
-                // Print user identifier
+                //User identifier
                 String userId = payload.getSubject();
-                System.out.println("User ID: " + userId);
 
                 // Get profile information from payload
                 String email = payload.getEmail();
-                boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
+                //boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
                 String name = (String) payload.get("name");
-                String pictureUrl = (String) payload.get("picture");
-                String locale = (String) payload.get("locale");
-                String familyName = (String) payload.get("family_name");
-                String givenName = (String) payload.get("given_name");
+                //String pictureUrl = (String) payload.get("picture");
+                //String locale = (String) payload.get("locale");
+                // String familyName = (String) payload.get("family_name");
+                // String givenName = (String) payload.get("given_name");
+                
+                if(db.selectOneUser(userId)==null){
+                    db.insertUserRow("", "");
+                    //create new profile table entry
+                }
 
-                // Use or store profile information
-                // ...
-
+                Integer userSession = usersHT.get(userId);
+                if(userSession == null){ 
+                    //add to hashtable
+                } //else already in hashtable
+                
+                return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
             } else {
-                System.out.println("Invalid ID token.");
-            }
-
-            if (true) {
-                return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
-            } else {
-                return gson.toJson(new StructuredResponse("ok", tokenString, null));
+                return gson.toJson(new StructuredResponse("error", "user could not be verified", null));
             }
         });
 

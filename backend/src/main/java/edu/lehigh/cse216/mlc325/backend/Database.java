@@ -263,19 +263,38 @@ public static class DataRow {
 
 
     /**
-     * Insert a row into the database
+     * Insert a idea into the database
      * 
      * @param title The title for this new row
      * @param content The content for this new row
      * 
      * @return The number of rows that were inserted
      */
-    int insertRow(String title, String message) {
+    int insertIdeaRow(String title, String message) {
         int count = 0;
         try {
             mInsertOneIdea.setString(1, title);
             mInsertOneIdea.setString(2, message);
             count += mInsertOneIdea.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+    /**
+     * Insert a user into the database
+     * 
+     * @param title The title for this new row
+     * @param content The content for this new row
+     * 
+     * @return The number of rows that were inserted
+     */
+    int insertUserRow(String title, String message) { //TODO change to user datarow
+        int count = 0;
+        try {
+            mInsertOneUser.setString(1, title);
+            mInsertOneUser.setString(2, message);
+            count += mInsertOneUser.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -317,6 +336,20 @@ public static class DataRow {
             ResultSet rs = mSelectOneIdea.executeQuery();
             if (rs.next()) {
                 res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    DataRow selectOneUser(String id) {//TODO return right datatype 
+        DataRow res = null;
+        try {
+            mSelectOneUser.setString(1, id);
+            ResultSet rs = mSelectOneUser.executeQuery();
+            if (rs.next()) {
+                res = new DataRow(-1, "title", "message", 0); //fix this, use different datarow
             }
         } catch (SQLException e) {
             e.printStackTrace();
