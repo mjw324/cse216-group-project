@@ -113,7 +113,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            return gson.toJson(new StructuredResponse("ok", null, db.selectAll()));
+            return gson.toJson(new StructuredResponse("ok", null, db.selectAllPosts()));
         });
 
         // GET route that returns everything for a single row in the database.
@@ -131,7 +131,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.DataRow data = db.selectOneIdea(idx);
+            Database.DataRow data = db.selectOnePost(idx);
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -150,7 +150,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.DataRow data = db.selectOneIdea(idx); // TODO change to different datarow
+            Database.DataRow data = db.selectOnePost(idx); // TODO change to different datarow
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -159,20 +159,23 @@ public class App {
         });
 
         // POST route for adding a new element to the database.  This will read
-        // JSON from the body of the request, turn it into a SimpleRequest 
+        // JSON from the body of the request, turn it into a IdeaRequest 
         // object, extract the title and message, insert them, and return the 
         // ID of the newly created row.
         Spark.post("/messages", (request, response) -> {
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
-            SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
+            IdeaRequest req = gson.fromJson(request.body(), IdeaRequest.class);
+            if(!usersHT.containsKey(req.mSessionId)){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
             //     describes the error.
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int newId = db.insertIdeaRow(req.mTitle, req.mMessage);
+            int newId = db.insertIdeaRow(req.mTitle, req.mMessage, usersHT.get(req.mSessionId));
             //System.out.println(newId);
             if (newId == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
@@ -205,7 +208,7 @@ public class App {
                 // String familyName = (String) payload.get("family_name");
                 // String givenName = (String) payload.get("given_name");
                 
-                if(db.selectOneUser(userId)==null){
+                if(db.selectOneProfile(userId)==null){
                     //db.insertUserRow("", "");
                     //create new profile table entry
                 }
@@ -228,11 +231,15 @@ public class App {
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
-            SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
+            IdeaRequest req = gson.fromJson(request.body(), IdeaRequest.class);
+            if(!usersHT.containsKey(req.mSessionId)){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.updateOne(idx, req.mMessage, req.mlikes);
+            int votes = db.selectOnePost(idx).mVotes; //keep the votes the same
+            int result = db.updateOne(idx, req.mMessage, votes);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
@@ -251,9 +258,7 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            //int liked = req.mlikes;
             int result = db.oneLike(idx);
-            //System.out.println(result);
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {

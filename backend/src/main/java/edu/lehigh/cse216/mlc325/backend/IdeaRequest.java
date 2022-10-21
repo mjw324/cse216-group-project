@@ -12,6 +12,4 @@ public class IdeaRequest {
     public String mMessage;
 
     public int mSessionId;
-
-    public int mlikes;
 }
