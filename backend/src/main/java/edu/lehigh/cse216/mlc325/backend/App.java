@@ -48,8 +48,8 @@ public class App {
         String commentTable = "commentTable";
         String votesTable = "votesTable";
 
-        //key is user id from google, value is generated session id
-        Hashtable<String, Integer> usersHT = new Hashtable<>(); 
+        //key generated session id, value is google user id
+        Hashtable<Integer, String> usersHT = new Hashtable<>(); 
 
         final String CLIENT_ID = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList(CLIENT_ID)).build();
@@ -174,9 +174,9 @@ public class App {
         });
         
         // POST route for retreving the user token
-        Spark.post("/signin/:token", (request, response) -> {
+        Spark.post("/signin", (request, response) -> {
             String tokenString = request.params("token");
-            SimpleRequest req = gson.fromJson(request.body(), SimpleRequest.class);
+            TokenRequest req = gson.fromJson(request.body(), TokenRequest.class);
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
@@ -202,10 +202,11 @@ public class App {
                     //create new profile table entry
                 }
 
-                Integer userSession = usersHT.get(userId);
-                if(userSession == null){ 
-                    //add to hashtable
-                } //else already in hashtable
+                Integer userSession = (int)(Math.random()*Integer.MAX_VALUE);
+                while(usersHT.containsKey(userSession)){
+                    userSession = (int)(Math.random()*Integer.MAX_VALUE);
+                }
+                usersHT.put(userSession, userId);
                 
                 return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
             } else {
