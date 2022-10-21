@@ -18,29 +18,48 @@ public class App {
      */
     static void menu() {
         System.out.println("Main Menu");
+        System.out.println("  [:] Create All Tables");
         System.out.println("  [T] Create tblData");
         System.out.println("  [P] Create profileTable");
         System.out.println("  [C] Create commentTable");
         System.out.println("  [V] Create votesTable");
+        //System.out.println("\n");
 
+        System.out.println("  [;] Drop All Tables");
         System.out.println("  [D] Drop tblData");
         System.out.println("  [U] Drop profileTable");
         System.out.println("  [S] Drop commentTable");
         System.out.println("  [K] Drop votesTable");
+        //System.out.println("\n");
 
         System.out.println("  [1] Query for a specific row of tblData");
         System.out.println("  [2] Query for a specific row of profileTable");
         System.out.println("  [3] Query for a specific row of commentTable");
         System.out.println("  [4] Query for a specific row of votesTable");
+        //System.out.println("\n");
 
+        System.out.println("  [0] Query for all rows: All Tables"); //Still need to do
         System.out.println("  [*] Query for all rows: tblData");
         System.out.println("  [&] Query for all rows: profileTable");
         System.out.println("  [$] Query for all rows: commentTable");
         System.out.println("  [!] Query for all rows: votesTable");
+        //System.out.println("\n");
 
-        System.out.println("  [-] Delete a row");
-        System.out.println("  [+] Insert a new row");
-        System.out.println("  [~] Update a row");
+        System.out.println("  [-] Delete a row: tblData");
+        System.out.println("  [M] Delete a row: profileTable");
+        System.out.println("  [N] Delete a row: commentTable");
+        System.out.println("  [B] Delete a row: votesTable");
+
+        System.out.println("  [+] Insert a new row: tblData");
+        System.out.println("  [X] Insert a new row: profileTable");
+        System.out.println("  [Z] Insert a new row: commentTable");
+        System.out.println("  [L] Insert a new row: votesTable");
+
+        System.out.println("  [~] Update a row: tblData");
+        System.out.println("  [J] Update a row: profileTable");
+        System.out.println("  [H] Update a row: commentTable");
+        System.out.println("  [G] Update a row: votesTable");
+
         System.out.println("  [q] Quit Program");
         System.out.println("  [?] Help (this message)");
     }
@@ -54,7 +73,7 @@ public class App {
      */
     static char prompt(BufferedReader in) {
         // The valid actions:
-        String actions = "TPCVDUSK1234*&$!-+~q?";
+        String actions = ":TPCV;DUSK12340*&$!-MNB+XZL~JHGq?";
 
         // We repeat until a valid single-character option is selected        
         while (true) {
@@ -146,6 +165,8 @@ public class App {
                 menu();
             } else if (action == 'q') {
                 break;
+            } else if (action == ':') {
+                createTables(db);
             } else if (action == 'T') {
                 createPostTable(db);
             } else if (action == 'P') {
@@ -154,6 +175,8 @@ public class App {
                 createCommentTable(db);
             } else if (action == 'V') {
                 createVotesTable(db);
+            } else if (action == ';') {
+                dropTables(db);
             } else if (action == 'D') {
                 dropPostTable(db);
             } else if (action == 'U') {
@@ -163,17 +186,45 @@ public class App {
             } else if (action == 'K') {
                 dropVotesTable(db);
             } else if (action == '1') {
-                query(db, in);
+                queryPost(db, in);
+            } else if (action == '2') {
+                queryProfile(db, in);
+            } else if (action == '3') {
+                queryComment(db, in);
+            } else if (action == '4') {
+                queryVote(db, in);
+            } else if (action == '0') {
+                //queryAll(db);
             } else if (action == '*') {
                 queryAllPosts(db);
             } else if (action == '&') {
                 queryAllProfile(db);
+            } else if (action == '$') {
+                queryAllComment(db);
+            } else if (action == '!') {
+                queryAllVotes(db);
             } else if (action == '-') {
-                deleteRow(db, in);
+                deleteRowPost(db, in);
+            } else if (action == 'M') {
+                deleteRowProfile(db, in);
+            } else if (action == 'N') {
+                deleteRowComment(db, in);
+            } else if (action == 'B') {
+                deleteRowVote(db, in);
             } else if (action == '+') {
                 addRow(db, in);
+            } else if (action == 'X') {
+                addRowProfile(db, in);
+            } else if (action == 'Z') {
+                addRowComment(db, in);
             } else if (action == '~') {
-                updateRow(db, in);
+                //updateRowPost(db, in);
+            } else if (action == 'J') {
+                //updateRowProfile(db, in);
+            } else if (action == 'H') {
+                //updateRowComment(db, in);
+            } else if (action == 'G') {
+                //updateRowVote(db, in);
             }
         }
         // Always remember to disconnect from the database when the program 
@@ -185,11 +236,17 @@ public class App {
     //methods to handle admin actions
 
     /**
-     * Create table tblData
+     * CREATE TABLES
      * Uses prepared statements in admin/database
      * 
      * @param db the database in which to create the new table
      */
+    public static void createTables(Database db){
+        db.createPostTable();
+        db.createProfileTable();
+        db.createCommentTable();
+        db.createVotesTable();
+    }
     public static void createPostTable(Database db){
         db.createPostTable();
     }
@@ -202,12 +259,19 @@ public class App {
     public static void createVotesTable(Database db){
         db.createVotesTable();
     }
+
     /**
-     * Drop table tblData
+     * DROP TABLES
      * Uses prepared statements in admin/database
      * 
      * @param db the database in which to drop the table
      */
+    public static void dropTables(Database db){
+        db.dropPostTable();
+        db.dropProfileTable();
+        db.dropCommentTable();
+        db.dropVotesTable();
+    }
     public static void dropPostTable(Database db){
         db.dropPostTable();
     }
@@ -229,11 +293,11 @@ public class App {
      * @param db the database to query a rwo from
      * @param in the bufferedreader to input the row id
      */
-    public static void query(Database db, BufferedReader in){
+    public static void queryPost(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID");
         if (id == -1)
             return;
-        Database.DataRow res = db.selectOne(id);
+        Database.DataRow res = db.selectOnePost(id);
         if (res != null) {
             System.out.println("  [" + res.mId + "] " + res.mTitle);
             System.out.println("  --> " + res.mMessage);
@@ -254,23 +318,48 @@ public class App {
             System.out.println("  Note: " + res.mNote);
         }
     }
-    /*public static void queryComment(Database db, BufferedReader in){
+    public static void queryComment(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID");
         if (id == -1)
             return;
-        Database.DataRow res = db.selectOne(id);
+        Database.CommentData res = db.selectOneComment(id);
         if (res != null) {
-            System.out.println("  [" + res.mId + "] " + res.mTitle);
-            System.out.println("  --> " + res.mMessage);
+            System.out.println("  [" + res.mPostId + "] " + res.mCommentId);
+            System.out.println("  --> " + res.mComment);
+            System.out.println("  UserId: " + res.mUserId);
+        }
+    }
+    public static void queryVote(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return;
+        Database.UserVotesData res = db.selectOneVote(id);
+        if (res != null) {
+            System.out.println("  [" + res.mPostId + "] " + res.mUserId);
+            //System.out.println("  --> " + res.mMessage);
             System.out.println("  votes: " + res.mVotes);
         }
-    }*/
+    }
 
     /**
      * Query all rows of a database
      * 
      * @param db the database to query from
      */
+    /*public static void queryAll(Database db){
+        ArrayList<Database.DataRow> res = db.selectAllPosts();
+        ArrayList<Database.ProfileData> res1 = db.selectAllProfile();
+        ArrayList<Database.CommentData> res2 = db.selectAllComments();
+        ArrayList<Database.UserVotesData> res3 = db.selectAllVotes();
+        if (res == null)
+            return;
+        System.out.println("  Current tblData Contents\t Current profileTable Contents\t Current commentTable Contents\t Current votesTable Contents");
+        System.out.println("  -------------------------\t ----------------------------\t -----------------------------\t ----------------------------");
+        for (Database.DataRow dr : res) {
+            System.out.println("  [" + dr.mId + "] " + dr.mTitle);
+        }
+    }*/
+
     public static void queryAllPosts(Database db){
         ArrayList<Database.DataRow> res = db.selectAllPosts();
         if (res == null)
@@ -304,16 +393,16 @@ public class App {
         }
     }
 
-    /*public static void queryAllVotes(Database db){
-        ArrayList<Database.ProfileData> res = db.selectAllVotes();
+    public static void queryAllVotes(Database db){
+        ArrayList<Database.UserVotesData> res = db.selectAllVotes();
         if (res == null)
             return;
         System.out.println("  Current votesTable Contents");
         System.out.println("  -------------------------");
-        for (Database.ProfileData dr : res) {
-            System.out.println("  [" + dr.mId + "] " + dr.mUsername);
+        for (Database.UserVotesData dr : res) {
+            System.out.println("  [" + dr.mPostId + "] " + dr.mVotes);
         }
-    }*/
+    }
 
     /**
      * Delete a row from the database 
@@ -322,11 +411,41 @@ public class App {
      * @param in the bufferedReader to input the row id
      * @return the number of rows deleted (expected 1)
      */
-    public static int deleteRow(Database db, BufferedReader in){
+    public static int deleteRowPost(Database db, BufferedReader in){
         int id = getInt(in, "Enter the row ID");
         if (id == -1)
             return-1;
-        int res = db.deleteRow(id);
+        int res = db.deleteRowPost(id);
+        if (res != -1) 
+            System.out.println("  " + res + " rows deleted");
+        return res;
+    }
+
+    public static int deleteRowProfile(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return-1;
+        int res = db.deleteRowProfile(id);
+        if (res != -1) 
+            System.out.println("  " + res + " rows deleted");
+        return res;
+    }
+
+    public static int deleteRowComment(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return-1;
+        int res = db.deleteRowComment(id);
+        if (res != -1) 
+            System.out.println("  " + res + " rows deleted");
+        return res;
+    }
+
+    public static int deleteRowVote(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return-1;
+        int res = db.deleteRowVote(id);
         if (res != -1) 
             System.out.println("  " + res + " rows deleted");
         return res;
@@ -342,9 +461,35 @@ public class App {
     public static int addRow(Database db, BufferedReader in){
         String title = getString(in, "Enter the title");
         String message = getString(in, "Enter the message");
-        if (title.equals("") || message.equals(""))
+        String userid = getString(in, "Enter userid");
+        if (title.equals("") || message.equals("") || userid.equals(""))
             return -1;
-        int res = db.insertRow(title, message);
+        int res = db.insertRow(title, message, userid);
+        System.out.println(res + " rows added");
+        return res;
+    }
+
+    public static int addRowProfile(Database db, BufferedReader in){
+        String SO = getString(in, "Enter your Sexual Orientation");
+        String GI = getString(in, "Enter your gender identity");
+        String email = getString(in, "Enter your email");
+        String username = getString(in, "Enter your username");
+        String note = getString(in, "Enter a note");
+        if (SO.equals("") || GI.equals("") || email.equals("") || username.equals("") || note.equals(""))
+            return -1;
+        int res = db.insertRowProfile(SO, GI, email, username, note);
+        System.out.println(res + " rows added");
+        return res;
+    }
+
+    public static int addRowComment(Database db, BufferedReader in){
+        int postid = getInt(in, "Enter postId");
+        int commentid = getInt(in, "Enter commentId");
+        int userid = getInt(in, "Enter userId");
+        String comment = getString(in, "Enter comment");
+        if (postid<0 || commentid<0 || userid<0 || comment.equals(""))
+            return -1;
+        int res = db.insertRowComment(postid,commentid,userid,comment);
         System.out.println(res + " rows added");
         return res;
     }

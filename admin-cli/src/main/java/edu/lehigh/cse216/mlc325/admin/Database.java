@@ -25,22 +25,30 @@ public class Database {
     private PreparedStatement mSelectAll;
     private PreparedStatement mSelectAllProfile;
     private PreparedStatement mSelectAllComment;
+    private PreparedStatement mSelectAllVote;
 
     /**
      * A prepared statement for getting one row from the database
      */
-    private PreparedStatement mSelectOne;
+    private PreparedStatement mSelectOnePost;
     private PreparedStatement mSelectOneProfile;
+    private PreparedStatement mSelectOneComment;
+    private PreparedStatement mSelectOneVote;
 
     /**
      * A prepared statement for deleting a row from the database
      */
-    private PreparedStatement mDeleteOne;
+    private PreparedStatement mDeleteOnePost;
+    private PreparedStatement mDeleteOneProfile;
+    private PreparedStatement mDeleteOneComment;
+    private PreparedStatement mDeleteOneVote;
 
     /**
      * A prepared statement for inserting into the database
      */
     private PreparedStatement mInsertOne;
+    private PreparedStatement mInsertOneProfile;
+    private PreparedStatement mInsertOneComment;
 
     /**
      * A prepared statement for updating a single row in the database
@@ -113,6 +121,8 @@ public static class DataRow {
      * The sum of votes for the idea
      */
     public int mVotes;
+    public String mUserId;
+    public int mSafePost;
 
     /**
      * Create a new DataRow with the provided id and title/message, and a 
@@ -128,11 +138,13 @@ public static class DataRow {
      * 
      * @param votes The number of votes for this row of data
      */
-    DataRow(int id, String title, String message, int votes) {
+    DataRow(int id, String title, String message, int votes, String Userid, int safePost) {
         mId = id;
         mTitle = title;
         mMessage = message;
         mVotes=votes;
+        mUserId = Userid;
+        mSafePost = safePost;
         mCreated = new Date();
     }
 
@@ -145,6 +157,8 @@ public static class DataRow {
         mTitle = data.mTitle;
         mMessage = data.mMessage;
         mVotes = data.mVotes;
+        mUserId = data.mUserId;
+        mSafePost = data.mSafePost;
         mCreated = data.mCreated;
     }
 }
@@ -156,15 +170,17 @@ public static class ProfileData {
     public String mEmail;
     public String mUsername;
     public String mNote;
+    public int mSafeUser;
     public final Date mCreated;
 
-    ProfileData(int id, String SO, String GI, String email, String username, String note) {
+    ProfileData(int id, String SO, String GI, String email, String username, String note, int safeUser) {
         mId = id;
         mSO = SO;
         mGI = GI;
         mEmail = email;
         mUsername = username;
         mNote = note;
+        mSafeUser = safeUser;
         mCreated = new Date();
     }
 
@@ -175,6 +191,7 @@ public static class ProfileData {
         mEmail = data.mEmail;
         mUsername = data.mUsername;
         mNote = data.mNote;
+        mSafeUser = data.mSafeUser;
         mCreated = data.mCreated;
     }
 }
@@ -284,10 +301,10 @@ public static class UserVotesData {
             // creation/deletion, so multiple executions will cause an exception
             db.mCreatePostTable = db.mConnection.prepareStatement(
                 "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(128) "
-                + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL)");
+                + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL, userid VARCHAR(1024) NOT NULL, safe INT NOT NULL)");
             db.mCreateProfileTable = db.mConnection.prepareStatement(
                 "CREATE TABLE profileTable (id SERIAL PRIMARY KEY, SO VARCHAR(128) "
-                + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL)");
+                + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL, safeP INT NOT NULL)");
             db.mCreateCommentTable = db.mConnection.prepareStatement(
                 "CREATE TABLE commentTable (id SERIAL PRIMARY KEY, userid INT "
                 + "NOT NULL, commentid INT NOT NULL, comment VARCHAR(1024) NOT NULL)");
@@ -301,23 +318,29 @@ public static class UserVotesData {
             db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votesTable");
 
             // Standard CRUD operations
-            db.mDeleteOne = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
+            db.mDeleteOnePost = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
+            db.mDeleteOneProfile = db.mConnection.prepareStatement("DELETE FROM profileTable WHERE id = ?");
+            db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM commentTable WHERE id = ?");
+            db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM votesTable WHERE id = ?");
 
-            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0)");
+            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0, ?, 0)");
+            db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO profileTable VALUES (default, ?, ?, ?, ?, ?, 0)");
+            db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO commentTable VALUES (default, ?, ?, ?)");
 
             db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT id, SO, GI, email, username, note FROM profileTable");
-            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT id, userid, commentid, comment FROM tblData");
+            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT id, userid, commentid, comment FROM commentTable");
+            db.mSelectAllVote = db.mConnection.prepareStatement("SELECT id, votesid, votes FROM votesTable");
 
-            db.mSelectOne = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
+            db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
             db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from profileTable WHERE id=?");
+            db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from commentTable WHERE id=?");
+            db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votesTable WHERE id=?");
 
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes ? WHERE id = ?");
 
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
-            
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
-
             db.mLikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + votes = ? WHERE id = ?");
             db.mDislikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - votes = ? WHERE id = ?");
         } catch (SQLException e) {
@@ -362,12 +385,42 @@ public static class UserVotesData {
      * 
      * @return The number of rows that were inserted
      */
-    int insertRow(String title, String message) {
+    int insertRow(String title, String message, String userid) {
         int count = 0;
         try {
             mInsertOne.setString(1, title);
             mInsertOne.setString(2, message);
+            mInsertOne.setString(3, userid);
             count += mInsertOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    int insertRowProfile(String SO, String GI, String email, String username, String note) {
+        int count = 0;
+        try {
+            mInsertOneProfile.setString(1, SO);
+            mInsertOneProfile.setString(2, GI);
+            mInsertOneProfile.setString(3, email);
+            mInsertOneProfile.setString(4, username);
+            mInsertOneProfile.setString(5, note);
+            count += mInsertOneProfile.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    int insertRowComment(int postid, int commentid, int userid, String comment) {
+        int count = 0;
+        try {
+            mInsertOneProfile.setInt(1, postid);
+            mInsertOneProfile.setInt(2, commentid);
+            mInsertOneProfile.setInt(3, userid);
+            mInsertOneProfile.setString(4, comment);
+            count += mInsertOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -384,7 +437,7 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes")));
+                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe")));
             }
             rs.close();
             return res;
@@ -399,7 +452,7 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAllProfile.executeQuery();
             while (rs.next()) {
-                res.add(new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note")));
+                res.add(new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe")));
             }
             rs.close();
             return res;
@@ -424,12 +477,12 @@ public static class UserVotesData {
         }
     }
 
-    ArrayList<DataRow> selectAllVotes() {
-        ArrayList<DataRow> res = new ArrayList<DataRow>();
+    ArrayList<UserVotesData> selectAllVotes() {
+        ArrayList<UserVotesData> res = new ArrayList<UserVotesData>();
         try {
-            ResultSet rs = mSelectAll.executeQuery();
+            ResultSet rs = mSelectAllVote.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes")));
+                res.add(new UserVotesData(rs.getInt("id"), rs.getInt("id"), rs.getInt("id")));
             }
             rs.close();
             return res;
@@ -446,13 +499,13 @@ public static class UserVotesData {
      * 
      * @return The data for the requested row, or null if the ID was invalid
      */
-    DataRow selectOne(int id) {
+    DataRow selectOnePost(int id) {
         DataRow res = null;
         try {
-            mSelectOne.setInt(1, id);
-            ResultSet rs = mSelectOne.executeQuery();
+            mSelectOnePost.setInt(1, id);
+            ResultSet rs = mSelectOnePost.executeQuery();
             if (rs.next()) {
-                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"));
+                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"),rs.getInt("safe"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -466,7 +519,35 @@ public static class UserVotesData {
             mSelectOneProfile.setInt(1, id);
             ResultSet rs = mSelectOneProfile.executeQuery();
             if (rs.next()) {
-                res = new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"));
+                res = new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    CommentData selectOneComment(int id) {
+        CommentData res = null;
+        try {
+            mSelectOneComment.setInt(1, id);
+            ResultSet rs = mSelectOneComment.executeQuery();
+            if (rs.next()) {
+                res = new CommentData(rs.getInt("id"), rs.getInt("userid"), rs.getInt("commentid"), rs.getString("comment"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    UserVotesData selectOneVote(int id) {
+        UserVotesData res = null;
+        try {
+            mSelectOneVote.setInt(1, id);
+            ResultSet rs = mSelectOneVote.executeQuery();
+            if (rs.next()) {
+                res = new UserVotesData(rs.getInt("id"), rs.getInt("votesid"), rs.getInt("votes"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -481,11 +562,44 @@ public static class UserVotesData {
      * 
      * @return The number of rows that were deleted.  -1 indicates an error.
      */
-    int deleteRow(int id) {
+    int deleteRowPost(int id) {
         int res = -1;
         try {
-            mDeleteOne.setInt(1, id);
-            res = mDeleteOne.executeUpdate();
+            mDeleteOnePost.setInt(1, id);
+            res = mDeleteOnePost.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int deleteRowProfile(int id) {
+        int res = -1;
+        try {
+            mDeleteOneProfile.setInt(1, id);
+            res = mDeleteOneProfile.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int deleteRowComment(int id) {
+        int res = -1;
+        try {
+            mDeleteOneComment.setInt(1, id);
+            res = mDeleteOneComment.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int deleteRowVote(int id) {
+        int res = -1;
+        try {
+            mDeleteOneVote.setInt(1, id);
+            res = mDeleteOneVote.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
