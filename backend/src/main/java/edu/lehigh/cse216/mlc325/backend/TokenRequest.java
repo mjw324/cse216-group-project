@@ -5,5 +5,5 @@ public class TokenRequest {
     /**
      * The google user token sent from the front-end
      */
-    public String token;
+    public String mToken;
 }

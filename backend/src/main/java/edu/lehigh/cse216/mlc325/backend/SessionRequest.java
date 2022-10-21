@@ -6,5 +6,5 @@ public class SessionRequest {
     /**
      * The seesion ID sent from the front-end
      */
-    public Integer sessionId;
+    public int mSessionId;
 }
