@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 // Provides functions which use REST calls and interprets responses
 import 'routes.dart';
-import 'addidea.dart';
+import 'profileinfo.dart';
 import 'ideaslist.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
-import 'profilepage.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MyProfilePage extends StatefulWidget {
+  const MyProfilePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -23,10 +22,10 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyProfilePage> createState() => _MyProfilePage();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyProfilePage extends State<MyProfilePage> {
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called
@@ -45,38 +44,9 @@ class _MyHomePageState extends State<MyHomePage> {
             body: const CustomScrollView(
               // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
               slivers: <Widget>[
-                AddIdeaWidget(),
-                IdeasListWidget(),
+                AddProfileWidget(),
+                
               ],
             )));
   }
 } 
-class TabBarDemo extends StatelessWidget {
-  const TabBarDemo({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            bottom: const TabBar(
-              tabs: [
-                Tab(icon:Icon(Icons.list_alt_outlined)),
-                Tab(icon: Icon(Icons.face_outlined)),
-              ],
-            ),
-            title: const Text('The Buzz'),
-          ),
-          body: const TabBarView(
-            children: [
-              MyHomePage(title: 'The Buzz Idea Page'),
-              MyProfilePage(title: 'Profile Page'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

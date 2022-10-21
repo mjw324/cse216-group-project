@@ -35,7 +35,8 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                                 fontSize: 18, fontWeight: FontWeight.bold)))),
                 Column(
                   children:[
-                    MaterialButton(
+                    Flexible(
+                    child: MaterialButton(
                   minWidth: 10,
                   height: 20,
                   color: widget.liked == 1 ? Colors.red[300] : Colors.grey[850],
@@ -73,10 +74,12 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                             }
                         })
                   },
-                ),
+                )
+                    ),
                 //const SizedBox(
                   //  width: 4), // Invis. Box between Upvote and Downvote
-                MaterialButton(
+                  Flexible(
+                child: MaterialButton(
                   minWidth: 10,
                   height: 20,
                   color: widget.liked == -1
@@ -112,6 +115,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                         })
                   },
                 ),
+                    )
                   ]
                 ),
               ],

@@ -18,7 +18,7 @@ GoogleSignIn _googleSignIn = GoogleSignIn(
 
    
   // Optional clientId
-  //clientId: '429689065020-0gt8auic7gbs1jrl4kq24v77al4fqtuk.apps.googleusercontent.com',
+  //clientId: '429689065020-h43s75d9jahb8st0jq8cieb9bctjg850.apps.googleusercontent.com',
   scopes: <String>[
     'email',
   ],
@@ -39,6 +39,7 @@ class SignInDemo extends StatefulWidget {
   @override
   State createState() => SignInDemoState();
 }
+
 
 class SignInDemoState extends State<SignInDemo> {
   GoogleSignInAccount? _currentUser;
@@ -65,16 +66,23 @@ class SignInDemoState extends State<SignInDemo> {
     } catch (error) {
       print(error);
     }
+    
+    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+    print (googleAuth.idToken);
+
      _googleSignIn.signIn().then((result){
           result?.authentication.then((googleKey){
-              print(googleKey.accessToken);
-              //sendToken(googleKey.accessToken);
-              print(googleKey.idToken);
               print(_googleSignIn.currentUser!.displayName);
+              //print(googleKey.accessToken);
+              sendToken(googleKey.idToken);
+              print(googleKey.idToken);
+              
           }).catchError((err){
             print('inner error');
           });
-      }).catchError((err){
+      }
+      ).catchError((err){
           print('error occured');
       });
   }
@@ -109,7 +117,7 @@ class SignInDemoState extends State<SignInDemo> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const MyHomePage(title: 'The Buzz Idea Page')),
+              MaterialPageRoute(builder: (context) => const TabBarDemo()),
             );
           },
         ),
@@ -143,4 +151,7 @@ class SignInDemoState extends State<SignInDemo> {
           child: _buildBody(),
         ));
   }
+
+  
 }
+

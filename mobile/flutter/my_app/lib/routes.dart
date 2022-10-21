@@ -4,59 +4,62 @@ import 'dart:convert';
 import 'dart:io';
 import 'ideaobj.dart';
 
-Future<http.Response> createAlbum(String title) {
-  return http.post(
-    Uri.parse('https://whispering-sands-78580.herokuapp.com/token'),
-    headers: <String, String>{
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
 
-  );
-}
-
+//Post-> sends the id_token to backend
 Future<String> sendToken(String? id_token) async {
   final response = await http.post(
     Uri.parse('https://whispering-sands-78580.herokuapp.com/signin/token'),
-    body: jsonEncode(<String, String?>{'token': id_token}),
+    body: jsonEncode(<String?, String?>{'token': id_token}),
   );
   var res = jsonDecode(response.body);
   return res['mStatus'];
 }
 
-
-Future<Album> fetchAlbum() async {
+/*Returns the username of the user id_token
+Future<String> fetchUsername(String? id_token) async {
   final response = await http.get(
-    Uri.parse('https://apis.google.com/js/platform.js'),
-    // Send authorization headers to the backend.
-    headers: {
-      HttpHeaders.authorizationHeader: 'Basic your_api_token_here',
-    },
+      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/username/$id_token'));
+  var res = jsonDecode(response.body);
+  print(res);
+  return res['mData'];
+}
+
+//Returns the email of the user id_token
+Future<String> fetchEmail(String? id_token) async {
+  final response = await http.get(
+      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/email/$id_token'));
+  var res = jsonDecode(response.body);
+  print(res);
+  return res['mData'];
+}
+
+//Adds SI of the user id_token
+Future<String> addSI(String? id_token, String SI) async {
+  final response = await http.post(
+      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/SI'),
+      body: jsonEncode(<String, String?>{'id_token': id_token, 'SI': SI}),
   );
-  final responseJson = jsonDecode(response.body);
-
-  return Album.fromJson(responseJson);
+  var res = jsonDecode(response.body);
+  return res['mMessage'];
 }
 
-class Album {
-  final int userId;
-  final int id;
-  final String title;
-
-  const Album({
-    required this.userId,
-    required this.id,
-    required this.title,
-  });
-
-  factory Album.fromJson(Map<String, dynamic> json) {
-    return Album(
-      userId: json['userId'],
-      id: json['id'],
-      title: json['title'],
-    );
-  }
+Future<String> addGO(String? id_token, String GO) async {
+  final response = await http.post(
+      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/GO'),
+      body: jsonEncode(<String, String?>{'id_token': id_token, 'GO': GO}),
+  );
+  var res = jsonDecode(response.body);
+  return res['mMessage'];
 }
-
+Future<String> addnote(String? id_token, String note) async {
+  final response = await http.post(
+      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/note'),
+      body: jsonEncode(<String, String?>{'id_token': id_token, 'note': note}),
+  );
+  var res = jsonDecode(response.body);
+  return res['mMessage'];
+}
+*/
 // POST /messages route given a new idea with title and messages, should return String of new ID
 Future<String> addIdea(String title, String message) async {
   final response = await http.post(
@@ -94,6 +97,7 @@ Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
 
   // res (response) should decode two key value pairs: mStatus and mData
   var res = jsonDecode(response.body);
+  print(res);
   return res['mData'];
 }
 
