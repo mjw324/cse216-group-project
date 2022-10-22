@@ -9,7 +9,7 @@ void main() async {
   runApp(
     const MaterialApp(
       title: 'Google Sign In',
-      home: SignInDemo(),
+      home: SignIn(),
     ),
   );
 }
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       ),
       // home is the default route of the app, consider it '/' in web routes
       //change this to login
-      home: const SignInDemo(),
+      home: const SignIn(),
     );
   }
 }

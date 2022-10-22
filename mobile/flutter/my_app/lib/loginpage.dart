@@ -28,20 +28,20 @@ void main() {
   runApp(
     const MaterialApp(
       title: 'Google Sign In',
-      home: SignInDemo(),
+      home: SignIn(),
     ),
   );
 }
 
-class SignInDemo extends StatefulWidget {
-  const SignInDemo({Key? key}) : super(key: key);
+class SignIn extends StatefulWidget {
+  const SignIn({Key? key}) : super(key: key);
 
   @override
-  State createState() => SignInDemoState();
+  State createState() => SignInState();
 }
 
 
-class SignInDemoState extends State<SignInDemo> {
+class SignInState extends State<SignIn> {
   GoogleSignInAccount? _currentUser;
   
   @override
@@ -69,13 +69,13 @@ class SignInDemoState extends State<SignInDemo> {
     
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-    print (googleAuth.idToken);
+    //print (googleAuth.idToken);
 
      _googleSignIn.signIn().then((result){
           result?.authentication.then((googleKey){
               print(_googleSignIn.currentUser!.displayName);
               //print(googleKey.accessToken);
-              sendToken(googleKey.idToken);
+              //sendToken(googleKey.idToken);
               print(googleKey.idToken);
               
           }).catchError((err){
@@ -90,11 +90,13 @@ class SignInDemoState extends State<SignInDemo> {
 
   Future<void> _handleSignOut() => _googleSignIn.disconnect();
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     
 
     final GoogleSignInAccount? user = _currentUser;
     if (user != null) {
+      String e = user.email;
+      String username= e.substring(0, e.indexOf('@'));
       //sendToken(user._idToken);
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -115,9 +117,12 @@ class SignInDemoState extends State<SignInDemo> {
           ElevatedButton(
           child: const Text('The Buzz Homepage'),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const TabBarDemo()),
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) =>  TabBarDemo(
+                  name: username, 
+                  email: user.email
+                  )),
             );
           },
         ),
@@ -148,7 +153,7 @@ class SignInDemoState extends State<SignInDemo> {
         ),
         body: ConstrainedBox(
           constraints: const BoxConstraints.expand(),
-          child: _buildBody(),
+          child: _buildBody(context),
         ));
   }
 

@@ -8,7 +8,7 @@ import 'ideaobj.dart';
 //Post-> sends the id_token to backend
 Future<String> sendToken(String? id_token) async {
   final response = await http.post(
-    Uri.parse('https://whispering-sands-78580.herokuapp.com/signin/token'),
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/signin/mToken'),
     body: jsonEncode(<String?, String?>{'token': id_token}),
   );
   var res = jsonDecode(response.body);
@@ -125,6 +125,7 @@ Future<List<IdeaObj>> fetchIdeas() async {
           .log('ERROR: Unexpected json response type (was not a List or Map).');
       returnData = List.empty();
     }
+    //print(res);
     return returnData;
   } else {
     // If the server did not return a 200 OK response,

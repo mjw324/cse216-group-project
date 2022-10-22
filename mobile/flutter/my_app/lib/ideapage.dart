@@ -52,7 +52,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 } 
 class TabBarDemo extends StatelessWidget {
-  const TabBarDemo({super.key});
+  String name, email; 
+   TabBarDemo( {super.key, required this.email, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -69,10 +70,10 @@ class TabBarDemo extends StatelessWidget {
             ),
             title: const Text('The Buzz'),
           ),
-          body: const TabBarView(
+          body: TabBarView(
             children: [
-              MyHomePage(title: 'The Buzz Idea Page'),
-              MyProfilePage(title: 'Profile Page'),
+              const MyHomePage(title: 'The Buzz Idea Page'),
+              MyProfilePage(title: 'Profile Page',name: name, email: email),
             ],
           ),
         ),

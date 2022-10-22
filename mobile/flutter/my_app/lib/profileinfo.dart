@@ -5,47 +5,44 @@ import 'schedule.dart';
 import 'ideaobj.dart';
 
 class AddProfileWidget extends StatefulWidget {
-  const AddProfileWidget({super.key});
+  String name, email;
+  AddProfileWidget({super.key, required this.name, required this.email});
 
   @override
-  State<AddProfileWidget> createState() => _AddProfileWidget();
+  State<AddProfileWidget> createState() => _AddProfileWidget(name: name, userEmail: email);
 }
 
 class _AddProfileWidget extends State<AddProfileWidget> {
+  String name;
+  String userEmail; 
+  _AddProfileWidget({required this.name, required this.userEmail});
   // title and idea controller are used to manage text input in respective fields
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _siController = TextEditingController();
   final _goController = TextEditingController();
   final _noteController = TextEditingController();
-  String username = '';
-  String email = '';
-  String SI = '';
-  String GO = '';
-  String note = '';
+  
 
   @override
   Widget build(BuildContext context) {
+    String username = name;
+    String email = userEmail;
+    String SI = '';
+    String GO = '';
+    String note = '';
     // Instantiate schedule using Provider.of, this is so we can access methods from schedule
     final schedule = Provider.of<MySchedule>(context);
     return SliverToBoxAdapter(
         child: Column(
       children: [
-        TextField(
-          controller: _usernameController,
-          decoration: const InputDecoration(
-            hintText: 'username',
-            border: OutlineInputBorder(),
-          ),
-          maxLength: 128, // max amount of characters accepted is 128
+        Text(
+          style: const TextStyle(height: 2, fontSize: 20),
+          'Username: $username'
         ),
-        TextField(
-          controller: _emailController,
-          decoration: const InputDecoration(
-            hintText: 'email',
-            border: OutlineInputBorder(),
-          ),
-          maxLength: 128, // max amount of characters accepted is 128
+        Text(
+          style: const TextStyle(height: 2, fontSize: 20),
+          'email: $email'
         ),
         TextField(
           controller: _siController,

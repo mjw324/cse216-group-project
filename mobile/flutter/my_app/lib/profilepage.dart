@@ -8,7 +8,10 @@ import 'schedule.dart';
 import 'package:provider/provider.dart';
 
 class MyProfilePage extends StatefulWidget {
-  const MyProfilePage({super.key, required this.title});
+  String name;
+  String email; 
+
+  MyProfilePage({super.key, required this.title, required this.name, required this.email});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -22,10 +25,14 @@ class MyProfilePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyProfilePage> createState() => _MyProfilePage();
+  // ignore: no_logic_in_create_state
+  State<MyProfilePage> createState() => _MyProfilePage(name: name, email: email);
 }
 
 class _MyProfilePage extends State<MyProfilePage> {
+  late String name;
+  late String email; 
+  _MyProfilePage({required this.name, required this.email});
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called
@@ -41,10 +48,10 @@ class _MyProfilePage extends State<MyProfilePage> {
               // the App.build method, and use it to set our appbar title.
               title: Text(widget.title),
             ),
-            body: const CustomScrollView(
+            body: CustomScrollView(
               // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
               slivers: <Widget>[
-                AddProfileWidget(),
+                AddProfileWidget(name: name, email: email),
                 
               ],
             )));
