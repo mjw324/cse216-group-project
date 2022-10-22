@@ -39,14 +39,10 @@ public class App {
         // String user = env.get("POSTGRES_USER");
         // String pass = env.get("POSTGRES_PASS");
 
-        // String db_url = env.get("DATABASE_URL");
-        String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
-        db_url += "?sslmode=require";
+        String db_url = env.get("DATABASE_URL");
+        // String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
 
-        String userTable = "profileTable";
-        String ideaTable = "ideasTable";
-        String commentTable = "commentTable";
-        String votesTable = "votesTable";
+        
 
         //key generated session id, value is google user id
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
@@ -209,8 +205,7 @@ public class App {
                 // String givenName = (String) payload.get("given_name");
                 
                 if(db.selectOneProfile(userId)==null){
-                    //db.insertUserRow("", "");
-                    //create new profile table entry
+                    db.insertRowProfile("Not specified", "not specifed", email, name, "");
                 }
 
                 Integer userSession = (int)(Math.random()*Integer.MAX_VALUE);
@@ -239,7 +234,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             int votes = db.selectOnePost(idx).mVotes; //keep the votes the same
-            int result = db.updateOne(idx, req.mMessage, votes);
+            int result = db.updateOneIdea(idx, req.mMessage, votes);
             if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
@@ -252,13 +247,27 @@ public class App {
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
             SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
+            String userId = usersHT.get(req.mSessionId);
+            if(userId == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.oneLike(idx);
+            int result;
+            Database.UserVotesData vote = db.selectOneVote(idx, userId);
+            if(vote==null){ //not voted yet
+                result = db.oneLike(idx);
+                db.insertRowVote(idx, userId, 1);
+            }else{
+                if(vote.mVotes==-1){//downvoted
+                    result = db.numLike(idx, 2);
+                    db.updateOneVote(idx, userId, 1);
+                }else{ //1, already upvoted
+                    db.deleteRowVote(idx, userId);
+                    result = db.oneDislike(idx); //undo vote
+                }
+            }
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
@@ -271,52 +280,28 @@ public class App {
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
             SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
+            String userId = usersHT.get(req.mSessionId);
+            if(userId == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.oneDislike(idx);
+            int result;
+            Database.UserVotesData vote = db.selectOneVote(idx, userId);
+            if(vote==null){ //not voted yet
+                result = db.oneDislike(idx);
+                db.insertRowVote(idx, userId, -1);
+            }else{
+                if(vote.mVotes==1){//upvoted
+                    result = db.numDislike(idx, 2);
+                    db.updateOneVote(idx, userId, -1);
+                }else{ //-1, already downvoted
+                    db.deleteRowVote(idx, userId);
+                    result = db.oneLike(idx);//undo vote
+                }
+            }
             if (result == -1) {
-                return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
-            } else {
-                return gson.toJson(new StructuredResponse("ok", null, result));
-            }
-        });
-
-        Spark.put("/messages/:id/upvotes/:num", (request, response) -> {
-            // If we can't get an ID or can't parse the JSON, Spark will send
-            // a status 500
-            int idx = Integer.parseInt(request.params("id"));
-            int num = Integer.parseInt(request.params("num"));
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
-                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
-            }            // ensure status 200 OK, with a MIME type of JSON
-            response.status(200);
-            response.type("application/json");
-            int result = db.numLike(idx, num);
-            if (result < 0) {
-                return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
-            } else {
-                return gson.toJson(new StructuredResponse("ok", null, result));
-            }
-        });
-
-        Spark.put("/messages/:id/downvotes/:num", (request, response) -> {
-            // If we can't get an ID or can't parse the JSON, Spark will send
-            // a status 500
-            int idx = Integer.parseInt(request.params("id"));
-            int num = Integer.parseInt(request.params("num"));
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
-                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
-            }            // ensure status 200 OK, with a MIME type of JSON
-            response.status(200);
-            response.type("application/json");
-            int result = db.numDislike(idx, num);
-            if (result < 0) {
                 return gson.toJson(new StructuredResponse("error", "unable to update row " + idx, null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", null, result));

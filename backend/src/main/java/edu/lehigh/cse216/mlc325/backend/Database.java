@@ -49,11 +49,17 @@ public class Database {
     private PreparedStatement mInsertOne;
     private PreparedStatement mInsertOneProfile;
     private PreparedStatement mInsertOneComment;
+    private PreparedStatement mInsertOneVote;
 
     /**
      * A prepared statement for updating a single row in the database
      */
-    private PreparedStatement mUpdateOne;
+    private PreparedStatement mUpdateOneIdea;
+
+    /**
+     * A prepared statement for updating a single row in the votes database
+     */
+    private PreparedStatement mUpdateOneVote;
 
     /**
      * A prepared statement for upvoting a single row in the database
@@ -77,13 +83,6 @@ public class Database {
     private PreparedStatement mCreateCommentTable;
     private PreparedStatement mCreateVotesTable;
 
-    /**
-     * A prepared statement for dropping the table in our database
-     */
-    private PreparedStatement mDropPostTable;
-    private PreparedStatement mDropProfileTable;
-    private PreparedStatement mDropCommentTable;
-    private PreparedStatement mDropVotesTable;
 
     /**
  * DataRow holds a row of information.  A row of information consists of
@@ -298,13 +297,9 @@ public static class UserVotesData {
             String commentTable = "commentTable";
             String votesTable = "votesTable";
     
-            // NB: we can easily get ourselves in trouble here by typing the
-            //     SQL incorrectly.  We really should have things like "ideasTable"
-            //     as constants, and then build the strings for the statements
-            //     from those constants.
 
-            // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
-            // creation/deletion, so multiple executions will cause an exception
+            
+            //For reference only, don't need to create in backend
             db.mCreatePostTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + ideaTable + " (id SERIAL PRIMARY KEY, title VARCHAR(128) "
                 + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL, userid VARCHAR(1024) NOT NULL, safe INT NOT NULL)");
@@ -317,38 +312,35 @@ public static class UserVotesData {
             db.mCreateVotesTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + votesTable + " (id SERIAL PRIMARY KEY, userid VARCHAR(1024) "
                 + "NOT NULL, votes INT NOT NULL)");
-            
-            db.mDropPostTable = db.mConnection.prepareStatement("DROP TABLE " + ideaTable);
-            db.mDropProfileTable = db.mConnection.prepareStatement("DROP TABLE " + userTable);
-            db.mDropCommentTable = db.mConnection.prepareStatement("DROP TABLE " + commentTable);
-            db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE" + votesTable);
 
             // Standard CRUD operations
             db.mDeleteOnePost = db.mConnection.prepareStatement("DELETE FROM " + ideaTable + " WHERE id = ?");
             db.mDeleteOneProfile = db.mConnection.prepareStatement("DELETE FROM " + userTable + " WHERE id = ?");
             db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM " + commentTable + " WHERE id = ?");
-            db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM " + votesTable + " WHERE id = ?");
+            db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM " + votesTable + " WHERE id = ? AND WHERE userid=?");
 
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0)");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (default, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?)");
+            db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
 
-            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM " + ideaTable + "");
+            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM " + ideaTable);
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT id, SO, GI, email, username, note FROM " + userTable);
-            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT id, userid, commentid, comment FROM " + commentTable + "");
+            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT id, userid, commentid, comment FROM " + commentTable);
             db.mSelectAllVote = db.mConnection.prepareStatement("SELECT id, votesid, votes FROM " + votesTable);
 
             db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE id=?");
             db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE id=?");
             db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from " + commentTable + " WHERE id=?");
-            db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from " + votesTable + " WHERE id=?");
+            db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from " + votesTable + " WHERE id=? AND WHERE userid=?");
 
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE id = ?");
+            db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE id = ?");
+            db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE id = ? AND WHERE userid = ?");
 
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + 1 WHERE id = ?");
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - 1 WHERE id = ?");
-            db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + votes = ? WHERE id = ?");
-            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - votes = ? WHERE id = ?");
+            db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + ? WHERE id = ?");
+            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -419,13 +411,26 @@ public static class UserVotesData {
         return count;
     }
 
-    int insertRowComment(int postid, int commentid, int userid, String comment) {
+    int insertRowComment(int postid, int commentid, String userid, String comment) {
         int count = 0;
         try {
             mInsertOneProfile.setInt(1, postid);
             mInsertOneProfile.setInt(2, commentid);
-            mInsertOneProfile.setInt(3, userid);
+            mInsertOneProfile.setString(3, userid);
             mInsertOneProfile.setString(4, comment);
+            count += mInsertOneProfile.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    int insertRowVote(int postid, String userid, int vote) {
+        int count = 0;
+        try {
+            mInsertOneProfile.setInt(1, postid);
+            mInsertOneProfile.setString(2, userid);
+            mInsertOneProfile.setInt(3, vote);
             count += mInsertOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -547,10 +552,11 @@ public static class UserVotesData {
         return res;
     }
 
-    UserVotesData selectOneVote(int id) {
+    UserVotesData selectOneVote(int postId, String userId) {
         UserVotesData res = null;
         try {
-            mSelectOneVote.setInt(1, id);
+            mSelectOneVote.setInt(1, postId);
+            mSelectOneVote.setString(2, userId);
             ResultSet rs = mSelectOneVote.executeQuery();
             if (rs.next()) {
                 res = new UserVotesData(rs.getInt("id"), rs.getString("userid"), rs.getInt("votes"));
@@ -698,10 +704,11 @@ public static class UserVotesData {
         return res;
     }
 
-    int deleteRowVote(int id) {
+    int deleteRowVote(int id, String userId) {
         int res = -1;
         try {
             mDeleteOneVote.setInt(1, id);
+            mDeleteOneVote.setString(2, userId);
             res = mDeleteOneVote.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -717,81 +724,36 @@ public static class UserVotesData {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String message, int votes) {
+    int updateOneIdea(int id, String message, int votes) {
         int res = -1;
         try {
-            mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(2, id);
-            mUpdateOne.setInt(3, votes);
-            res = mUpdateOne.executeUpdate();
+            mUpdateOneIdea.setString(1, message);
+            mUpdateOneIdea.setInt(2, id);
+            mUpdateOneIdea.setInt(3, votes);
+            res = mUpdateOneIdea.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return res;
     }
-
     /**
-     * Create ideasTable.  If it already exists, this will print an error
+     * Update the vote for a row in the database
+     * 
+     * @param id The id of the row to update
+     * @param userId The new mesaage
+     * 
+     * @return The number of rows that were updated.  -1 indicates an error.
      */
-    void createPostTable() {
+    int updateOneVote(int id, String userId, int votes) {
+        int res = -1;
         try {
-            mCreatePostTable.execute();
+            mUpdateOneIdea.setInt(1, votes);
+            mUpdateOneIdea.setInt(2, id);
+            mUpdateOneIdea.setString(3, userId);
+            res = mUpdateOneIdea.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-    void createProfileTable() {
-        try {
-            mCreateProfileTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    void createCommentTable() {
-        try {
-            mCreateCommentTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    void createVotesTable() {
-        try {
-            mCreateVotesTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Remove ideasTable from the database.  If it does not exist, this will print
-     * an error.
-     */
-    void dropPostTable() {
-        try {
-            mDropPostTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    void dropProfileTable() {
-        try {
-            mDropProfileTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    void dropCommentTable() {
-        try {
-            mDropCommentTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    void dropVotesTable() {
-        try {
-            mDropVotesTable.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        return res;
     }
 }
