@@ -16,7 +16,7 @@ import junit.framework.TestSuite;
 public class AppTest 
     extends TestCase
 {
-    Database db = Database.getDatabase("postgres://syseojtbnbaqmf:65d25d95b1c64ef7a92b1fe3ddbef1573c08f242ccc6a58de6d99ab3c81affc4@ec2-44-210-228-110.compute-1.amazonaws.com:5432/d40vh1r24v4e4m?sslmode=require");
+    Database db = Database.getDatabase("postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl?sslmode=require");
     /**
      * Create the test case
      *
@@ -47,7 +47,25 @@ public class AppTest
     public void testAddEntry()
     {
         assertFalse(db==null);
-        String test = "Unit test title \nUnit test message";
+        String test = "Unit test title \nUnit test message\n 2";
+        Reader inputString = new StringReader(test);
+        BufferedReader input = new BufferedReader(inputString);
+        assertTrue( App.addRow(db, input) == 1 );
+    }
+
+    public void testAddEntryProfile()
+    {
+        assertFalse(db==null);
+        String test = "Unit test SO\n Unit test GI\n Unit Test email\n unit test username\n unit test note";
+        Reader inputString = new StringReader(test);
+        BufferedReader input = new BufferedReader(inputString);
+        assertTrue( App.addRow(db, input) == 1 );
+    }
+
+    public void testAddEntryComment()
+    {
+        assertFalse(db==null);
+        String test = "1 \n 1\n 1\n Unit test comment";
         Reader inputString = new StringReader(test);
         BufferedReader input = new BufferedReader(inputString);
         assertTrue( App.addRow(db, input) == 1 );
@@ -58,15 +76,28 @@ public class AppTest
      */
     public void testRemoveEntry()
     {
-        ArrayList<Database.DataRow> res = db.selectAll();
+        ArrayList<Database.DataRow> res = db.selectAllPosts();
         int id = 0;
         for (Database.DataRow dr : res) {
-            id = dr.mId;
+            id = dr.mPostId;
         }
         String test = "" + id;
         Reader inputString = new StringReader(test);
         BufferedReader input = new BufferedReader(inputString);
-        assertTrue( App.deleteRow(db, input) == 1);
+        assertTrue( App.deleteRowPost(db, input) == 1);
+    }
+
+    public void testRemoveEntryProfile()
+    {
+        ArrayList<Database.ProfileData> res = db.selectAllProfile();
+        int id = 0;
+        for (Database.ProfileData dr : res) {
+            id = dr.mUserId;
+        }
+        String test = "" + id;
+        Reader inputString = new StringReader(test);
+        BufferedReader input = new BufferedReader(inputString);
+        assertTrue( App.deleteRowPost(db, input) == 1);
     }
 
     /**
@@ -78,19 +109,23 @@ public class AppTest
         String content = "Test Content";
         int id = 17;
         int votes = 4;
+        String userid = "testuserid";
+        int safe = 1;
         assertTrue(true);
-        Database.DataRow d = new Database.DataRow(id, title, content, votes);
+        Database.DataRow d = new Database.DataRow(id, title, content, votes, userid, safe);
         assertTrue(d.mTitle.equals(title));
         assertTrue(d.mMessage.equals(content));
-        assertTrue(d.mId == id);
+        assertTrue(d.mPostId == id);
         assertTrue(d.mVotes == votes);
+        assertTrue(d.mUserId == userid);
+        assertTrue(d.mSafePost == safe);
         assertFalse(d.mCreated == null);
     }
 
     /**
      * Ensure that the copy constructor works correctly
      */
-    public void testCopyconstructor() {
+    /*public void testCopyconstructor() {
         String title = "Test Title For Copy";
         String content = "Test Content For Copy";
         int id = 177;
@@ -103,5 +138,5 @@ public class AppTest
         assertTrue(d2.mId == d.mId);
         assertTrue(d2.mVotes == d.mVotes);
         assertTrue(d2.mCreated.equals(d.mCreated));
-    }
+    }*/
 }
