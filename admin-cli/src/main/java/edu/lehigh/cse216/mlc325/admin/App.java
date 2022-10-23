@@ -19,43 +19,42 @@ public class App {
     static void menu() {
         System.out.println("Main Menu");
         System.out.println("  [:] Create All Tables");
-        System.out.println("  [T] Create tblData");
+        System.out.println("  [T] Create ideasTable");
         System.out.println("  [P] Create profileTable");
         System.out.println("  [C] Create commentTable");
         System.out.println("  [V] Create votesTable");
         //System.out.println("\n");
 
         System.out.println("  [;] Drop All Tables");
-        System.out.println("  [D] Drop tblData");
+        System.out.println("  [D] Drop ideasTable");
         System.out.println("  [U] Drop profileTable");
         System.out.println("  [S] Drop commentTable");
         System.out.println("  [K] Drop votesTable");
         //System.out.println("\n");
 
-        System.out.println("  [1] Query for a specific row of tblData");
+        System.out.println("  [1] Query for a specific row of ideasTable");
         System.out.println("  [2] Query for a specific row of profileTable");
         System.out.println("  [3] Query for a specific row of commentTable");
         System.out.println("  [4] Query for a specific row of votesTable");
         //System.out.println("\n");
 
-        System.out.println("  [0] Query for all rows: All Tables"); //Still need to do
-        System.out.println("  [*] Query for all rows: tblData");
+        System.out.println("  [*] Query for all rows: ideasTable");
         System.out.println("  [&] Query for all rows: profileTable");
         System.out.println("  [$] Query for all rows: commentTable");
         System.out.println("  [!] Query for all rows: votesTable");
         //System.out.println("\n");
 
-        System.out.println("  [-] Delete a row: tblData");
+        System.out.println("  [-] Delete a row: ideasTable");
         System.out.println("  [M] Delete a row: profileTable");
         System.out.println("  [N] Delete a row: commentTable");
         System.out.println("  [B] Delete a row: votesTable");
 
-        System.out.println("  [+] Insert a new row: tblData");
+        System.out.println("  [+] Insert a new row: ideasTable");
         System.out.println("  [X] Insert a new row: profileTable");
         System.out.println("  [Z] Insert a new row: commentTable");
         System.out.println("  [L] Insert a new row: votesTable");
 
-        System.out.println("  [~] Update a row: tblData");
+        System.out.println("  [~] Update a row: ideasTable");
         System.out.println("  [J] Update a row: profileTable");
         System.out.println("  [H] Update a row: commentTable");
         System.out.println("  [G] Update a row: votesTable");
@@ -73,7 +72,7 @@ public class App {
      */
     static char prompt(BufferedReader in) {
         // The valid actions:
-        String actions = ":TPCV;DUSK12340*&$!-MNB+XZL~JHGq?";
+        String actions = ":TPCV;DUSK1234*&$!-MNB+XZL~JHGq?";
 
         // We repeat until a valid single-character option is selected        
         while (true) {
@@ -193,8 +192,6 @@ public class App {
                 queryComment(db, in);
             } else if (action == '4') {
                 queryVote(db, in);
-            } else if (action == '0') {
-                //queryAll(db);
             } else if (action == '*') {
                 queryAllPosts(db);
             } else if (action == '&') {
@@ -218,9 +215,9 @@ public class App {
             } else if (action == 'Z') {
                 addRowComment(db, in);
             } else if (action == '~') {
-                //updateRowPost(db, in);
+                updateRow(db, in);
             } else if (action == 'J') {
-                //updateRowProfile(db, in);
+                updateRowProfile(db, in);
             } else if (action == 'H') {
                 //updateRowComment(db, in);
             } else if (action == 'G') {
@@ -299,7 +296,7 @@ public class App {
             return;
         Database.DataRow res = db.selectOnePost(id);
         if (res != null) {
-            System.out.println("  [" + res.mId + "] " + res.mTitle);
+            System.out.println("  [" + res.mPostId + "] " + res.mTitle);
             System.out.println("  --> " + res.mMessage);
             System.out.println("  votes: " + res.mVotes);
         }
@@ -311,11 +308,12 @@ public class App {
             return;
         Database.ProfileData res = db.selectOneProfile(id);
         if (res != null) {
-            System.out.println("  [" + res.mId + "] " + res.mUsername);
+            System.out.println("  [" + res.mUserId + "] " + res.mUsername);
             System.out.println("  --> " + res.mEmail);
             System.out.println("  SO: " + res.mSO);
             System.out.println("  GI: " + res.mGI);
             System.out.println("  Note: " + res.mNote);
+            System.out.println("  Safe(0 is yes): " + res.mSafeUser);
         }
     }
     public static void queryComment(Database db, BufferedReader in){
@@ -341,33 +339,18 @@ public class App {
         }
     }
 
-    /**
-     * Query all rows of a database
-     * 
-     * @param db the database to query from
-     */
-    /*public static void queryAll(Database db){
-        ArrayList<Database.DataRow> res = db.selectAllPosts();
-        ArrayList<Database.ProfileData> res1 = db.selectAllProfile();
-        ArrayList<Database.CommentData> res2 = db.selectAllComments();
-        ArrayList<Database.UserVotesData> res3 = db.selectAllVotes();
-        if (res == null)
-            return;
-        System.out.println("  Current tblData Contents\t Current profileTable Contents\t Current commentTable Contents\t Current votesTable Contents");
-        System.out.println("  -------------------------\t ----------------------------\t -----------------------------\t ----------------------------");
-        for (Database.DataRow dr : res) {
-            System.out.println("  [" + dr.mId + "] " + dr.mTitle);
-        }
-    }*/
+    //All Posts All tables
 
     public static void queryAllPosts(Database db){
         ArrayList<Database.DataRow> res = db.selectAllPosts();
         if (res == null)
             return;
-        System.out.println("  Current tblData Contents");
+        System.out.println("  Current ideasTable Contents");
         System.out.println("  -------------------------");
         for (Database.DataRow dr : res) {
-            System.out.println("  [" + dr.mId + "] " + dr.mTitle);
+            if(dr.mSafePost == 0){
+                System.out.println("  [" + dr.mPostId + "] " + dr.mTitle);
+            }
         }
     }
 
@@ -378,7 +361,9 @@ public class App {
         System.out.println("  Current profileTable Contents");
         System.out.println("  -------------------------");
         for (Database.ProfileData dr : res) {
-            System.out.println("  [" + dr.mId + "] " + dr.mUsername);
+            if(dr.mSafeUser == 0){
+                System.out.println("  [" + dr.mUserId + "] " + dr.mUsername);
+            }
         }
     }
 
@@ -507,7 +492,24 @@ public class App {
         return -1;
         String newMessage = getString(in, "Enter the new message");
         int votes = getInt(in, "Enter the new votes :> ");
-        int res = db.updateOne(id, newMessage, votes);
+        int safe = getInt(in, "Update 0 for safe, 1 for not safe post");
+        int res = db.updateOne(id, newMessage, votes, safe);
+        if (res != -1)
+            System.out.println("  " + res + " rows updated");
+        return res;
+    }
+
+    public static int updateRowProfile(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID :> ");
+        if (id == -1)
+        return -1;
+        String newSO = getString(in, "Enter your SO: ");
+        String newGI = getString(in, "Enter your GI: ");
+        String newEmail = getString(in, "Enter the email: ");
+        String newUsername = getString(in, "Enter the username: ");
+        String newNote = getString(in, "Enter new note: ");
+        int safe = getInt(in, "Update 0 for safe, 1 for not safe post");
+        int res = db.updateOneProfile(id, newSO, newGI, newEmail,newUsername, newNote, safe);
         if (res != -1)
             System.out.println("  " + res + " rows updated");
         return res;

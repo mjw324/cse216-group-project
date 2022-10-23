@@ -54,6 +54,7 @@ public class Database {
      * A prepared statement for updating a single row in the database
      */
     private PreparedStatement mUpdateOne;
+    private PreparedStatement mUpdateOneProfile;
 
     /**
      * A prepared statement for upvoting a single row in the database
@@ -99,7 +100,7 @@ public static class DataRow {
      * The unique identifier associated with this element.  It's final, because
      * we never want to change it.
      */
-    public final int mId;
+    public final int mPostId;
 
     /**
      * The title for this row of data
@@ -139,32 +140,32 @@ public static class DataRow {
      * @param votes The number of votes for this row of data
      */
     DataRow(int id, String title, String message, int votes, String Userid, int safePost) {
-        mId = id;
+        mPostId = id;
         mTitle = title;
         mMessage = message;
         mVotes=votes;
+        mCreated = new Date();
         mUserId = Userid;
         mSafePost = safePost;
-        mCreated = new Date();
     }
 
     /**
      * Copy constructor to create one datarow from another
      */
     DataRow(DataRow data) {
-        mId = data.mId;
+        mPostId = data.mPostId;
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
         mTitle = data.mTitle;
         mMessage = data.mMessage;
         mVotes = data.mVotes;
+        mCreated = data.mCreated;
         mUserId = data.mUserId;
         mSafePost = data.mSafePost;
-        mCreated = data.mCreated;
     }
 }
 
 public static class ProfileData {
-    public final int mId;
+    public final int mUserId;
     public String mSO;
     public String mGI;
     public String mEmail;
@@ -174,7 +175,7 @@ public static class ProfileData {
     public final Date mCreated;
 
     ProfileData(int id, String SO, String GI, String email, String username, String note, int safeUser) {
-        mId = id;
+        mUserId = id;
         mSO = SO;
         mGI = GI;
         mEmail = email;
@@ -185,7 +186,7 @@ public static class ProfileData {
     }
 
     ProfileData(ProfileData data) {
-        mId = data.mId;
+        mUserId = data.mUserId;
         mSO = data.mSO;
         mGI = data.mGI;
         mEmail = data.mEmail;
@@ -197,23 +198,23 @@ public static class ProfileData {
 }
 
 public static class CommentData {
-    public final int mPostId;
-    public int mCommentId;
+    public final int mCommentId;
+    public int mPostId;
     public int mUserId;
     public String mComment;
     public final Date mCreated;
 
-    CommentData(int postId, int commentId, int userId, String comment) {
-        mPostId = postId;
+    CommentData( int commentId, int postId, int userId, String comment) {
         mCommentId = commentId;
+        mPostId = postId;
         mUserId = userId;
         mComment = comment;
         mCreated = new Date();
     }
 
     CommentData(CommentData data) {
-        mPostId = data.mPostId;
         mCommentId = data.mCommentId;
+        mPostId = data.mPostId;
         mUserId = data.mUserId;
         mComment = data.mComment;
         mCreated = data.mCreated;
@@ -300,7 +301,7 @@ public static class UserVotesData {
             // Note: no "IF NOT EXISTS" or "IF EXISTS" checks on table 
             // creation/deletion, so multiple executions will cause an exception
             db.mCreatePostTable = db.mConnection.prepareStatement(
-                "CREATE TABLE tblData (id SERIAL PRIMARY KEY, title VARCHAR(128) "
+                "CREATE TABLE ideasTable (id SERIAL PRIMARY KEY, title VARCHAR(128) "
                 + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL, userid VARCHAR(1024) NOT NULL, safe INT NOT NULL)");
             db.mCreateProfileTable = db.mConnection.prepareStatement(
                 "CREATE TABLE profileTable (id SERIAL PRIMARY KEY, SO VARCHAR(128) "
@@ -312,37 +313,38 @@ public static class UserVotesData {
                 "CREATE TABLE votesTable (id SERIAL PRIMARY KEY, votesid INT "
                 + "NOT NULL, votes INT NOT NULL)");
             
-            db.mDropPostTable = db.mConnection.prepareStatement("DROP TABLE tblData");
+            db.mDropPostTable = db.mConnection.prepareStatement("DROP TABLE ideasTable");
             db.mDropProfileTable = db.mConnection.prepareStatement("DROP TABLE profileTable");
             db.mDropCommentTable = db.mConnection.prepareStatement("DROP TABLE commentTable");
             db.mDropVotesTable = db.mConnection.prepareStatement("DROP TABLE votesTable");
 
             // Standard CRUD operations
-            db.mDeleteOnePost = db.mConnection.prepareStatement("DELETE FROM tblData WHERE id = ?");
+            db.mDeleteOnePost = db.mConnection.prepareStatement("DELETE FROM ideasTable WHERE id = ?");
             db.mDeleteOneProfile = db.mConnection.prepareStatement("DELETE FROM profileTable WHERE id = ?");
             db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM commentTable WHERE id = ?");
             db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM votesTable WHERE id = ?");
 
-            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO tblData VALUES (default, ?, ?, 0, ?, 0)");
+            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO ideasTable VALUES (default, ?, ?, 0, ?, 0)");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO profileTable VALUES (default, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO commentTable VALUES (default, ?, ?, ?)");
 
-            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM tblData");
-            db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT id, SO, GI, email, username, note FROM profileTable");
+            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes, userid, safe FROM ideasTable");
+            db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT id, SO, GI, email, username, note, safeP FROM profileTable");
             db.mSelectAllComment = db.mConnection.prepareStatement("SELECT id, userid, commentid, comment FROM commentTable");
             db.mSelectAllVote = db.mConnection.prepareStatement("SELECT id, votesid, votes FROM votesTable");
 
-            db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from tblData WHERE id=?");
+            db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from ideasTable WHERE id=?");
             db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from profileTable WHERE id=?");
             db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from commentTable WHERE id=?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from votesTable WHERE id=?");
 
-            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE tblData SET message = ?, votes ? WHERE id = ?");
+            db.mUpdateOne = db.mConnection.prepareStatement("UPDATE ideasTable SET message = ?, votes = ?, safe = ? WHERE id = ?");
+            db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE profileTable SET SO = ?, GI = ?, email = ?, username = ?, note = ?, safeP = ? WHERE id = ?");
 
-            db.mLikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + 1 WHERE id = ?");
-            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - 1 WHERE id = ?");
-            db.mLikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes + votes = ? WHERE id = ?");
-            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE tblData SET votes = votes - votes = ? WHERE id = ?");
+            db.mLikeOne = db.mConnection.prepareStatement("UPDATE ideasTable SET votes = votes + 1 WHERE id = ?");
+            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE ideasTable SET votes = votes - 1 WHERE id = ?");
+            db.mLikeNum = db.mConnection.prepareStatement("UPDATE ideasTable SET votes = votes + votes = ? WHERE id = ?");
+            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE ideasTable SET votes = votes - votes = ? WHERE id = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -452,7 +454,7 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAllProfile.executeQuery();
             while (rs.next()) {
-                res.add(new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe")));
+                res.add(new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safeP")));
             }
             rs.close();
             return res;
@@ -519,7 +521,7 @@ public static class UserVotesData {
             mSelectOneProfile.setInt(1, id);
             ResultSet rs = mSelectOneProfile.executeQuery();
             if (rs.next()) {
-                res = new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe"));
+                res = new ProfileData(rs.getInt("id"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safeP"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -614,13 +616,31 @@ public static class UserVotesData {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOne(int id, String message, int votes) {
+    int updateOne(int id, String message, int votes, int safe) {
         int res = -1;
         try {
             mUpdateOne.setString(1, message);
-            mUpdateOne.setInt(2, id);
-            mUpdateOne.setInt(3, votes);
+            mUpdateOne.setInt(4, id);
+            mUpdateOne.setInt(2, votes);
+            mUpdateOne.setInt(3, safe);
             res = mUpdateOne.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int updateOneProfile(int id, String SO, String GI, String email, String username, String note, int safe) {
+        int res = -1;
+        try {
+            mUpdateOneProfile.setString(1, SO);
+            mUpdateOneProfile.setInt(6, safe);
+            mUpdateOneProfile.setInt(7, safe);
+            mUpdateOneProfile.setString(2, GI);
+            mUpdateOneProfile.setString(3, email);
+            mUpdateOneProfile.setString(4, username);
+            mUpdateOneProfile.setString(5, note);
+            res = mUpdateOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
