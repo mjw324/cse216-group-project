@@ -97,7 +97,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                     childCount: list.length,
                   ));
                 } else if (snapshot.hasError) {
-                  child = Text('${snapshot.error}');
+                  child = SliverToBoxAdapter(child: Text('${snapshot.error}'));
                 } else {
                   child = const SliverToBoxAdapter(
                       child: Center(
