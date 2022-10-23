@@ -60,6 +60,14 @@ public class Database {
      * A prepared statement for updating a single row in the votes database
      */
     private PreparedStatement mUpdateOneVote;
+    /**
+     * A prepared statement for updating a single row in the profile database
+     */
+    private PreparedStatement mUpdateOneProfile;
+    /**
+     * A prepared statement for updating a single row in the comment database
+     */
+    private PreparedStatement mUpdateOneComment;
 
     /**
      * A prepared statement for upvoting a single row in the database
@@ -336,6 +344,8 @@ public static class UserVotesData {
 
             db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE id = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE id = ? AND WHERE userid = ?");
+            db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE " + userTable + " SET GI = ?, SO = ?, username = ?, note= ? WHERE id = ?");
+            db.mUpdateOneComment= db.mConnection.prepareStatement("UPDATE " + commentTable + " SET votes = ? WHERE id = ? AND WHERE userid = ?");
 
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + 1 WHERE id = ?");
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - 1 WHERE id = ?");
@@ -448,7 +458,9 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                res.add(new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe")));
+                DataRow row = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe"));
+                if(row.mSafePost==0) //safe post
+                    res.add(row);
             }
             rs.close();
             return res;
@@ -517,6 +529,9 @@ public static class UserVotesData {
             ResultSet rs = mSelectOnePost.executeQuery();
             if (rs.next()) {
                 res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"),rs.getInt("safe"));
+                if (res.mSafePost != 0){ //unsafe post
+                    return null;
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -747,10 +762,50 @@ public static class UserVotesData {
     int updateOneVote(int id, String userId, int votes) {
         int res = -1;
         try {
-            mUpdateOneIdea.setInt(1, votes);
-            mUpdateOneIdea.setInt(2, id);
-            mUpdateOneIdea.setString(3, userId);
-            res = mUpdateOneIdea.executeUpdate();
+            mUpdateOneVote.setInt(1, votes);
+            mUpdateOneVote.setInt(2, id);
+            mUpdateOneVote.setString(3, userId);
+            res = mUpdateOneVote.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+    /**
+     * Update the vote for a row in the database
+     * 
+     * @param id The id of the row to update
+     * @param userId The new mesaage
+     * 
+     * @return The number of rows that were updated.  -1 indicates an error.
+     */
+    int updateOneProfile(int id, String userId, int votes) {
+        int res = -1;
+        try {
+            mUpdateOneProfile.setInt(1, votes);
+            mUpdateOneProfile.setInt(2, id);
+            mUpdateOneProfile.setString(3, userId);
+            res = mUpdateOneProfile.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+    /**
+     * Update the vote for a row in the database
+     * 
+     * @param id The id of the row to update
+     * @param userId The new mesaage
+     * 
+     * @return The number of rows that were updated.  -1 indicates an error.
+     */
+    int updateOneComment(int id, String userId, int votes) {
+        int res = -1;
+        try {
+            mUpdateOneVote.setInt(1, votes);
+            mUpdateOneVote.setInt(2, id);
+            mUpdateOneVote.setString(3, userId);
+            res = mUpdateOneVote.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

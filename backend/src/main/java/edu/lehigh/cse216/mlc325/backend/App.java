@@ -4,7 +4,7 @@ package edu.lehigh.cse216.mlc325.backend;
 // create an HTTP GET route
 import spark.Spark;
 
-
+import java.util.Arrays;
 
 // Import Google's JSON library
 import com.google.gson.*;
@@ -41,16 +41,15 @@ public class App {
 
         String db_url = env.get("DATABASE_URL");
         // String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
-
         
 
         //key generated session id, value is google user id
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
 
-        final String CLIENT_ID = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList(CLIENT_ID)).build();
-        
-        
+        final String CLIENT_ID_1 = "429689065020-h43s75d9jahb8st0jq8cieb9bctjg850.apps.googleusercontent.com";
+        final String CLIENT_ID_2 = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2)).build();
+
         // Get a fully-configured connection to the database, or exit 
         // immediately
         Database db = Database.getDatabase(db_url); 
@@ -187,7 +186,6 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            //System.out.println(newId);
             GoogleIdToken idToken = verifier.verify(tokenString);
             if (idToken != null) {
                 Payload payload = idToken.getPayload();
