@@ -44,30 +44,30 @@ public class AppTest
     /**
      * Ensure that adding an entry works correctly
      */
-    public void testAddEntry()
+    /*public void testAddEntry()
     {
         assertFalse(db==null);
         String test = "Unit test title \nUnit test message";
         Reader inputString = new StringReader(test);
         BufferedReader input = new BufferedReader(inputString);
         assertTrue( App.addRow(db, input) == 1 );
-    }
+    }*/
     
     /**
      * Ensure that removing an entry works correctly
      */
-    /*public void testRemoveEntry()
+    public void testRemoveEntry()
     {
-        ArrayList<Database.DataRow> res = db.selectAll();
+        ArrayList<Database.DataRow> res = db.selectAllPosts();
         int id = 0;
         for (Database.DataRow dr : res) {
-            id = dr.mId;
+            id = dr.mPostId;
         }
         String test = "" + id;
         Reader inputString = new StringReader(test);
         BufferedReader input = new BufferedReader(inputString);
-        assertTrue( App.deleteRow(db, input) == 1);
-    }*/
+        assertTrue( App.deleteRowPost(db, input) == 1);
+    }
 
     /**
      * Ensure that the constructor populates every field of the object it
