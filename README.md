@@ -92,6 +92,3 @@ So I can see what my colleagues think of the ideat (manual)
 - Test that database was deleted correctly
 - Test that rows were removed correctly
 
-Trello invite link:
-https://trello.com/invite/cse216mlcc325/08e8c14c1250d96b2bdec08825a8fc0b
-
