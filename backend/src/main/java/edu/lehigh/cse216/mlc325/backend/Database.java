@@ -24,7 +24,7 @@ public class Database {
      */
     private PreparedStatement mSelectAll;
     private PreparedStatement mSelectAllProfile;
-    private PreparedStatement mSelectAllComment;
+    private PreparedStatement mSelectAllComments;
     private PreparedStatement mSelectAllVote;
 
     /**
@@ -34,6 +34,8 @@ public class Database {
     private PreparedStatement mSelectOneProfile;
     private PreparedStatement mSelectOneComment;
     private PreparedStatement mSelectOneVote;
+    
+    private PreparedStatement mSelectPostComments;
 
     /**
      * A prepared statement for deleting a row from the database
@@ -69,18 +71,7 @@ public class Database {
      */
     private PreparedStatement mUpdateOneComment;
 
-    /**
-     * A prepared statement for upvoting a single row in the database
-     */
-    private PreparedStatement mLikeOne;
-
-    /**
-     * A prepared statement for downvoting a single row in the database
-     */
-    private PreparedStatement mDislikeOne;
-
     private PreparedStatement mDislikeNum;
-
     private PreparedStatement mLikeNum;
 
     /**
@@ -334,9 +325,11 @@ public static class UserVotesData {
 
             db.mSelectAll = db.mConnection.prepareStatement("SELECT postid, title, message, votes FROM " + ideaTable);
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note FROM " + userTable);
-            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT commentid, userid, posttid, comment FROM " + commentTable);
-            db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, votesid, votes FROM " + votesTable);
-
+            db.mSelectAllComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment FROM " + commentTable);
+            db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, userid, votes FROM " + votesTable);
+            
+            db.mSelectPostComments = db.mConnection.prepareStatement("SELECT * FROM " + commentTable + "WHERE postid = ?");
+            
             db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE postid=?");
             db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE userid=?");
             db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from " + commentTable + " WHERE commentid=?");
@@ -345,10 +338,8 @@ public static class UserVotesData {
             db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE postid = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE postid = ? AND WHERE userid = ?");
             db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE " + userTable + " SET GI = ?, SO = ?, username = ?, note= ? WHERE userid = ?");
-            db.mUpdateOneComment= db.mConnection.prepareStatement("UPDATE " + commentTable + " SET votes = ? WHERE postid = ? AND WHERE userid = ?");
+            db.mUpdateOneComment= db.mConnection.prepareStatement("UPDATE " + commentTable + " SET comment = ? WHERE WHERE commentid = ?");
 
-            db.mLikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + 1 WHERE postid = ?");
-            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - 1 WHERE postid = ?");
             db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + ? WHERE postid = ?");
             db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - ? WHERE postid = ?");
         } catch (SQLException e) {
@@ -475,7 +466,9 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAllProfile.executeQuery();
             while (rs.next()) {
-                res.add(new ProfileData(rs.getString("userid"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe")));
+                ProfileData user = new ProfileData(rs.getString("userid"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe"));
+                if(user.mSafeUser==0) //safe user
+                    res.add(user);
             }
             rs.close();
             return res;
@@ -488,9 +481,11 @@ public static class UserVotesData {
     ArrayList<CommentData> selectAllComments() {
         ArrayList<CommentData> res = new ArrayList<CommentData>();
         try {
-            ResultSet rs = mSelectAllComment.executeQuery();
+            ResultSet rs = mSelectAllComments.executeQuery();
             while (rs.next()) {
-                res.add(new CommentData(rs.getInt("postId"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment")));
+                CommentData comment = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"));
+                if(safeUser(comment.mUserId))
+                    res.add(comment);
             }
             rs.close();
             return res;
@@ -499,13 +494,30 @@ public static class UserVotesData {
             return null;
         }
     }
-
+    
     ArrayList<UserVotesData> selectAllVotes() {
         ArrayList<UserVotesData> res = new ArrayList<UserVotesData>();
         try {
             ResultSet rs = mSelectAllVote.executeQuery();
             while (rs.next()) {
-                res.add(new UserVotesData(rs.getInt("id"), rs.getString("userid"), rs.getInt("votes")));
+                res.add(new UserVotesData(rs.getInt("postid"), rs.getString("userid"), rs.getInt("votes")));
+            }
+            rs.close();
+            return res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    ArrayList<CommentData> selectPostComments() {
+        ArrayList<CommentData> res = new ArrayList<CommentData>();
+        try {
+            ResultSet rs = mSelectPostComments.executeQuery();
+            while (rs.next()) {
+                CommentData comment = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"));
+                if(safeUser(comment.mUserId))
+                    res.add(comment);            
             }
             rs.close();
             return res;
@@ -528,7 +540,7 @@ public static class UserVotesData {
             mSelectOnePost.setInt(1, id);
             ResultSet rs = mSelectOnePost.executeQuery();
             if (rs.next()) {
-                res = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"),rs.getInt("safe"));
+                res = new DataRow(rs.getInt("postid"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"),rs.getInt("safe"));
                 if (res.mSafePost != 0){ //unsafe post
                     return null;
                 }
@@ -545,7 +557,7 @@ public static class UserVotesData {
             mSelectOneProfile.setString(1, id);
             ResultSet rs = mSelectOneProfile.executeQuery();
             if (rs.next()) {
-                res = new ProfileData(rs.getString("id"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe"));
+                res = new ProfileData(rs.getString("userid"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -559,7 +571,7 @@ public static class UserVotesData {
             mSelectOneComment.setInt(1, id);
             ResultSet rs = mSelectOneComment.executeQuery();
             if (rs.next()) {
-                res = new CommentData(rs.getInt("id"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"));
+                res = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -574,54 +586,8 @@ public static class UserVotesData {
             mSelectOneVote.setString(2, userId);
             ResultSet rs = mSelectOneVote.executeQuery();
             if (rs.next()) {
-                res = new UserVotesData(rs.getInt("id"), rs.getString("userid"), rs.getInt("votes"));
+                res = new UserVotesData(rs.getInt("postid"), rs.getString("userid"), rs.getInt("votes"));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return res;
-    }
-
-    /**
-     * Like post, by ID
-     * 
-     * @param id The id of the row being requested
-     * 
-     *
-     * @return The data for the requested row, or null if the ID was invalid
-     */
-    int oneLike(int id) {
-        int res = -1;
-        try {
-            mLikeOne.setInt(1, id);
-            res = mLikeOne.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return res;
-    }
-
-    /**
-     * Dislike post, by ID
-     * 
-     * @param id The id of the row being requested
-     * 
-     *
-     * @return The data for the requested row, or null if the ID was invalid
-     */
-    int oneDislike(int id) {
-        int res = -1;
-        try {
-            mDislikeOne.setInt(1, id);
-            res = mDislikeOne.executeUpdate();
-            /*mSelectOne.setInt(1, id);
-            ResultSet rs = mSelectOne.executeQuery();
-            if(rs.getInt("votes") > 0){
-                mDislikeOne.setInt(1, id);
-                res = mDislikeOne.executeUpdate();
-            }else{
-                System.err.println("No");
-            }*/
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -637,7 +603,7 @@ public static class UserVotesData {
      *
      * @return The data for the requested row, or null if the ID was invalid
      */
-    int numLike(int id, int numVotes) {
+    int like(int id, int numVotes) {
         int res = -1;
         try {
             mLikeNum.setInt(1, numVotes);
@@ -657,7 +623,7 @@ public static class UserVotesData {
      *
      * @return The data for the requested row, or null if the ID was invalid
      */
-    int numDislike(int id, int numVotes) {
+    int dislike(int id, int numVotes) {
         int res = -1;
         try {
             mDislikeNum.setInt(1, numVotes);
@@ -779,12 +745,14 @@ public static class UserVotesData {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOneProfile(int id, String userId, int votes) {
+    int updateOneProfile(String userid, String GI, String SO, String username, String note) {
         int res = -1;
         try {
-            mUpdateOneProfile.setInt(1, votes);
-            mUpdateOneProfile.setInt(2, id);
-            mUpdateOneProfile.setString(3, userId);
+            mUpdateOneProfile.setString(5, userid);
+            mUpdateOneProfile.setString(1, GI);
+            mUpdateOneProfile.setString(2, SO);
+            mUpdateOneProfile.setString(3, username);
+            mUpdateOneProfile.setString(4, note);
             res = mUpdateOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -799,16 +767,20 @@ public static class UserVotesData {
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOneComment(int id, String userId, int votes) {
+    int updateOneComment(int commentid, String comment) {
         int res = -1;
         try {
-            mUpdateOneVote.setInt(1, votes);
-            mUpdateOneVote.setInt(2, id);
-            mUpdateOneVote.setString(3, userId);
+            mUpdateOneComment.setInt(2, commentid);
+            mUpdateOneComment.setString(1, comment);
             res = mUpdateOneVote.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return res;
+    }
+
+    boolean safeUser(String userID){
+        ProfileData user = selectOneProfile(userID);
+        return user.mSafeUser==0; 
     }
 }

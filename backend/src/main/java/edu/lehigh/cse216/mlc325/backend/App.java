@@ -9,6 +9,8 @@ import java.util.Arrays;
 // Import Google's JSON library
 import com.google.gson.*;
 
+import edu.lehigh.cse216.mlc325.backend.Database.ProfileData;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -205,6 +207,9 @@ public class App {
                 if(db.selectOneProfile(userId)==null){
                     db.insertRowProfile("Not specified", "not specifed", email, name, "");
                 }
+                if(!db.safeUser(userId)){
+                    return gson.toJson(new StructuredResponse("error", "User blocked by administrator", null));
+                }
 
                 Integer userSession = (int)(Math.random()*Integer.MAX_VALUE);
                 while(usersHT.containsKey(userSession)){ //make sure session ID is unique
@@ -255,15 +260,15 @@ public class App {
             int result;
             Database.UserVotesData vote = db.selectOneVote(idx, userId);
             if(vote==null){ //not voted yet
-                result = db.oneLike(idx);
+                result = db.like(idx,1);
                 db.insertRowVote(idx, userId, 1);
             }else{
                 if(vote.mVotes==-1){//downvoted
-                    result = db.numLike(idx, 2);
+                    result = db.like(idx, 2);
                     db.updateOneVote(idx, userId, 1);
                 }else{ //1, already upvoted
                     db.deleteRowVote(idx, userId);
-                    result = db.oneDislike(idx); //undo vote
+                    result = db.dislike(idx, 1); //undo vote
                 }
             }
             if (result == -1) {
@@ -288,15 +293,15 @@ public class App {
             int result;
             Database.UserVotesData vote = db.selectOneVote(idx, userId);
             if(vote==null){ //not voted yet
-                result = db.oneDislike(idx);
+                result = db.dislike(idx,1);
                 db.insertRowVote(idx, userId, -1);
             }else{
                 if(vote.mVotes==1){//upvoted
-                    result = db.numDislike(idx, 2);
+                    result = db.dislike(idx, 2);
                     db.updateOneVote(idx, userId, -1);
                 }else{ //-1, already downvoted
                     db.deleteRowVote(idx, userId);
-                    result = db.oneLike(idx);//undo vote
+                    result = db.like(idx,1);//undo vote
                 }
             }
             if (result == -1) {
