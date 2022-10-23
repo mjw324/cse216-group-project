@@ -309,48 +309,48 @@ public static class UserVotesData {
             
             //For reference only, don't need to create in backend
             db.mCreatePostTable = db.mConnection.prepareStatement(
-                "CREATE TABLE " + ideaTable + " (id SERIAL PRIMARY KEY, title VARCHAR(128) "
+                "CREATE TABLE " + ideaTable + " (postid SERIAL PRIMARY KEY, title VARCHAR(128) "
                 + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL, userid VARCHAR(1024) NOT NULL, safe INT NOT NULL)");
             db.mCreateProfileTable = db.mConnection.prepareStatement(
-                "CREATE TABLE " + userTable + " (id SERIAL PRIMARY KEY, SO VARCHAR(128) "
+                "CREATE TABLE " + userTable + " (userid SERIAL PRIMARY KEY, SO VARCHAR(128) "
                 + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL, safeP INT NOT NULL)");
             db.mCreateCommentTable = db.mConnection.prepareStatement(
-                "CREATE TABLE " + commentTable + " (id SERIAL PRIMARY KEY, userid INT "
-                + "NOT NULL, commentid INT NOT NULL, comment VARCHAR(1024) NOT NULL)");
+                "CREATE TABLE " + commentTable + " (commentid SERIAL PRIMARY KEY, userid INT "
+                + "NOT NULL, postid INT NOT NULL, comment VARCHAR(1024) NOT NULL)");
             db.mCreateVotesTable = db.mConnection.prepareStatement(
-                "CREATE TABLE " + votesTable + " (id SERIAL PRIMARY KEY, userid VARCHAR(1024) "
+                "CREATE TABLE " + votesTable + " (postid INT NOT NULL userid VARCHAR(1024) "
                 + "NOT NULL, votes INT NOT NULL)");
 
             // Standard CRUD operations
-            db.mDeleteOnePost = db.mConnection.prepareStatement("DELETE FROM " + ideaTable + " WHERE id = ?");
-            db.mDeleteOneProfile = db.mConnection.prepareStatement("DELETE FROM " + userTable + " WHERE id = ?");
-            db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM " + commentTable + " WHERE id = ?");
-            db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM " + votesTable + " WHERE id = ? AND WHERE userid=?");
+            db.mDeleteOnePost = db.mConnection.prepareStatement("DELETE FROM " + ideaTable + " WHERE postid = ?");
+            db.mDeleteOneProfile = db.mConnection.prepareStatement("DELETE FROM " + userTable + " WHERE userid = ?");
+            db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM " + commentTable + " WHERE commentid = ?");
+            db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM " + votesTable + " WHERE postid = ? AND WHERE userid=?");
 
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0)");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (default, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?)");
             db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
 
-            db.mSelectAll = db.mConnection.prepareStatement("SELECT id, title, message, votes FROM " + ideaTable);
-            db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT id, SO, GI, email, username, note FROM " + userTable);
-            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT id, userid, commentid, comment FROM " + commentTable);
-            db.mSelectAllVote = db.mConnection.prepareStatement("SELECT id, votesid, votes FROM " + votesTable);
+            db.mSelectAll = db.mConnection.prepareStatement("SELECT postid, title, message, votes FROM " + ideaTable);
+            db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note FROM " + userTable);
+            db.mSelectAllComment = db.mConnection.prepareStatement("SELECT commentid, userid, posttid, comment FROM " + commentTable);
+            db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, votesid, votes FROM " + votesTable);
 
-            db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE id=?");
-            db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE id=?");
-            db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from " + commentTable + " WHERE id=?");
-            db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from " + votesTable + " WHERE id=? AND WHERE userid=?");
+            db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE postid=?");
+            db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE userid=?");
+            db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from " + commentTable + " WHERE commentid=?");
+            db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from " + votesTable + " WHERE postid=? AND WHERE userid=?");
 
-            db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE id = ?");
-            db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE id = ? AND WHERE userid = ?");
-            db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE " + userTable + " SET GI = ?, SO = ?, username = ?, note= ? WHERE id = ?");
-            db.mUpdateOneComment= db.mConnection.prepareStatement("UPDATE " + commentTable + " SET votes = ? WHERE id = ? AND WHERE userid = ?");
+            db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE postid = ?");
+            db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE postid = ? AND WHERE userid = ?");
+            db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE " + userTable + " SET GI = ?, SO = ?, username = ?, note= ? WHERE userid = ?");
+            db.mUpdateOneComment= db.mConnection.prepareStatement("UPDATE " + commentTable + " SET votes = ? WHERE postid = ? AND WHERE userid = ?");
 
-            db.mLikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + 1 WHERE id = ?");
-            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - 1 WHERE id = ?");
-            db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + ? WHERE id = ?");
-            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - ? WHERE id = ?");
+            db.mLikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + 1 WHERE postid = ?");
+            db.mDislikeOne = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - 1 WHERE postid = ?");
+            db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + ? WHERE postid = ?");
+            db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - ? WHERE postid = ?");
         } catch (SQLException e) {
             System.err.println("Error creating prepared statement");
             e.printStackTrace();
@@ -458,7 +458,7 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAll.executeQuery();
             while (rs.next()) {
-                DataRow row = new DataRow(rs.getInt("id"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe"));
+                DataRow row = new DataRow(rs.getInt("postid"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe"));
                 if(row.mSafePost==0) //safe post
                     res.add(row);
             }
@@ -475,7 +475,7 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAllProfile.executeQuery();
             while (rs.next()) {
-                res.add(new ProfileData(rs.getString("id"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe")));
+                res.add(new ProfileData(rs.getString("userid"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safe")));
             }
             rs.close();
             return res;
