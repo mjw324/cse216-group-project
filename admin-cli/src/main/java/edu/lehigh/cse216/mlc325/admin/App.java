@@ -508,7 +508,7 @@ public class App {
         String newEmail = getString(in, "Enter the email: ");
         String newUsername = getString(in, "Enter the username: ");
         String newNote = getString(in, "Enter new note: ");
-        int safe = getInt(in, "Update 0 for safe, 1 for not safe post");
+        int safe = getInt(in, "Update 0 for safe, 1 for not safe profile");
         int res = db.updateOneProfile(id, newSO, newGI, newEmail,newUsername, newNote, safe);
         if (res != -1)
             System.out.println("  " + res + " rows updated");

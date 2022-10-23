@@ -44,14 +44,32 @@ public class AppTest
     /**
      * Ensure that adding an entry works correctly
      */
-    /*public void testAddEntry()
+    public void testAddEntry()
     {
         assertFalse(db==null);
-        String test = "Unit test title \nUnit test message";
+        String test = "Unit test title \nUnit test message\n 2";
         Reader inputString = new StringReader(test);
         BufferedReader input = new BufferedReader(inputString);
         assertTrue( App.addRow(db, input) == 1 );
-    }*/
+    }
+
+    public void testAddEntryProfile()
+    {
+        assertFalse(db==null);
+        String test = "Unit test SO\n Unit test GI\n Unit Test email\n unit test username\n unit test note";
+        Reader inputString = new StringReader(test);
+        BufferedReader input = new BufferedReader(inputString);
+        assertTrue( App.addRow(db, input) == 1 );
+    }
+
+    public void testAddEntryComment()
+    {
+        assertFalse(db==null);
+        String test = "1 \n 1\n 1\n Unit test comment";
+        Reader inputString = new StringReader(test);
+        BufferedReader input = new BufferedReader(inputString);
+        assertTrue( App.addRow(db, input) == 1 );
+    }
     
     /**
      * Ensure that removing an entry works correctly
@@ -69,23 +87,40 @@ public class AppTest
         assertTrue( App.deleteRowPost(db, input) == 1);
     }
 
+    public void testRemoveEntryProfile()
+    {
+        ArrayList<Database.ProfileData> res = db.selectAllProfile();
+        int id = 0;
+        for (Database.ProfileData dr : res) {
+            id = dr.mUserId;
+        }
+        String test = "" + id;
+        Reader inputString = new StringReader(test);
+        BufferedReader input = new BufferedReader(inputString);
+        assertTrue( App.deleteRowPost(db, input) == 1);
+    }
+
     /**
      * Ensure that the constructor populates every field of the object it
      * creates
      */
-    /*public void testConstructor() {
+    public void testConstructor() {
         String title = "Test Title";
         String content = "Test Content";
         int id = 17;
         int votes = 4;
+        String userid = "testuserid";
+        int safe = 1;
         assertTrue(true);
-        Database.DataRow d = new Database.DataRow(id, title, content, votes);
+        Database.DataRow d = new Database.DataRow(id, title, content, votes, userid, safe);
         assertTrue(d.mTitle.equals(title));
         assertTrue(d.mMessage.equals(content));
-        assertTrue(d.mId == id);
+        assertTrue(d.mPostId == id);
         assertTrue(d.mVotes == votes);
+        assertTrue(d.mUserId == userid);
+        assertTrue(d.mSafePost == safe);
         assertFalse(d.mCreated == null);
-    }*/
+    }
 
     /**
      * Ensure that the copy constructor works correctly
