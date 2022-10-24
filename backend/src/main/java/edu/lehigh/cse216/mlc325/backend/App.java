@@ -203,11 +203,14 @@ public class App {
                 //String locale = (String) payload.get("locale");
                 // String familyName = (String) payload.get("family_name");
                 // String givenName = (String) payload.get("given_name");
-                
                 if(db.selectOneProfile(userId)==null){
-                    db.insertRowProfile("Not specified", "not specifed", email, name, "");
+                    db.insertRowProfile(userId, "Not specified", "not specifed", email, name, " ");
                 }
+                
                 if(!db.safeUser(userId)){
+                    // if(db.selectOneProfile(userId)==null){
+                    //     return gson.toJson(new StructuredResponse("error", "Could not find userid: " + userId, null));
+                    // }
                     return gson.toJson(new StructuredResponse("error", "User blocked by administrator", null));
                 }
 
@@ -217,7 +220,7 @@ public class App {
                 }
                 usersHT.put(userSession, userId);
                 
-                return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
+                return gson.toJson(new StructuredResponse("ok", "Signed in " + name, (Object)userSession));
             } else {
                 return gson.toJson(new StructuredResponse("error", "user could not be verified", null));
             }
