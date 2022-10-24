@@ -166,7 +166,7 @@ public static class DataRow {
 }
 
 public static class ProfileData {
-    public final int mUserId;
+    public final String mUserId;
     public String mSO;
     public String mGI;
     public String mEmail;
@@ -175,7 +175,7 @@ public static class ProfileData {
     public int mSafeUser;
     public final Date mCreated;
 
-    ProfileData(int id, String SO, String GI, String email, String username, String note, int safeUser) {
+    ProfileData(String id, String SO, String GI, String email, String username, String note, int safeUser) {
         mUserId = id;
         mSO = SO;
         mGI = GI;
@@ -305,7 +305,7 @@ public static class UserVotesData {
                 "CREATE TABLE ideasTable (postid SERIAL PRIMARY KEY, title VARCHAR(128) "
                 + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL, userid VARCHAR(1024) NOT NULL, safe INT NOT NULL)");
             db.mCreateProfileTable = db.mConnection.prepareStatement(
-                "CREATE TABLE profileTable (userid SERIAL PRIMARY KEY, SO VARCHAR(128) "
+                "CREATE TABLE profileTable (userid VARCHAR(128), SO VARCHAR(128) "
                 + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL, safeP INT NOT NULL)");
             db.mCreateCommentTable = db.mConnection.prepareStatement(
                 "CREATE TABLE commentTable (commentid SERIAL PRIMARY KEY, userid INT "
@@ -326,7 +326,7 @@ public static class UserVotesData {
             db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM votesTable WHERE postid = ? AND WHERE userid = ?");
 
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO ideasTable VALUES (default, ?, ?, 0, ?, 0)");
-            db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO profileTable VALUES (default, ?, ?, ?, ?, ?, 0)");
+            db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO profileTable VALUES (?, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO commentTable VALUES (default, ?, ?, ?)");
 
             db.mSelectAll = db.mConnection.prepareStatement("SELECT postid, title, message, votes, userid, safe FROM ideasTable");
@@ -402,14 +402,15 @@ public static class UserVotesData {
         return count;
     }
 
-    int insertRowProfile(String SO, String GI, String email, String username, String note) {
+    int insertRowProfile(String userid, String SO, String GI, String email, String username, String note) {
         int count = 0;
         try {
-            mInsertOneProfile.setString(1, SO);
-            mInsertOneProfile.setString(2, GI);
-            mInsertOneProfile.setString(3, email);
-            mInsertOneProfile.setString(4, username);
-            mInsertOneProfile.setString(5, note);
+            mInsertOneProfile.setString(1, userid);
+            mInsertOneProfile.setString(2, SO);
+            mInsertOneProfile.setString(3, GI);
+            mInsertOneProfile.setString(4, email);
+            mInsertOneProfile.setString(5, username);
+            mInsertOneProfile.setString(6, note);
             count += mInsertOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -456,7 +457,7 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAllProfile.executeQuery();
             while (rs.next()) {
-                res.add(new ProfileData(rs.getInt("userid"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safeP")));
+                res.add(new ProfileData(rs.getString("userid"), rs.getString("SO"), rs.getString("GI"), rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safeP")));
             }
             rs.close();
             return res;
@@ -517,13 +518,13 @@ public static class UserVotesData {
         return res;
     }
 
-    ProfileData selectOneProfile(int id) {
+    ProfileData selectOneProfile(String id) {
         ProfileData res = null;
         try {
-            mSelectOneProfile.setInt(1, id);
+            mSelectOneProfile.setString(1, id);
             ResultSet rs = mSelectOneProfile.executeQuery();
             if (rs.next()) {
-                res = new ProfileData(rs.getInt("userid"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safeP"));
+                res = new ProfileData(rs.getString("userid"), rs.getString("SO"), rs.getString("GI"),rs.getString("email"),rs.getString("username"),rs.getString("note"),rs.getInt("safeP"));
             }
         } catch (SQLException e) {
             e.printStackTrace();

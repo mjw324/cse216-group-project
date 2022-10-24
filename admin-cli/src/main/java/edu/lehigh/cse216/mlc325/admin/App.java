@@ -303,8 +303,8 @@ public class App {
     }
 
     public static void queryProfile(Database db, BufferedReader in){
-        int id = getInt(in, "Enter the row ID");
-        if (id == -1)
+        String id = getString(in, "Enter the userid");
+        if (id == "")
             return;
         Database.ProfileData res = db.selectOneProfile(id);
         if (res != null) {
@@ -455,14 +455,15 @@ public class App {
     }
 
     public static int addRowProfile(Database db, BufferedReader in){
+        String useridtoken = getString(in, "Enter userid token");
         String SO = getString(in, "Enter your Sexual Orientation");
         String GI = getString(in, "Enter your gender identity");
         String email = getString(in, "Enter your email");
         String username = getString(in, "Enter your username");
         String note = getString(in, "Enter a note");
-        if (SO.equals("") || GI.equals("") || email.equals("") || username.equals("") || note.equals(""))
+        if (useridtoken.equals("") || SO.equals("") || GI.equals("") || email.equals("") || username.equals("") || note.equals(""))
             return -1;
-        int res = db.insertRowProfile(SO, GI, email, username, note);
+        int res = db.insertRowProfile(useridtoken, SO, GI, email, username, note);
         System.out.println(res + " rows added");
         return res;
     }
