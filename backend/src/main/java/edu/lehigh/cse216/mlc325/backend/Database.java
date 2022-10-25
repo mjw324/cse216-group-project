@@ -22,7 +22,7 @@ public class Database {
     /**
      * A prepared statement for getting all data in the database
      */
-    private PreparedStatement mSelectAll;
+    private PreparedStatement mSelectAllPost;
     private PreparedStatement mSelectAllProfile;
     private PreparedStatement mSelectAllComments;
     private PreparedStatement mSelectAllVote;
@@ -323,7 +323,7 @@ public static class UserVotesData {
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?)");
             db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
 
-            db.mSelectAll = db.mConnection.prepareStatement("SELECT postid, title, message, votes FROM " + ideaTable);
+            db.mSelectAllPost = db.mConnection.prepareStatement("SELECT postid, title, message, votes, userid, safe FROM " + ideaTable);
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note FROM " + userTable);
             db.mSelectAllComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment FROM " + commentTable);
             db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, userid, votes FROM " + votesTable);
@@ -448,7 +448,7 @@ public static class UserVotesData {
     ArrayList<DataRow> selectAllPosts() {
         ArrayList<DataRow> res = new ArrayList<DataRow>();
         try {
-            ResultSet rs = mSelectAll.executeQuery();
+            ResultSet rs = mSelectAllPost.executeQuery();
             while (rs.next()) {
                 DataRow row = new DataRow(rs.getInt("postid"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe"));
                 if(row.mSafePost==0) //safe post

@@ -9,17 +9,12 @@ import java.util.Arrays;
 // Import Google's JSON library
 import com.google.gson.*;
 
-import edu.lehigh.cse216.mlc325.backend.Database.ProfileData;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-
-import java.util.Collections;
-
 
 import java.util.Hashtable;
 //import java.sql.ResultSetMetaData;
@@ -30,20 +25,9 @@ import java.util.Map;
  */
 public class App {
     public static void main(String[] args) {
-        // get the Postgres configuration from the environment
-        // String ip = "jelani.db.elephantsql.com";
-        // String port = "5432";
-        // String user = "vgugbrva";
-        // String pass = "PolzAkACTdEx6tlXKiC9ej9X75hG878B";
         Map<String, String> env = System.getenv();
-        // String ip = env.get("POSTGRES_IP");
-        // String port = env.get("POSTGRES_PORT");
-        // String user = env.get("POSTGRES_USER");
-        // String pass = env.get("POSTGRES_PASS");
-
         String db_url = env.get("DATABASE_URL");
         // String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
-        
 
         //key generated session id, value is google user id
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
@@ -52,17 +36,13 @@ public class App {
         final String CLIENT_ID_2 = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2)).build();
 
-        // Get a fully-configured connection to the database, or exit 
-        // immediately
+        // Get a fully-configured connection to the database, or exit immediately
         Database db = Database.getDatabase(db_url); 
         if (db == null)
             return;
 
-        // gson provides us with a way to turn JSON into objects, and objects
-        // into JSON.
-        //
+        // gson provides us with a way to turn JSON into objects, and objects into JSON.
         // NB: it must be final, so that it can be accessed from our lambdas
-        //
         // NB: Gson is thread-safe.  See 
         // https://stackoverflow.com/questions/10380835/is-it-ok-to-use-gson-instance-as-a-static-field-in-a-model-bean-reuse
         final Gson gson = new Gson();
@@ -136,20 +116,61 @@ public class App {
             }
         });
 
-        // GET route that returns your profile information
+        // GET route that returns someone's profile information
         // The ":id" suffix in the first parameter to get() becomes 
-        // request.params("id"), so that we can get the requested user ID.  If 
-        // ":id" isn't a number, Spark will reply with a status 500 Internal
-        // Server Error.  Otherwise, we have an integer, and the only possible 
-        // error is that it doesn't correspond to a row with data.
+        // request.params("id"), so that we can get the requested user ID.
         Spark.get("/profile/:id", (request, response) -> {
-            int idx = Integer.parseInt(request.params("id"));
+            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
+            if(!usersHT.containsKey(req.mSessionId)){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
+            String id = request.params("id");
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.DataRow data = db.selectOnePost(idx); // TODO change to different datarow
+            Database.ProfileData data = db.selectOneProfile(id);
             if (data == null) {
-                return gson.toJson(new StructuredResponse("error", idx + " not found", null));
+                return gson.toJson(new StructuredResponse("error", id + " not found", null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", null, data));
+            }
+        });
+        
+        // GET route that returns your profile information
+        // The ":id" suffix in the first parameter to get() becomes 
+        // request.params("id"), so that we can get the requested user ID.
+        Spark.get("/profile", (request, response) -> {
+            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
+            String id = usersHT.get(req.mSessionId);
+            if(id==null){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
+            // ensure status 200 OK, with a MIME type of JSON
+            response.status(200);
+            response.type("application/json");
+            Database.ProfileData data = db.selectOneProfile(id);
+            if (data == null) {
+                return gson.toJson(new StructuredResponse("error", id + " not found", null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", null, data));
+            }
+        });
+        
+        // Put route that updates someone's profile information
+        // The ":id" suffix in the first parameter to get() becomes 
+        // request.params("id"), so that we can get the requested user ID.
+        Spark.put("/profile", (request, response) -> {
+            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
+            String id = usersHT.get(req.mSessionId);
+            if(id==null){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
+            // ensure status 200 OK, with a MIME type of JSON
+            response.status(200);
+            response.type("application/json");
+            Database.ProfileData data = db.selectOneProfile(id);
+            if (data == null) {
+                return gson.toJson(new StructuredResponse("error", id + " not found", null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", null, data));
             }
@@ -204,7 +225,7 @@ public class App {
                 // String familyName = (String) payload.get("family_name");
                 // String givenName = (String) payload.get("given_name");
                 if(db.selectOneProfile(userId)==null){
-                    db.insertRowProfile(userId, "Not specified", "not specifed", email, name, " ");
+                    db.insertRowProfile(userId, "Not specified", "not specifed", email, name, ".");
                 }
                 
                 if(!db.safeUser(userId)){
