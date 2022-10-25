@@ -6,10 +6,32 @@ import 'ideaobj.dart';
 
 
 //Post-> sends the id_token to backend
-Future<String> sendToken(String? id_token) async {
+Future<int> sendToken(String? mToken) async {
+  //print('mToken');
+  //print(mToken);
   final response = await http.post(
-    Uri.parse('https://whispering-sands-78580.herokuapp.com/signin/mToken'),
-    body: jsonEncode(<String?, String?>{'token': id_token}),
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/signin'),
+    body: jsonEncode(<String, String?>{'mToken': mToken}),
+  );
+  //developer.log(response.body);
+  
+  //print(response.body);
+  var res = jsonDecode(response.body);
+  /*
+  developer.log('json decode: $res');
+  developer.log('The keys are: ${res.keys}');
+  developer.log('The values are: ${res.values}');
+  print('hi');
+  print(res);
+   print('hi');
+   */
+  //print(res['mData']);
+  return res['mData'];
+}
+Future<String> sendSessionId(String? mSessionId) async {
+  final response = await http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/signin/mSessionId'),
+    body: jsonEncode(<String?, String?>{'mSessionid': mSessionId}),
   );
   var res = jsonDecode(response.body);
   return res['mStatus'];
@@ -64,16 +86,19 @@ Future<String> addnote(String? id_token, String note) async {
 Future<String> addIdea(String title, String message) async {
   final response = await http.post(
     Uri.parse('https://whispering-sands-78580.herokuapp.com/messages'),
-    body: jsonEncode(<String, String>{'mTitle': title, 'mMessage': message}),
+    body: jsonEncode(<String, String>{'mTitle': title, 'mMessage': message }),
   );
   var res = jsonDecode(response.body);
   return res['mMessage'];
 }
 
 // Returns an IdeaObj from GET /messages/:id given its id
-Future<IdeaObj> fetchIdea(int idx) async {
+Future<IdeaObj> fetchIdea(int idx, int sessionId) async {
+  print('this is from the routes');
+  print(sessionId);
   final response = await http.get(
       Uri.parse('https://whispering-sands-78580.herokuapp.com/messages/$idx'));
+      body: jsonEncode(<String, int>{'mSessionId': sessionId });
   var res = jsonDecode(response.body);
   print(res);
   return res['mData'];
@@ -102,10 +127,11 @@ Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
 }
 
 // Perform GET on /ideas route, retrieves JSON response and converts it into a list of Idea Objects
-Future<List<IdeaObj>> fetchIdeas() async {
-  final response = await http
-      .get(Uri.parse('https://whispering-sands-78580.herokuapp.com/messages'));
-
+Future<List<IdeaObj>> fetchIdeas(int SessionId) async {
+  final response = await http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/messages'),
+    body: jsonEncode(<String?, int>{'mSessionId': SessionId}),
+  );
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response, then parse the JSON.
     final List<IdeaObj> returnData;
@@ -116,6 +142,7 @@ Future<List<IdeaObj>> fetchIdeas() async {
     //developer.log('The keys are: ${res.keys}');
     //developer.log('The values are: ${res.values}');
     var ideas = res['mData'];
+    print(ideas);
     if (ideas is List) {
       returnData = ideas.map((x) => IdeaObj.fromJson(x)).toList();
     } else if (ideas is Map) {
@@ -125,7 +152,7 @@ Future<List<IdeaObj>> fetchIdeas() async {
           .log('ERROR: Unexpected json response type (was not a List or Map).');
       returnData = List.empty();
     }
-    //print(res);
+    print(res);
     return returnData;
   } else {
     // If the server did not return a 200 OK response,

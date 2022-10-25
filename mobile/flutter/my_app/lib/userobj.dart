@@ -9,13 +9,15 @@ class UserObj {
 
   final String name;
   final String email;
+  final String sessionId;
 
   
 
   UserObj(
       {required this.name,
       required this.email,
-      required this.username,});
+      required this.username,
+      required this.sessionId});
 
 
 }

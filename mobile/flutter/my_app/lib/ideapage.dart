@@ -9,7 +9,8 @@ import 'package:provider/provider.dart';
 import 'profilepage.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  int session;
+   MyHomePage({super.key, required this.title, required this.session});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -23,10 +24,12 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState(session: session);
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late int session; 
+  _MyHomePageState({required this.session});
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called
@@ -42,21 +45,26 @@ class _MyHomePageState extends State<MyHomePage> {
               // the App.build method, and use it to set our appbar title.
               title: Text(widget.title),
             ),
-            body: const CustomScrollView(
+            body: CustomScrollView(
               // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
               slivers: <Widget>[
                 AddIdeaWidget(),
-                IdeasListWidget(),
+                IdeasListWidget(sessionId: session),
               ],
             )));
   }
 } 
 class TabBarDemo extends StatelessWidget {
   String name, email; 
-   TabBarDemo( {super.key, required this.email, required this.name});
+  int session; 
+   TabBarDemo( {super.key, required this.email, required this.name, required this.session});
 
   @override
   Widget build(BuildContext context) {
+    final schedule = Provider.of<MySchedule>(context);
+    schedule.sessionId = session;
+    print('this is from the tabbardemo');
+    print(session);
     return MaterialApp(
       home: DefaultTabController(
         length: 2,
@@ -72,7 +80,7 @@ class TabBarDemo extends StatelessWidget {
           ),
           body: TabBarView(
             children: [
-              const MyHomePage(title: 'The Buzz Idea Page'),
+              MyHomePage(title: 'The Buzz Idea Page', session: session),
               MyProfilePage(title: 'Profile Page',name: name, email: email),
             ],
           ),
