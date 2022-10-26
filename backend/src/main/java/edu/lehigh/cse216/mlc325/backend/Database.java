@@ -48,7 +48,7 @@ public class Database {
     /**
      * A prepared statement for inserting into the database
      */
-    private PreparedStatement mInsertOne;
+    private PreparedStatement mInsertOnePost;
     private PreparedStatement mInsertOneProfile;
     private PreparedStatement mInsertOneComment;
     private PreparedStatement mInsertOneVote;
@@ -306,7 +306,7 @@ public static class UserVotesData {
                 "CREATE TABLE " + userTable + " (userid VARCHAR(128), SO VARCHAR(128) "
                 + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL, safeP INT NOT NULL)");
             db.mCreateCommentTable = db.mConnection.prepareStatement(
-                "CREATE TABLE " + commentTable + " (commentid SERIAL PRIMARY KEY, userid INT "
+                "CREATE TABLE " + commentTable + " (commentid SERIAL PRIMARY KEY, userid VARCHAR(128) "
                 + "NOT NULL, postid INT NOT NULL, comment VARCHAR(1024) NOT NULL)");
             db.mCreateVotesTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + votesTable + " (postid INT NOT NULL userid VARCHAR(1024) "
@@ -318,7 +318,7 @@ public static class UserVotesData {
             db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM " + commentTable + " WHERE commentid = ?");
             db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM " + votesTable + " WHERE postid = ? AND WHERE userid=?");
 
-            db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0)");
+            db.mInsertOnePost = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0)");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (?, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?)");
             db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
@@ -387,10 +387,31 @@ public static class UserVotesData {
     int insertIdeaRow(String title, String message, String userid) {
         int count = 0;
         try {
-            mInsertOne.setString(1, title);
-            mInsertOne.setString(2, message);
-            mInsertOne.setString(3, userid);
-            count += mInsertOne.executeUpdate();
+            mInsertOnePost.setString(1, title);
+            mInsertOnePost.setString(2, message);
+            mInsertOnePost.setString(3, userid);
+            count += mInsertOnePost.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    /**
+     * Insert a comment into the database
+     * 
+     * @param title The title for this new row
+     * @param message The message for this new row
+     * 
+     * @return The number of rows that were inserted
+     */
+    int insertCommentRow(String userId, int postId, String comment) {
+        int count = 0;
+        try {
+            mInsertOnePost.setString(1, userId);
+            mInsertOnePost.setInt(2, postId);
+            mInsertOnePost.setString(3, comment);
+            count += mInsertOneComment.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

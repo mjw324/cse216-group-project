@@ -12,4 +12,6 @@ public class ProfileRequest {
 
     public String mNote;
 
+    public int mSessionId;
+
 }

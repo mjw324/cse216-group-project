@@ -99,7 +99,7 @@ public class App {
         // ":id" isn't a number, Spark will reply with a status 500 Internal
         // Server Error.  Otherwise, we have an integer, and the only possible 
         // error is that it doesn't correspond to a row with data.
-        Spark.get("/messages/:id", (request, response) -> {
+        Spark.get("/messages/:id", (request, response) -> { //TODO modifiy to return comments or make new route??
             int idx = Integer.parseInt(request.params("id"));
             SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
             if(!usersHT.containsKey(req.mSessionId)){
@@ -132,13 +132,12 @@ public class App {
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", id + " not found", null));
             } else {
+                data.mGI = data.mSO = ""; //delete hidden data
                 return gson.toJson(new StructuredResponse("ok", null, data));
             }
         });
         
         // GET route that returns your profile information
-        // The ":id" suffix in the first parameter to get() becomes 
-        // request.params("id"), so that we can get the requested user ID.
         Spark.get("/profile", (request, response) -> {
             SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
             String id = usersHT.get(req.mSessionId);
@@ -156,23 +155,21 @@ public class App {
             }
         });
         
-        // Put route that updates someone's profile information
-        // The ":id" suffix in the first parameter to get() becomes 
-        // request.params("id"), so that we can get the requested user ID.
+        // Put route that updates someone's own profile information
         Spark.put("/profile", (request, response) -> {
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
+            ProfileRequest req = gson.fromJson(request.body(), ProfileRequest.class);
             String id = usersHT.get(req.mSessionId);
             if(id==null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
-            // ensure status 200 OK, with a MIME type of JSON
+            //ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.ProfileData data = db.selectOneProfile(id);
-            if (data == null) {
+            int result = db.updateOneProfile(id, req.mGI, req.mSO, req.mUsername, req.mNote);
+            if (result<0) {
                 return gson.toJson(new StructuredResponse("error", id + " not found", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", null, data));
+                return gson.toJson(new StructuredResponse("ok", null, result));
             }
         });
 
@@ -184,7 +181,8 @@ public class App {
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             IdeaRequest req = gson.fromJson(request.body(), IdeaRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
+            String userId = usersHT.get(req.mSessionId);
+            if(userId==null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
@@ -193,12 +191,12 @@ public class App {
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int newId = db.insertIdeaRow(req.mTitle, req.mMessage, usersHT.get(req.mSessionId));
+            int result = db.insertIdeaRow(req.mTitle, req.mMessage, userId);
             //System.out.println(newId);
-            if (newId == -1) {
+            if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", "" + newId, null));
+                return gson.toJson(new StructuredResponse("ok", "" + result, null));
             }
         });
         
@@ -215,7 +213,7 @@ public class App {
                 
                 //User identifier
                 String userId = payload.getSubject();
-
+                
                 // Get profile information from payload
                 String email = payload.getEmail();
                 //boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
@@ -225,18 +223,18 @@ public class App {
                 // String familyName = (String) payload.get("family_name");
                 // String givenName = (String) payload.get("given_name");
                 if(db.selectOneProfile(userId)==null){
-                    db.insertRowProfile(userId, "Not specified", "not specifed", email, name, ".");
+                    db.insertRowProfile(userId, "Not specified", "not specifed", email, name, "");
                 }
                 
                 if(!db.safeUser(userId)){
                     // if(db.selectOneProfile(userId)==null){
-                    //     return gson.toJson(new StructuredResponse("error", "Could not find userid: " + userId, null));
-                    // }
-                    return gson.toJson(new StructuredResponse("error", "User blocked by administrator", null));
-                }
-
-                Integer userSession = (int)(Math.random()*Integer.MAX_VALUE);
-                while(usersHT.containsKey(userSession)){ //make sure session ID is unique
+                        //     return gson.toJson(new StructuredResponse("error", "Could not find userid: " + userId, null));
+                        // }
+                        return gson.toJson(new StructuredResponse("error", "User blocked by administrator", null));
+                    }
+                    
+                    Integer userSession = (int)(Math.random()*Integer.MAX_VALUE);
+                    while(usersHT.containsKey(userSession)){ //make sure session ID is unique
                     userSession = (int)(Math.random()*Integer.MAX_VALUE);
                 }
                 usersHT.put(userSession, userId);
@@ -244,6 +242,54 @@ public class App {
                 return gson.toJson(new StructuredResponse("ok", "Signed in " + name, (Object)userSession));
             } else {
                 return gson.toJson(new StructuredResponse("error", "user could not be verified", null));
+            }
+        });
+        
+        // POST route for adding a new comment to the database.
+        Spark.post("/comment/:id", (request, response) -> {
+            int postId = Integer.parseInt(request.params("id"));
+            // NB: if gson.Json fails, Spark will reply with status 500 Internal 
+            // Server Error
+            CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
+            String userId = usersHT.get(req.mSessionId);
+            if(userId==null){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
+            // ensure status 200 OK, with a MIME type of JSON
+            // NB: even on error, we return 200, but with a JSON object that
+            //     describes the error.
+            response.status(200);
+            response.type("application/json");
+            int result = db.insertCommentRow(userId, postId, req.mCommment);
+            //System.out.println(newId);
+            if (result == -1) {
+                return gson.toJson(new StructuredResponse("error", "error inserting comment", null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", "" + result, null));
+            }
+        });
+
+        // PUT route for modifying a comment from its comment id
+        Spark.put("/comment/:id", (request, response) -> {
+            int postId = Integer.parseInt(request.params("id"));
+            // NB: if gson.Json fails, Spark will reply with status 500 Internal 
+            // Server Error
+            CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
+            String userId = usersHT.get(req.mSessionId);
+            if(userId==null){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
+            // ensure status 200 OK, with a MIME type of JSON
+            // NB: even on error, we return 200, but with a JSON object that
+            //     describes the error.
+            response.status(200);
+            response.type("application/json");
+            int result = db.updateOneComment(req.mCommentId, req.mCommment);
+            //System.out.println(newId);
+            if (result == -1) {
+                return gson.toJson(new StructuredResponse("error", "error updating comment: " + req.mCommentId, null));
+            } else {
+                return gson.toJson(new StructuredResponse("ok", "" + result, null));
             }
         });
 
