@@ -92,7 +92,12 @@ public class Database {
  * not bother with having getters and setters... instead, we will allow code to
  * interact with the fields directly.
  */
-public static class DataRow {
+
+public static abstract class DataRow{
+
+}
+
+public static class PostData extends DataRow{
     /**
      * The unique identifier associated with this element.  It's final, because
      * we never want to change it.
@@ -110,12 +115,6 @@ public static class DataRow {
     public String mMessage;
 
     /**
-     * The creation date for this row of data.  Once it is set, it cannot be 
-     * changed
-     */
-    public final Date mCreated;
-
-    /**
      * The sum of votes for the idea
      */
     public int mVotes;
@@ -127,7 +126,7 @@ public static class DataRow {
      * creation date based on the system clock at the time the constructor was
      * called
      * 
-     * @param id The id to associate with this row.  Assumed to be unique 
+     * @param postId The id to associate with this row.  Assumed to be unique 
      *           throughout the whole program.
      * 
      * @param title The title string for this row of data
@@ -136,20 +135,19 @@ public static class DataRow {
      * 
      * @param votes The number of votes for this row of data
      */
-    DataRow(int id, String title, String message, int votes, String Userid, int safePost) {
-        mId = id;
+    PostData(int postId, String title, String message, int votes, String userId, int safePost) {
+        mId = postId;
         mTitle = title;
         mMessage = message;
         mVotes=votes;
-        mUserId = Userid;
+        mUserId = userId;
         mSafePost = safePost;
-        mCreated = new Date();
     }
 
     /**
      * Copy constructor to create one datarow from another
      */
-    DataRow(DataRow data) {
+    PostData(PostData data) {
         mId = data.mId;
         // NB: Strings and Dates are immutable, so copy-by-reference is safe
         mTitle = data.mTitle;
@@ -157,11 +155,10 @@ public static class DataRow {
         mVotes = data.mVotes;
         mUserId = data.mUserId;
         mSafePost = data.mSafePost;
-        mCreated = data.mCreated;
     }
 }
 
-public static class ProfileData {
+public static class ProfileData extends DataRow{
     public final String mId;
     public String mSO;
     public String mGI;
@@ -169,7 +166,6 @@ public static class ProfileData {
     public String mUsername;
     public String mNote;
     public int mSafeUser;
-    public final Date mCreated;
 
     ProfileData(String id, String SO, String GI, String email, String username, String note, int safeUser) {
         mId = id;
@@ -179,7 +175,6 @@ public static class ProfileData {
         mUsername = username;
         mNote = note;
         mSafeUser = safeUser;
-        mCreated = new Date();
     }
 
     ProfileData(ProfileData data) {
@@ -190,11 +185,10 @@ public static class ProfileData {
         mUsername = data.mUsername;
         mNote = data.mNote;
         mSafeUser = data.mSafeUser;
-        mCreated = data.mCreated;
     }
 }
 
-public static class CommentData {
+public static class CommentData extends DataRow{
     public final int mPostId;
     public int mCommentId;
     public String mUserId;
@@ -218,7 +212,7 @@ public static class CommentData {
     }
 }
 
-public static class UserVotesData {
+public static class UserVotesData extends DataRow{
     public final int mPostId;
     public String mUserId;
     public int mVotes;
@@ -466,12 +460,12 @@ public static class UserVotesData {
      * 
      * @return All rows, as an ArrayList
      */
-    ArrayList<DataRow> selectAllPosts() {
-        ArrayList<DataRow> res = new ArrayList<DataRow>();
+    ArrayList<PostData> selectAllPosts() {
+        ArrayList<PostData> res = new ArrayList<PostData>();
         try {
             ResultSet rs = mSelectAllPost.executeQuery();
             while (rs.next()) {
-                DataRow row = new DataRow(rs.getInt("postid"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe"));
+                PostData row = new PostData(rs.getInt("postid"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"),rs.getInt("safe"));
                 if(row.mSafePost==0) //safe post
                     res.add(row);
             }
@@ -532,9 +526,10 @@ public static class UserVotesData {
         }
     }
     
-    ArrayList<CommentData> selectPostComments() {
+    ArrayList<CommentData> selectPostComments(int postId) {
         ArrayList<CommentData> res = new ArrayList<CommentData>();
         try {
+            mSelectPostComments.setInt(1, postId);
             ResultSet rs = mSelectPostComments.executeQuery();
             while (rs.next()) {
                 CommentData comment = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"));
@@ -556,13 +551,13 @@ public static class UserVotesData {
      * 
      * @return The data for the requested row, or null if the ID was invalid
      */
-    DataRow selectOnePost(int id) {
-        DataRow res = null;
+    PostData selectOnePost(int id) {
+        PostData res = null;
         try {
             mSelectOnePost.setInt(1, id);
             ResultSet rs = mSelectOnePost.executeQuery();
             if (rs.next()) {
-                res = new DataRow(rs.getInt("postid"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"),rs.getInt("safe"));
+                res = new PostData(rs.getInt("postid"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"),rs.getInt("safe"));
                 if (res.mSafePost != 0){ //unsafe post
                     return null;
                 }

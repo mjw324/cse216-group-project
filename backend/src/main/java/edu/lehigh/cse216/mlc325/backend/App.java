@@ -4,6 +4,7 @@ package edu.lehigh.cse216.mlc325.backend;
 // create an HTTP GET route
 import spark.Spark;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 // Import Google's JSON library
@@ -90,7 +91,11 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            return gson.toJson(new StructuredResponse("ok", null, db.selectAllPosts()));
+            ArrayList<Database.PostData> posts = db.selectAllPosts();
+            if(posts==null){
+                return gson.toJson(new StructuredResponse("error", "no posts selected", null));
+            }
+            return gson.toJson(new StructuredResponse("ok", null, posts));
         });
 
         // GET route that returns everything for a single row in the database.
@@ -99,7 +104,7 @@ public class App {
         // ":id" isn't a number, Spark will reply with a status 500 Internal
         // Server Error.  Otherwise, we have an integer, and the only possible 
         // error is that it doesn't correspond to a row with data.
-        Spark.get("/messages/:id", (request, response) -> { //TODO modifiy to return comments or make new route??
+        Spark.get("/messages/:id", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
             SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
             if(!usersHT.containsKey(req.mSessionId)){
@@ -108,12 +113,30 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.DataRow data = db.selectOnePost(idx);
+            Database.PostData data = db.selectOnePost(idx);
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", null, data));
             }
+        });
+
+        //get all comments and single post from post id
+        Spark.get("/comments/:id", (request, response) -> {
+            int idx = Integer.parseInt(request.params("id"));
+            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
+            if(!usersHT.containsKey(req.mSessionId)){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
+            // ensure status 200 OK, with a MIME type of JSON
+            response.status(200);
+            response.type("application/json");
+            ArrayList<Database.DataRow> output = new ArrayList<>();
+            Database.PostData post = db.selectOnePost(idx);
+            output.add(post);
+            ArrayList<Database.CommentData> comments = db.selectPostComments(idx);
+            output.addAll(comments);
+            return gson.toJson(new StructuredResponse("ok", null, output));
         });
 
         // GET route that returns someone's profile information
