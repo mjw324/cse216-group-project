@@ -56,6 +56,7 @@ public class Database {
     private PreparedStatement mUpdateOne;
     private PreparedStatement mUpdateOneProfile;
     private PreparedStatement mUpdateOneComment;
+    private PreparedStatement mUpdateOneVotes;
 
     /**
      * A prepared statement for upvoting a single row in the database
@@ -205,7 +206,7 @@ public static class CommentData {
     public String mComment;
     public final Date mCreated;
 
-    CommentData( int commentId, int postId, int userId, String comment) {
+    CommentData(int commentId, int postId, int userId, String comment) {
         mCommentId = commentId;
         mPostId = postId;
         mUserId = userId;
@@ -342,6 +343,7 @@ public static class UserVotesData {
             db.mUpdateOne = db.mConnection.prepareStatement("UPDATE ideasTable SET message = ?, votes = ?, safe = ? WHERE postid = ?");
             db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE profileTable SET SO = ?, GI = ?, email = ?, username = ?, note = ?, safeP = ? WHERE userid = ?");
             db.mUpdateOneComment = db.mConnection.prepareStatement("UPDATE commentTable SET comment = ? WHERE commentid = ?");
+            db.mUpdateOneVotes = db.mConnection.prepareStatement("UPDATE votesTable SET userid = ?, votes = ? WHERE postid = ?");
 
             db.mLikeOne = db.mConnection.prepareStatement("UPDATE ideasTable SET votes = votes + 1 WHERE postid = ?");
             db.mDislikeOne = db.mConnection.prepareStatement("UPDATE ideasTable SET votes = votes - 1 WHERE postid = ?");
@@ -421,11 +423,11 @@ public static class UserVotesData {
     int insertRowComment(int postid, int commentid, int userid, String comment) {
         int count = 0;
         try {
-            mInsertOneProfile.setInt(1, postid);
-            mInsertOneProfile.setInt(2, commentid);
-            mInsertOneProfile.setInt(3, userid);
-            mInsertOneProfile.setString(4, comment);
-            count += mInsertOneProfile.executeUpdate();
+            mInsertOneComment.setInt(1, postid);
+            mInsertOneComment.setInt(2, commentid);
+            mInsertOneComment.setInt(3, userid);
+            mInsertOneComment.setString(4, comment);
+            count += mInsertOneComment.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -578,10 +580,10 @@ public static class UserVotesData {
         return res;
     }
 
-    int deleteRowProfile(int id) {
+    int deleteRowProfile(String id) {
         int res = -1;
         try {
-            mDeleteOneProfile.setInt(1, id);
+            mDeleteOneProfile.setString(1, id);
             res = mDeleteOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -644,6 +646,31 @@ public static class UserVotesData {
             mUpdateOneProfile.setString(4, username);
             mUpdateOneProfile.setString(5, note);
             res = mUpdateOneProfile.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int updateOneComment(int id, int postId, int userId, String comment) {
+        int res = -1;
+        try {
+            mUpdateOneComment.setString(1, comment);
+            mUpdateOneComment.setInt(2, id);
+            res = mUpdateOneComment.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int updateOneVotes(int postId, int userId, int votes) {
+        int res = -1;
+        try {
+            mUpdateOneVotes.setInt(1, userId);
+            mUpdateOneVotes.setInt(2, votes);
+            mUpdateOneVotes.setInt(3, postId);
+            res = mUpdateOneVotes.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
