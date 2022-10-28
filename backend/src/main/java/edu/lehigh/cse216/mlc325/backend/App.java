@@ -84,9 +84,14 @@ public class App {
         // return it.  If there's no data, we return "[]", so there's no need 
         // for error handling.
         Spark.get("/messages", (request, response) -> {
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
-                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            int sesId;
+            try {
+                sesId = Integer.parseInt(request.headers("Session-ID"));
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
+            }
+            if(!usersHT.containsKey(sesId)){
+                return gson.toJson(new StructuredResponse("error", "invalid user session: " + sesId, null));
             }
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
@@ -106,8 +111,13 @@ public class App {
         // error is that it doesn't correspond to a row with data.
         Spark.get("/messages/:id", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
+            int sesId;
+            try {
+                sesId = Integer.parseInt(request.headers("Session-ID"));
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
+            }
+            if(!usersHT.containsKey(sesId)){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
@@ -124,8 +134,13 @@ public class App {
         //get all comments and single post from post id
         Spark.get("/comments/:id", (request, response) -> {
             int idx = Integer.parseInt(request.params("id"));
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
+            int sesId;
+            try {
+                sesId = Integer.parseInt(request.headers("Session-ID"));
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
+            }
+            if(!usersHT.containsKey(sesId)){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
@@ -143,8 +158,13 @@ public class App {
         // The ":id" suffix in the first parameter to get() becomes 
         // request.params("id"), so that we can get the requested user ID.
         Spark.get("/profile/:id", (request, response) -> {
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
+            int sesId;
+            try {
+                sesId = Integer.parseInt(request.headers("Session-ID"));
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
+            }
+            if(!usersHT.containsKey(sesId)){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             String id = request.params("id");
@@ -162,8 +182,13 @@ public class App {
         
         // GET route that returns your profile information
         Spark.get("/profile", (request, response) -> {
-            SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            String id = usersHT.get(req.mSessionId);
+            int sesId;
+            try {
+                sesId = Integer.parseInt(request.headers("Session-ID"));
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
+            }
+            String id = usersHT.get(sesId);
             if(id==null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
@@ -219,7 +244,7 @@ public class App {
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", "" + result, null));
+                return gson.toJson(new StructuredResponse("ok", "" + result, userId));
             }
         });
         
@@ -262,7 +287,7 @@ public class App {
                 }
                 usersHT.put(userSession, userId);
                 
-                return gson.toJson(new StructuredResponse("ok", "Signed in " + name, (Object)userSession));
+                return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
             } else {
                 return gson.toJson(new StructuredResponse("error", "user could not be verified", null));
             }
