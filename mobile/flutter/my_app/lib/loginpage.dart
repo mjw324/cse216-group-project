@@ -131,6 +131,7 @@ class SignInState extends State<SignIn> {
           child: const Text('The Buzz Homepage'),
           onPressed: () {
             print('this is from the elevated button');
+           routes.sessionId = schedule.sessionId; 
             print(schedule.sessionId);
             Navigator.of(context).push(
               MaterialPageRoute(

@@ -1,13 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:my_app/userobj.dart';
 import 'ideaobj.dart';
+import 'commentobj.dart';
+import 'routes.dart';
+import 'profileobj.dart';
 
 // Resource for schedule functionality:
 // https://brewyourtech.com/complete-guide-to-changenotifier-in-flutter/
 class MySchedule with ChangeNotifier {
   List<IdeaObj> _ideas = <IdeaObj>[];
-  int sessionId = 1;
+  List<CommentObj> _comment = <CommentObj>[];
+  List<ProfileObj> _profile = <ProfileObj>[];
+  int sessionId = routes.sessionId;
   List<IdeaObj> get ideas => _ideas;
+  List<CommentObj> get comment => _comment;
+  List<ProfileObj> get profile => _profile;
   IdeaObj getIdea(int idx) {
     for (var idea in _ideas) {
       if (idea.id == idx) {
@@ -22,6 +29,9 @@ class MySchedule with ChangeNotifier {
     _ideas.add(idea);
   }
 
+  void addComment(CommentObj comment){
+    _comment.add(comment);
+  }
   // Used when addIdeaWidget submits idea, updates state
   set submitIdea(IdeaObj idea) {
     _ideas.add(idea);
@@ -42,4 +52,11 @@ class MySchedule with ChangeNotifier {
   set ideasList(List<IdeaObj> list) {
     _ideas = list;
   }
+  set commentList(List<CommentObj> comment){
+    _comment = comment;
+  }
+  set profileList(List<ProfileObj> profile){
+    _profile = profile;
+  }
+
 }

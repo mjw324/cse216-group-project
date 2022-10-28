@@ -13,20 +13,22 @@ void main() {
     int votes = 50;
     String createdAt = "Nov 30, 2022, 5:19:48 PM";
     int userVotes = 1;
+    String userId = '1234';
     // Act
     IdeaObj idea = IdeaObj(
         id: id,
         title: title,
         message: message,
         votes: votes,
-        createdAt: createdAt,
+        //createdAt: createdAt,
+        userId: userId,
         userVotes: userVotes);
     // Assert
     expect(idea.id, id);
     expect(idea.title, title);
     expect(idea.message, message);
     expect(idea.votes, votes);
-    expect(idea.createdAt, createdAt);
+    //expect(idea.createdAt, createdAt);
     expect(idea.userVotes, userVotes);
   });
 }

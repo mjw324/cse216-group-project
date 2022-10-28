@@ -22,15 +22,15 @@ class _AddProfileWidget extends State<AddProfileWidget> {
   final _siController = TextEditingController();
   final _goController = TextEditingController();
   final _noteController = TextEditingController();
-  
+  String SI = 'Sexual Identity';
+  String GO = 'Gender Orientation';
+  String note = 'Note';
 
   @override
   Widget build(BuildContext context) {
     String username = name;
     String email = userEmail;
-    String SI = '';
-    String GO = '';
-    String note = '';
+    
     // Instantiate schedule using Provider.of, this is so we can access methods from schedule
     final schedule = Provider.of<MySchedule>(context);
     return SliverToBoxAdapter(
@@ -46,25 +46,25 @@ class _AddProfileWidget extends State<AddProfileWidget> {
         ),
         TextField(
           controller: _siController,
-          decoration: const InputDecoration(
-            hintText: 'Sexual Identity',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: SI,
+            border: const OutlineInputBorder(),
           ),
           maxLength: 128, // max amount of characters accepted is 128
         ),
         TextField(
           controller: _goController,
-          decoration: const InputDecoration(
-            hintText: 'Gender Orientation',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: GO,
+            border: const OutlineInputBorder(),
           ),
           maxLength: 128, // max amount of characters accepted is 128
         ),
         TextField(
           controller: _noteController,
-          decoration: const InputDecoration(
-            hintText: 'Note',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: note,
+            border: const OutlineInputBorder(),
           ),
           maxLength: 1024, // max amount of characters accepted is 128
         ),
@@ -76,6 +76,7 @@ class _AddProfileWidget extends State<AddProfileWidget> {
               if (_goController.text != '' && _siController.text != '') {
                 GO = _goController.text;
                 SI = _siController.text;
+                note = _noteController.text;
                 // Currently this string cant be used because it always returns 1. Backend needs to return id of newIdea
                 
               }
