@@ -202,11 +202,11 @@ public static class ProfileData {
 public static class CommentData {
     public final int mCommentId;
     public int mPostId;
-    public int mUserId;
+    public String mUserId;
     public String mComment;
     public final Date mCreated;
 
-    CommentData(int commentId, int postId, int userId, String comment) {
+    CommentData(int commentId, int postId, String userId, String comment) {
         mCommentId = commentId;
         mPostId = postId;
         mUserId = userId;
@@ -309,7 +309,7 @@ public static class UserVotesData {
                 "CREATE TABLE profileTable (userid VARCHAR(128), SO VARCHAR(128) "
                 + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL, safeP INT NOT NULL)");
             db.mCreateCommentTable = db.mConnection.prepareStatement(
-                "CREATE TABLE commentTable (commentid SERIAL PRIMARY KEY, userid INT "
+                "CREATE TABLE commentTable (commentid SERIAL PRIMARY KEY, userid VARCHAR(128) "
                 + "NOT NULL, postid INT NOT NULL, comment VARCHAR(1024) NOT NULL)");
             db.mCreateVotesTable = db.mConnection.prepareStatement(
                 "CREATE TABLE votesTable (postid INT NOT NULL, userid INT "
@@ -474,7 +474,7 @@ public static class UserVotesData {
         try {
             ResultSet rs = mSelectAllComment.executeQuery();
             while (rs.next()) {
-                res.add(new CommentData(rs.getInt("commentid"), rs.getInt("userid"), rs.getInt("postid"), rs.getString("comment")));
+                res.add(new CommentData(rs.getInt("commentid"), rs.getInt("postid"), rs.getString("userid"), rs.getString("comment")));
             }
             rs.close();
             return res;
@@ -540,7 +540,7 @@ public static class UserVotesData {
             mSelectOneComment.setInt(1, id);
             ResultSet rs = mSelectOneComment.executeQuery();
             if (rs.next()) {
-                res = new CommentData(rs.getInt("commentid"), rs.getInt("userid"), rs.getInt("postid"), rs.getString("comment"));
+                res = new CommentData(rs.getInt("commentid"), rs.getInt("postid"), rs.getString("userid"), rs.getString("comment"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
