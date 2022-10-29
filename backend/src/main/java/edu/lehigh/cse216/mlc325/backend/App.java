@@ -133,7 +133,12 @@ public class App {
 
         //get all comments and single post from post id
         Spark.get("/comments/:id", (request, response) -> {
-            int idx = Integer.parseInt(request.params("id"));
+            int idx;
+            try {
+                idx = Integer.parseInt(request.params("id"));
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "could not parse int from route", null));
+            }
             int sesId;
             try {
                 sesId = Integer.parseInt(request.headers("Session-ID"));
@@ -147,10 +152,26 @@ public class App {
             response.status(200);
             response.type("application/json");
             ArrayList<Database.DataRow> output = new ArrayList<>();
-            Database.PostData post = db.selectOnePost(idx);
-            output.add(post);
-            ArrayList<Database.CommentData> comments = db.selectPostComments(idx);
-            output.addAll(comments);
+            try {
+                Database.PostData post = db.selectOnePost(idx);
+                output.add(post);
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "error adding post", db.selectOnePost(idx)));
+            }
+            ArrayList<Database.CommentData> comments;
+            try {
+                comments = db.selectPostComments(idx);
+                
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "error selecting comments", null));
+            }
+            try {
+                for (Database.CommentData com : comments) {
+                    output.add((Database.DataRow)com);
+                }
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "error adding comments to list", null));
+            }
             return gson.toJson(new StructuredResponse("ok", null, output));
         });
 
