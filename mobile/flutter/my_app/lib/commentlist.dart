@@ -6,21 +6,24 @@ import 'routes.dart'; // is this necessary?
 import 'package:provider/provider.dart';
 import 'schedule.dart';
 import 'commentlist.dart';
+import 'addcomment.dart';
 
 class CommentListWidget extends StatefulWidget {
-  String userId = routes.user_id; 
-  CommentListWidget({Key? key, required this.userId}) : super(key: key);
+  int id; 
+  CommentListWidget({Key? key, required this.id}) : super(key: key);
 
   @override
-  State<CommentListWidget> createState() => _CommentListWidgetState(user_id: userId);
+  State<CommentListWidget> createState() => _CommentListWidgetState(id: id);
 }
 
 class _CommentListWidgetState extends State<CommentListWidget> {
 
   late Future<List<CommentObj>> _listComments;
-  late String user_id;
-  _CommentListWidgetState({required this.user_id}); 
+  int id;
+  _CommentListWidgetState({required this.id}); 
   final _biggerFont = const TextStyle(fontSize: 16);
+  final _commentController = TextEditingController();
+  String nComment = '';
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +53,23 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                             comment.comment,
                             style: _biggerFont,
                           ),
+                          trailing: 
+                                ElevatedButton(
+                                child:const Icon(Icons.edit, size: 30, color: Colors.white),
+                                onPressed: () => showDialog<String>(
+                              context: context, 
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Edit Comment'),
+                                content: EditCommentWidget( id: id,commentId: comment.commentId),
+                                actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                              ),
+                            ),
+                                ),
                           ),
                       const Divider(height: 1.0),
                     ],
@@ -60,7 +80,7 @@ class _CommentListWidgetState extends State<CommentListWidget> {
     } else {
       return Consumer<MySchedule>(
           builder: (context, schedule, _) => FutureBuilder<List<CommentObj>>(
-              future: _listComments= routes.fetchComments(),
+              future: _listComments= routes.fetchComments(id),
               builder: ((BuildContext context,
                   AsyncSnapshot<List<CommentObj>> snapshot) {
                 Widget child;

@@ -80,6 +80,7 @@ class SignInState extends State<SignIn> {
               print(_googleSignIn.currentUser!.displayName);
               print(googleKey.idToken);
               //final schedule = Provider.of<MySchedule>(context,listen: true);
+              print('this is before send token');
               sessionId = sendToken(googleAuth.idToken);
               //int actualsessionId;
               //print(addIdea('title', 'message'));
@@ -109,7 +110,8 @@ class SignInState extends State<SignIn> {
     final GoogleSignInAccount? user = _currentUser;
     if (user != null) {
       String e = user.email;
-      String username= e.substring(0, e.indexOf('@'));
+      String? name = user.displayName;
+      String username= e.substring(0, e.indexOf('@')) + " and Name: " + name!;
       //sendToken(user._idToken);
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

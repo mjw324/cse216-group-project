@@ -94,7 +94,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                             {
                               // Will remove downvote if already downvoted
                               widget.liked == 0,
-                              voteIdea(widget.idx, true, 1),
+                              voteIdea(widget.idx, true, 0),
                               schedule.setVotes(widget.idx, 1,widget.liked),
                             }
                           else

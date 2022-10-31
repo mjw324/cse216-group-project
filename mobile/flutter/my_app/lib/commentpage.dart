@@ -4,25 +4,25 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 // Provides functions which use REST calls and interprets responses
 import 'routes.dart';
-import 'commentadd.dart';
 import 'commentlist.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
 import 'profilepage.dart';
+import 'addcomment.dart';
 
 class MyCommentPage extends StatefulWidget{
   final String title;
-  int session; 
-  MyCommentPage({super.key, required this.title, required this.session});
+  int id; 
+  MyCommentPage({super.key, required this.title, required this.id});
 
   @override 
-  State<MyCommentPage> createState() => _MyCommentPage(session: session);
+  State<MyCommentPage> createState() => _MyCommentPage(id: id);
 
 }
 
 class _MyCommentPage extends State<MyCommentPage>{
-  int session; 
-  _MyCommentPage({required this.session});
+  int id; 
+  _MyCommentPage({required this.id});
 
   @override 
    Widget build(BuildContext context) {
@@ -33,8 +33,8 @@ class _MyCommentPage extends State<MyCommentPage>{
         ),
         body:CustomScrollView(
           slivers: <Widget>[
-            //commentadd(),
-            CommentListWidget(userId: session.toString())
+            AddCommentWidget(id: id),
+            CommentListWidget(id: id)
 
           ]
 

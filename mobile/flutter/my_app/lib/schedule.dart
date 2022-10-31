@@ -37,12 +37,26 @@ class MySchedule with ChangeNotifier {
     _ideas.add(idea);
     notifyListeners();
   }
+
+  set submitComment(CommentObj comment){
+    _comment.add(comment);
+    notifyListeners();
+  }
+
+  set editComment(CommentObj commentId){
+    _comment.add(commentId);
+    _comment.clear();
+    notifyListeners();
+  }
   void setVotes(int idx, int voteChange, int userVote) {
     for (var idea in _ideas) {
       if (idea.id == idx) {
         idea.votes += voteChange;
         // voteChange can't be equal to userVotes. Ex: voteChange is -2 from selecting upvote to downvote, but userVotes is -1 (downvote)
         idea.userVotes = userVote;
+        if(idea.votes < 0){
+          idea.votes = 0;
+        }
       }
     }
     notifyListeners(); // notify has all widgets who consume the schedule update their state

@@ -5,13 +5,13 @@ class CommentObj {
   final int postId;
   
   //the commentId
-  final String commentId;
+  final int commentId;
 
   // The String representation of the user id
   final String userId;
 
   // The String representation of the idea message
-  final String comment;
+   String comment;
  
 
 
@@ -27,7 +27,7 @@ class CommentObj {
     // Map's String dynamic pair is the JSON key value pair
     return CommentObj(
       // Format - value = json['key']
-      postId: json['mId'],
+      postId: json['mPostId'],
       commentId: json['mCommentId'],
       userId: json['mUserId'],
       comment: json['mComment'],

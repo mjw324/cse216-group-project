@@ -65,7 +65,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                         trailing: ElevatedButton(
                           child:const Icon(Icons.comment, size: 30, color: Colors.white),
                           onPressed: (){
-                            Navigator.of(context).push( MaterialPageRoute(builder: (context) => MyCommentPage(title: 'Comment Page', session: session) ));
+                            Navigator.of(context).push( MaterialPageRoute(builder: (context) => MyCommentPage(title: 'Comment Page', id: idea.id) ));
                           },
                           ),
                          
@@ -86,7 +86,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                               context: context, 
                               builder: (BuildContext context) => AlertDialog(
                                 title: const Text('Profile Information'),
-                                content: const Text('Profile Information'),
+                                content: Text('Name: '+ ideasList.fetchProfile(idea.userId)[0] + '    Email:' + ideasList.fetchProfile(idea.userId)[1]),
                                 actions: <Widget>[
                                 TextButton(
                                   onPressed: () => Navigator.pop(context, 'OK'),
@@ -129,7 +129,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                                 ElevatedButton(
                                 child:const Icon(Icons.comment, size: 30, color: Colors.white),
                                 onPressed: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>CommentListWidget(userId: routes.user_id) ));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>MyCommentPage(title: 'Comment Page', id: idea.id) ));
                                 },
                                 ),
                               leading: VoteButtonWidget(
@@ -143,7 +143,8 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                                   context: context, 
                                   builder: (BuildContext context) => AlertDialog(
                                     title: const Text('Profile Information'),
-                                    content: Text(ideasList.fetchProfile(idea.userId).toString()),
+                                    content: Text(
+                                      'Name: '+ ideasList.fetchProfile(idea.userId)[0] + '     Email:' + ideasList.fetchProfile(idea.userId)[1]),
                                     actions: <Widget>[
                                     TextButton(
                                       onPressed: () => Navigator.pop(context, 'OK'),
@@ -179,16 +180,14 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
 }
 
 class ideasList{
-  static List<ProfileObj> fetchProfile(String userId){
+  static  List fetchProfile(String userId)  {
     Future<List<ProfileObj>> prof; 
-    List<ProfileObj> profile = []; 
-    prof = routes.fetchProfileInfo(userId);
-    print(prof);
-    prof.then((value) => {profile.add(value.first)});
     
-    print(profile.length);
+
+    prof = routes.fetchProfileInfo(userId);
+    List list = [routes.name, routes.email, routes.note];
     //ProfileObj userProfile = profile[profile.length];
-    return profile;
+    return list;
   }
 }
 /*

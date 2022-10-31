@@ -7,9 +7,12 @@ import 'ideaobj.dart';
 import 'profileobj.dart';
 
 class routes{
-  static int sessionId = 0;
+  static int sessionId = 1;
   static String user_id = ""; 
   static http.Client client = http.Client();
+  static String email = "";
+  static String name = "";
+  static String note = "";
   static Future<dynamic> sendRequest(String method, String path, {String? body}) async{
     print('now in sendRequest');
     final request = http.Request(method, Uri.parse('https://whispering-sands-78580.herokuapp.com$path'));
@@ -57,11 +60,12 @@ class routes{
   
   }
    static Future<List<ProfileObj>> fetchProfileInfo(String id) async{
-    print('in fetchProfile info');
+    print('in fetchProfile info: $id');
     final data = await sendRequest("GET", '/profile/$id');
     //print(data);
      final List<ProfileObj> returnData;
      var ideas = data['mData'];
+      print(ideas);
      if(ideas is List){
       final posts = ideas.map((x) => ProfileObj.fromJson(x)).toList();
       return posts;
@@ -76,19 +80,38 @@ class routes{
       returnData = List.empty();
     }
    // print('here 4');
-    //print(returnData);
+   email = returnData[0].email;
+   name = returnData[0].username;
+   note = returnData[0].note;
+    print(returnData[0].email);
     return returnData;
 
   }
-
-  static Future<List<CommentObj>> fetchComments() async{
-    final data = await sendRequest("GET", '/comments');
-    if(data is List){
-      final posts = data.map((x) => CommentObj.fromJson(x)).toList();
-      return posts;
-    }else{
-      throw Exception('Invalid Response');
+  static String fetchUsername(List<ProfileObj> profile) {
+      return profile[0].username;
+  }
+  static Future<List<CommentObj>> fetchComments(int id) async{
+    print(id);
+    final data = await sendRequest("GET", '/comments/$id');
+    print("data:$data");
+     final List<CommentObj> returnData;
+     var ideas = data['mData'];
+    if (ideas is List) {
+      print('list');
+      returnData = ideas.map((x) => CommentObj.fromJson(x)).toList();
+    } else if (ideas is Map) {
+      returnData = <CommentObj>[CommentObj.fromJson(data as Map<String, dynamic>)];
+    } else {
+      developer
+          .log('ERROR: Unexpected json response type (was not a List or Map).');
+      returnData = List.empty();
     }
+    print('res');
+    print(data);
+    print(returnData);
+    
+    return returnData;
+    
 
   }
 
@@ -99,8 +122,8 @@ class routes{
 }
 //Post-> sends the id_token to backend
 Future<int> sendToken(String? mToken) async {
-  //print('mToken');
-  //print(mToken);
+  print('mToken');
+  print(mToken);
   final response = await http.post(
     Uri.parse('https://whispering-sands-78580.herokuapp.com/signin'),
     body: jsonEncode(<String, String?>{'mToken': mToken}),
@@ -127,6 +150,7 @@ Future<int> sendToken(String? mToken) async {
 
 
 
+
 // Returns an IdeaObj from GET /messages/:id given its id
 Future<IdeaObj> fetchIdea(int idx, int sessionId) async {
   print('this is from the routes');
@@ -143,13 +167,13 @@ Future<IdeaObj> fetchIdea(int idx, int sessionId) async {
 // Perform PUT on /messages/:id/[upvotes or downvotes]
 Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
   // isUpvote boolean determines which vote route to HTTP PUT
-  String vote = isUpvote ? 'upvotes' : 'downvotes';
+  String vote = isUpvote ? 'upvote' : 'downvote';
   // ignore: prefer_typing_uninitialized_variables
   final response;
   if (voteCount > 1) {
     // If front ends needs to increment/decrement votes more than once, we specify the route with an addition /voteCount
     response = await http.put(Uri.parse(
-        'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote/$voteCount'),
+        'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'),
         body: jsonEncode(<String, int?>{'mSessionId': routes.sessionId}),);
   } else {
     response = await http.put(Uri.parse(
@@ -157,10 +181,21 @@ Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
         body: jsonEncode(<String, int?>{'mSessionId': routes.sessionId}),);
   }
 
+
   // res (response) should decode two key value pairs: mStatus and mData
   var res = jsonDecode(response.body);
   print(res);
   return res['mData'];
+}
+
+Future<int> upVote(int idx) async{
+  final response = await http.put(Uri.parse(
+        'https://whispering-sands-78580.herokuapp.com/messages/$idx'),
+        body: jsonEncode(<String, int?>{'mSessionId': routes.sessionId}),);
+  var res = jsonDecode(response.body);
+  print(res);
+  return res['mData'];
+
 }
 
 // POST /messages route given a new idea with title and messages, should return String of new ID
@@ -178,6 +213,41 @@ Future<String> addIdea(String title, String message) async {
 
 }
 
+// POST /messages route given a new idea with title and messages, should return String of new ID
+Future<String> addComment(String comment, int id ) async {
+  print("post ID: $id");
+  final response = await http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/comment/$id'),
+    body: jsonEncode(<String, String>{'mComment': comment, 'mSessionId' :routes.sessionId.toString()}),
+  );
+  var res = jsonDecode(response.body);
+  print("res$res");
+  print('userId');
+  return res['mMessage'];
+
+}
+Future<String> editComment(String comment, int id, int commentId) async {
+  print("post ID: $id");
+  final response = await http.put(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/comment'),
+    body: jsonEncode(<String, String>{'mComment': comment, 'mCommentId': commentId.toString(),'mSessionId' :routes.sessionId.toString()}),
+  );
+  var res = jsonDecode(response.body);
+  print("res$res");
+  print('userId');
+  return res['mMessage'];
+
+}
+
+Future<int> sendProfile(String username, String SO, String GI, String note) async{
+   final response = await http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/profile'),
+    body: jsonEncode(<String, String>{'mSessionId' :routes.sessionId.toString(), 'mGI': GI, 'mSO' : SO,  'mUsername': username.substring(0, username.indexOf(' and')),'mNote': note }),
+  );
+  var res = jsonDecode(response.body);
+  print("res$res");
+  return res;
+}
 // Perform GET on /ideas route, retrieves JSON response and converts it into a list of Idea Objects
 Future<List<IdeaObj>> fetchIdeas(int SessionId) async {
   routes.sessionId = SessionId;
