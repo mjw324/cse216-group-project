@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:my_app/api/google_signin_api.dart';
+import 'package:my_app/schedule.dart';
+import 'package:provider/provider.dart';
 import 'ideapage.dart';
 import 'loginpage.dart';
 
 void main() async {
   //runApp(const MyApp());
   runApp(
-    const MaterialApp(
+     ChangeNotifierProvider(
+      create: (_) => MySchedule(),
+      child:
+      const MaterialApp(
       title: 'Google Sign In',
       home: SignIn(),
     ),
+      )
+    
   );
 }
 
@@ -41,7 +48,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
+/*
 class FirstRoute extends StatelessWidget {
   const FirstRoute({super.key});
 
@@ -65,4 +72,4 @@ class FirstRoute extends StatelessWidget {
     );
   }
 }
-
+*/

@@ -40,12 +40,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                   minWidth: 10,
                   height: 20,
                   color: widget.liked == 1 ? Colors.red[300] : Colors.grey[850],
-                  child: const Text(
-                    // When this runs on web, the character isn't recognized
-                    // Needs to be changed to something like Icons.dislike. Search flutter Icons for more info
-                    '↑',
-                    style: TextStyle(fontSize: 15, color: Colors.white),
-                  ),
+                  child: const Icon(Icons.arrow_upward_outlined, size: 30, color: Colors.white),
                   onPressed: () => {
                     setState(() => {
                           if (widget.liked == -1)
@@ -85,10 +80,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                   color: widget.liked == -1
                       ? Colors.indigo[300]
                       : Colors.grey[850],
-                  child: const Text(
-                    '↓',
-                    style: TextStyle(fontSize: 15, color: Colors.white),
-                  ),
+                  child: const Icon(Icons.arrow_downward_outlined, size: 30, color: Colors.white),
                   onPressed: () => {
                     setState(() => {
                           if (widget.liked == 1)
@@ -102,7 +94,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                             {
                               // Will remove downvote if already downvoted
                               widget.liked == 0,
-                              voteIdea(widget.idx, true, 1),
+                              voteIdea(widget.idx, true, 0),
                               schedule.setVotes(widget.idx, 1,widget.liked),
                             }
                           else

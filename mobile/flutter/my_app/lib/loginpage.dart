@@ -7,7 +7,8 @@
 import 'dart:async';
 import 'dart:convert' show json;
 import 'ideapage.dart';
-import 'loginpage.dart';
+import 'schedule.dart';
+import 'package:provider/provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -60,7 +61,8 @@ class SignInState extends State<SignIn> {
 
  
 
-  Future<void> _handleSignIn() async {
+  Future<int> _handleSignIn() async {
+    
     try {
       await _googleSignIn.signIn();
     } catch (error) {
@@ -70,33 +72,46 @@ class SignInState extends State<SignIn> {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
     //print (googleAuth.idToken);
-
+    Future<int> session;
+    Future<int> sessionId;
+    int sessionID_int = 0;
      _googleSignIn.signIn().then((result){
           result?.authentication.then((googleKey){
               print(_googleSignIn.currentUser!.displayName);
-              //print(googleKey.accessToken);
-              //sendToken(googleKey.idToken);
               print(googleKey.idToken);
+              //final schedule = Provider.of<MySchedule>(context,listen: true);
+              print('this is before send token');
+              sessionId = sendToken(googleAuth.idToken);
+              //int actualsessionId;
+              //print(addIdea('title', 'message'));
+             // session= sendToken(googleKey.idToken!);
+             // session.then((value) => print(value));
+              sessionId.then((value) =>  {sessionID_int = value});
+              //print(actualsessionId);
               
           }).catchError((err){
-            print('inner error');
+            print(err);
           });
       }
       ).catchError((err){
           print('error occured');
       });
+      await Future.delayed(Duration(milliseconds: 300));
+      return sessionID_int;
   }
   
 
   Future<void> _handleSignOut() => _googleSignIn.disconnect();
 
   Widget _buildBody(BuildContext context) {
+ final schedule = Provider.of<MySchedule>(context);
     
 
     final GoogleSignInAccount? user = _currentUser;
     if (user != null) {
       String e = user.email;
-      String username= e.substring(0, e.indexOf('@'));
+      String? name = user.displayName;
+      String username= e.substring(0, e.indexOf('@')) + " and Name: " + name!;
       //sendToken(user._idToken);
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -117,11 +132,15 @@ class SignInState extends State<SignIn> {
           ElevatedButton(
           child: const Text('The Buzz Homepage'),
           onPressed: () {
+            print('this is from the elevated button');
+           routes.sessionId = schedule.sessionId; 
+            print(schedule.sessionId);
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) =>  TabBarDemo(
                   name: username, 
-                  email: user.email
+                  email: user.email, 
+                  session: schedule.sessionId,
                   )),
             );
           },
@@ -130,12 +149,16 @@ class SignInState extends State<SignIn> {
         ],
       );
     } else {
+      Future<int> number;
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           const Text('You are not currently signed in.'),
           ElevatedButton(
-            onPressed: _handleSignIn,
+            onPressed: ()=> {
+               number =  _handleSignIn(),
+               number.then((value) => {schedule.sessionId = value, print(value)}),
+              },
 
             child: const Text('SIGN IN'),
           ),

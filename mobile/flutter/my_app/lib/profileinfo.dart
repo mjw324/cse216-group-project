@@ -22,15 +22,15 @@ class _AddProfileWidget extends State<AddProfileWidget> {
   final _siController = TextEditingController();
   final _goController = TextEditingController();
   final _noteController = TextEditingController();
-  
+
 
   @override
   Widget build(BuildContext context) {
     String username = name;
     String email = userEmail;
-    String SI = '';
-    String GO = '';
-    String note = '';
+    String SO = 'Sexual Orientation';
+  String GI = 'Gender Identity';
+  String note = 'Note';
     // Instantiate schedule using Provider.of, this is so we can access methods from schedule
     final schedule = Provider.of<MySchedule>(context);
     return SliverToBoxAdapter(
@@ -46,25 +46,25 @@ class _AddProfileWidget extends State<AddProfileWidget> {
         ),
         TextField(
           controller: _siController,
-          decoration: const InputDecoration(
-            hintText: 'Sexual Identity',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: SO,
+            border: const OutlineInputBorder(),
           ),
           maxLength: 128, // max amount of characters accepted is 128
         ),
         TextField(
           controller: _goController,
-          decoration: const InputDecoration(
-            hintText: 'Gender Orientation',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: GI,
+            border: const OutlineInputBorder(),
           ),
           maxLength: 128, // max amount of characters accepted is 128
         ),
         TextField(
           controller: _noteController,
-          decoration: const InputDecoration(
-            hintText: 'Note',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: note,
+            border: const OutlineInputBorder(),
           ),
           maxLength: 1024, // max amount of characters accepted is 128
         ),
@@ -74,11 +74,18 @@ class _AddProfileWidget extends State<AddProfileWidget> {
             onPressed: () {
               // checks if both title and idea field are filled before adding
               if (_goController.text != '' && _siController.text != '') {
-                GO = _goController.text;
-                SI = _siController.text;
+                GI = _goController.text;
+                print(GI);
+                SO = _siController.text;
+                print(SO);
+                note = _noteController.text;
+                print(note);
+                sendProfile(username, SO, GI, note);
+                print(sendProfile(username, SO, GI, note));
                 // Currently this string cant be used because it always returns 1. Backend needs to return id of newIdea
                 
               }
+
                
             },
             color: Colors.blueGrey,

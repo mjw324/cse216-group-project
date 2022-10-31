@@ -1,40 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/profileobj.dart';
 import 'votebutton.dart';
 import 'ideaobj.dart';
 import 'routes.dart'; // is this necessary?
 import 'package:provider/provider.dart';
 import 'schedule.dart';
+import 'commentlist.dart';
+import 'commentpage.dart';
 
 class IdeasListWidget extends StatefulWidget {
-  const IdeasListWidget({Key? key}) : super(key: key);
+  int sessionId; 
+  IdeasListWidget({Key? key, required this.sessionId}) : super(key: key);
 
   @override
-  State<IdeasListWidget> createState() => _IdeasListWidgetState();
+  State<IdeasListWidget> createState() => _IdeasListWidgetState(session: sessionId);
 }
 
 class _IdeasListWidgetState extends State<IdeasListWidget> {
+
   late Future<List<IdeaObj>> _listIdeas;
+  int session;
+  _IdeasListWidgetState({required this.session}); 
   final _biggerFont = const TextStyle(fontSize: 16);
 
-  // This is called when IdeasListWidget is first initialized. The _listIdeas variable is initialized with fetchIdeas() in routes.dart
-  @override
+ @override
+ /*
   void initState() {
     super.initState();
-    _listIdeas = fetchIdeas();
+    print(Provider.of<MySchedule>(context, listen: true).sessionId);
+    _listIdeas = fetchIdeas(Provider.of<MySchedule>(context, listen: false).sessionId);
   }
 
   void retry() {
     setState(() {
-      _listIdeas = fetchIdeas();
+      print(Provider.of<MySchedule>(context, listen: true).sessionId);
+      _listIdeas = fetchIdeas(Provider.of<MySchedule>(context, listen: false).sessionId);
     });
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     // We need to create a schedule in order to access MySchedule (check to see if instance of Consumer and Provider concurrently is code smell)
     final schedule = Provider.of<MySchedule>(context);
+    print('this is from idea list page');
+    print(session);
+   // fetchIdeas(session).then((value) => print(value),);
     // Creates scheduleList to access current ideas list stored in schedule
     List<IdeaObj> scheduleList = schedule.ideas;
+     // This is called when IdeasListWidget is first initialized. The _listIdeas variable is initialized with fetchIdeas() in routes.dart
+  
     // If it isn't empty, we create our IdeasListWidget from the scheduleList.
     // This will need to be refactored because schedule.ideas only updates when 1) it is initialized in else block 2) we make updates to it on app
     // *It does not take into account new ideas from other clients after it has been initialized*
@@ -48,12 +62,41 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                   return Column(
                     children: <Widget>[
                       ListTile(
-                          leading: VoteButtonWidget(
-                              idx: idea.id, liked: idea.userVotes),
-                          title: Text(
-                            idea.title,
-                            style: _biggerFont,
+                        trailing: ElevatedButton(
+                          child:const Icon(Icons.comment, size: 30, color: Colors.white),
+                          onPressed: (){
+                            Navigator.of(context).push( MaterialPageRoute(builder: (context) => MyCommentPage(title: 'Comment Page', id: idea.id) ));
+                          },
                           ),
+                         
+                          leading:
+                           VoteButtonWidget(
+                              idx: idea.id, liked: idea.userVotes),
+                              
+                          title:
+                            ElevatedButton(
+                              style:ElevatedButton.styleFrom(
+                                backgroundColor: Colors.brown,
+                              ),
+                            child:Text(
+                              idea.title + ' by ' + idea.userId,
+                              style: _biggerFont,
+                            ),
+                            onPressed: () => showDialog<String>(
+                              context: context, 
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Profile Information'),
+                                content: Text('Name: '+ ideasList.fetchProfile(idea.userId)[0] + '    Email:' + ideasList.fetchProfile(idea.userId)[1]),
+                                actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                              ),
+                            ),
+                            
+                            ), 
                           subtitle: Text(
                             idea.message,
                           )),
@@ -66,7 +109,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
     } else {
       return Consumer<MySchedule>(
           builder: (context, schedule, _) => FutureBuilder<List<IdeaObj>>(
-              future: _listIdeas,
+              future: _listIdeas= routes.fetchPosts(), 
               builder: ((BuildContext context,
                   AsyncSnapshot<List<IdeaObj>> snapshot) {
                 Widget child;
@@ -78,16 +121,40 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                       delegate: SliverChildBuilderDelegate(
                     (context, i) {
                       IdeaObj idea = list[i];
+                      
                       return Column(
                         children: <Widget>[
                           ListTile(
+                              trailing: 
+                                ElevatedButton(
+                                child:const Icon(Icons.comment, size: 30, color: Colors.white),
+                                onPressed: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) =>MyCommentPage(title: 'Comment Page', id: idea.id) ));
+                                },
+                                ),
                               leading: VoteButtonWidget(
                                   idx: idea.id, liked: idea.userVotes),
-                              title: Text(
-                                idea.title,
-                                style: _biggerFont,
-                              ),
-                              subtitle: Text(
+                              title: ElevatedButton(
+                                child:Text(
+                                  idea.title + ' by ' + idea.userId,
+                                  style: _biggerFont,
+                                ),
+                                onPressed: () => showDialog<String>(
+                                  context: context, 
+                                  builder: (BuildContext context) => AlertDialog(
+                                    title: const Text('Profile Information'),
+                                    content: Text(
+                                      'Name: '+ ideasList.fetchProfile(idea.userId)[0] + '     Email:' + ideasList.fetchProfile(idea.userId)[1]),
+                                    actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, 'OK'),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                  ),
+                                ),
+                                ), 
+                            subtitle: Text(
                                 idea.message,
                               )),
                           const Divider(height: 1.0),
@@ -111,3 +178,24 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
     }
   }
 }
+
+class ideasList{
+  static  List fetchProfile(String userId)  {
+    Future<List<ProfileObj>> prof; 
+    
+
+    prof = routes.fetchProfileInfo(userId);
+    List list = [routes.name, routes.email, routes.note];
+    //ProfileObj userProfile = profile[profile.length];
+    return list;
+  }
+}
+/*
+Future<List<ProfileObj>> prof; 
+List<ProfileObj> profile = []; 
+prof = routes.fetchProfileInfo(idea.userId);
+prof.then((value) => {profile = value});
+schedule.profileList = profile;
+print(profile.length);
+ProfileObj userProfile = profile[profile.length];
+*/

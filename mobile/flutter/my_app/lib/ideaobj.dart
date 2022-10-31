@@ -13,9 +13,12 @@ class IdeaObj {
   // The int representation of the amount of votes. This is not final because vote count can change
   int votes;
 
+  String userId;
+
+
   // The String representation of the amount of votes
   // Possible technical debt - this is a question of type Date vs type String
-  final String createdAt;
+  //final String createdAt;
 
   // This attribute will need to change when adding functionality for multiple users.
   // This tracks if the current user has upvoted (1), downvoted (-1), or not voted (0) on an idea
@@ -26,7 +29,7 @@ class IdeaObj {
       required this.title,
       required this.message,
       required this.votes,
-      required this.createdAt,
+      required this.userId,
       required this.userVotes});
 
   factory IdeaObj.fromJson(Map<String, dynamic> json) {
@@ -39,7 +42,7 @@ class IdeaObj {
       title: json['mTitle'],
       message: json['mMessage'],
       votes: json['mVotes'],
-      createdAt: json['mCreated'],
+      userId: json['mUserId'],
       userVotes: 0,
     );
   }
