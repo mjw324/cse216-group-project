@@ -52,11 +52,11 @@ public class App {
         System.out.println("  [+] Insert a new row: ideasTable");
         System.out.println("  [X] Insert a new row: profileTable");
         System.out.println("  [Z] Insert a new row: commentTable");
-        //System.out.println("  [L] Insert a new row: votesTable");
+        System.out.println("  [L] Insert a new row: votesTable");
 
         System.out.println("  [~] Update a row: ideasTable");
         System.out.println("  [J] Update a row: profileTable");
-        //System.out.println("  [H] Update a row: commentTable");
+        System.out.println("  [H] Update a row: commentTable");
         System.out.println("  [G] Update a row: votesTable");
 
         System.out.println("  [q] Quit Program");
@@ -72,7 +72,7 @@ public class App {
      */
     static char prompt(BufferedReader in) {
         // The valid actions:
-        String actions = ":TPCV;DUSK1234*&$!-MNB+XZ~JGq?";
+        String actions = ":TPCV;DUSK1234*&$!-MNB+XZL~JHGq?";
 
         // We repeat until a valid single-character option is selected        
         while (true) {
@@ -214,12 +214,14 @@ public class App {
                 addRowProfile(db, in);
             } else if (action == 'Z') {
                 addRowComment(db, in);
+            } else if (action == 'L') {
+                addRowVote(db, in);
             } else if (action == '~') {
                 updateRow(db, in);
             } else if (action == 'J') {
                 updateRowProfile(db, in);
             } else if (action == 'H') {
-                //updateRowComment(db, in);
+                updateRowComment(db, in);
             } else if (action == 'G') {
                 updateRowVote(db, in);
             }
@@ -322,7 +324,7 @@ public class App {
             return;
         Database.CommentData res = db.selectOneComment(id);
         if (res != null) {
-            System.out.println("  [" + res.mPostId + "] " + res.mCommentId);
+            System.out.println("  [" + res.mCommentId + "] " + res.mPostId);
             System.out.println("  --> " + res.mComment);
             System.out.println("  UserId: " + res.mUserId);
         }
@@ -374,7 +376,7 @@ public class App {
         System.out.println("  Current commentTable Contents");
         System.out.println("  -------------------------");
         for (Database.CommentData dr : res) {
-            System.out.println("  [" + dr.mPostId + "] " + dr.mCommentId);
+            System.out.println("  [" + dr.mCommentId + "] " + dr.mPostId);
         }
     }
 
@@ -480,6 +482,17 @@ public class App {
         return res;
     }
 
+    public static int addRowVote(Database db, BufferedReader in){
+        int postid = getInt(in, "Enter postId");
+        int userid = getInt(in, "Enter userId");
+        int votes = getInt(in, "Enter votes");
+        if (postid<0 || userid<0 || votes<0)
+            return -1;
+        int res = db.insertRowVote(postid,userid,votes);
+        System.out.println(res + " rows added");
+        return res;
+    }
+
     /**
      * Update a row from the database
      * 
@@ -516,18 +529,18 @@ public class App {
         return res;
     }
 
-    /*public static int updateRowComment(Database db, BufferedReader in){
+    public static int updateRowComment(Database db, BufferedReader in){
         int id = getInt(in, "Enter the comment row ID :> ");
         if (id == -1)
         return -1;
         int postId = getInt(in, "Enter postId: ");
-        int userId = getInt(in, "Enter new userId: ");
+        int userId = getInt(in, "Enter userId: ");
         String newComment = getString(in, "Enter new comment: ");
         int res = db.updateOneComment(id, postId, userId, newComment);
         if (res != -1)
             System.out.println("  " + res + " rows updated");
         return res;
-    }*/
+    }
 
     public static int updateRowVote(Database db, BufferedReader in){
         int id = getInt(in, "Enter the vote row ID :> ");
@@ -535,7 +548,7 @@ public class App {
         return -1;
         int userId = getInt(in, "Enter userId: ");
         int votes = getInt(in, "Enter votes: ");
-        int res = db.updateOneVotes(id, userId, votes );
+        int res = db.updateOneVotes(id, userId, votes);
         if (res != -1)
             System.out.println("  " + res + " rows updated");
         return res;

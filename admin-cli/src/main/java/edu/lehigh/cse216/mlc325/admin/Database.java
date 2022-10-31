@@ -49,6 +49,7 @@ public class Database {
     private PreparedStatement mInsertOne;
     private PreparedStatement mInsertOneProfile;
     private PreparedStatement mInsertOneComment;
+    private PreparedStatement mInsertOneVote;
 
     /**
      * A prepared statement for updating a single row in the database
@@ -329,6 +330,7 @@ public static class UserVotesData {
             db.mInsertOne = db.mConnection.prepareStatement("INSERT INTO ideasTable VALUES (default, ?, ?, 0, ?, 0)");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO profileTable VALUES (?, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO commentTable VALUES (default, ?, ?, ?)");
+            db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO votesTable VALUES (?, ?, ?)");
 
             db.mSelectAll = db.mConnection.prepareStatement("SELECT postid, title, message, votes, userid, safe FROM ideasTable");
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note, safeP FROM profileTable");
@@ -428,6 +430,19 @@ public static class UserVotesData {
             mInsertOneComment.setInt(3, userid);
             mInsertOneComment.setString(4, comment);
             count += mInsertOneComment.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    int insertRowVote(int postid, int userid, int vote) {
+        int count = 0;
+        try {
+            mInsertOneVote.setInt(1, postid);
+            mInsertOneVote.setInt(2, userid);
+            mInsertOneVote.setInt(3, vote);
+            count += mInsertOneVote.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
