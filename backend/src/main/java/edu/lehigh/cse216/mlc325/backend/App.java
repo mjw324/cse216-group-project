@@ -147,28 +147,6 @@ public class App {
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-
-            // ArrayList<Database.DataRow> output;
-            // output = new ArrayList<>();
-            // Database.PostData post = db.selectOnePost(idx);
-            // if(post == null){
-            //     return gson.toJson(new StructuredResponse("error", "null post", null));
-            // }
-            // output.add(post);
-            // ArrayList<Database.CommentData> comments;
-            // comments = db.selectPostComments(idx);
-            // int added = -1;
-            // if(comments != null){
-            //     added = 0;
-            //     try {
-            //         for (Database.CommentData com : comments) {
-            //             output.add((Database.DataRow)com);
-            //             added++;
-            //         }
-            //     } catch (Exception e) {
-            //         return gson.toJson(new StructuredResponse("error", "error adding comments to list. Size: " + comments.size(), null));
-            //     }
-            // }
             return gson.toJson(new StructuredResponse("ok", null, db.selectPostComments(idx)));
         });
 
@@ -345,14 +323,14 @@ public class App {
 
         // PUT route for modifying a comment from its comment id
         Spark.put("/comment", (request, response) -> {
-            //int postId = Integer.parseInt(request.params("id"));
+            int postId = Integer.parseInt(request.params("id"));
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
-            // String userId = usersHT.get(req.mSessionId);
-            // if(userId==null){
-            //     return gson.toJson(new StructuredResponse("error", "invalid user session", null));
-            // }
+            String userId = usersHT.get(req.mSessionId);
+            if(userId==null){
+                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            }
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
             //     describes the error.
