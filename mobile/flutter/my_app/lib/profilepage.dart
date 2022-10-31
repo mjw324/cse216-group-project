@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 // Provides functions which use REST calls and interprets responses
 import 'routes.dart';
-import 'addidea.dart';
+import 'profileinfo.dart';
 import 'ideaslist.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
-import 'profilepage.dart';
 
-class MyHomePage extends StatefulWidget {
-  int session;
-   MyHomePage({super.key, required this.title, required this.session});
+class MyProfilePage extends StatefulWidget {
+  String name;
+  String email; 
+
+  MyProfilePage({super.key, required this.title, required this.name, required this.email});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -24,12 +25,14 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState(session: session);
+  // ignore: no_logic_in_create_state
+  State<MyProfilePage> createState() => _MyProfilePage(name: name, email: email);
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  late int session; 
-  _MyHomePageState({required this.session});
+class _MyProfilePage extends State<MyProfilePage> {
+  late String name;
+  late String email; 
+  _MyProfilePage({required this.name, required this.email});
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called
@@ -48,44 +51,9 @@ class _MyHomePageState extends State<MyHomePage> {
             body: CustomScrollView(
               // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
               slivers: <Widget>[
-                AddIdeaWidget(),
-                IdeasListWidget(sessionId: session),
+                AddProfileWidget(name: name, email: email),
+                
               ],
             )));
   }
 } 
-class TabBarDemo extends StatelessWidget {
-  String name, email; 
-  int session; 
-   TabBarDemo( {super.key, required this.email, required this.name, required this.session});
-
-  @override
-  Widget build(BuildContext context) {
-    final schedule = Provider.of<MySchedule>(context);
-    schedule.sessionId = session;
-    print('this is from the tabbardemo');
-    print(session);
-    return MaterialApp(
-      home: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            bottom: const TabBar(
-              tabs: [
-                Tab(icon:Icon(Icons.list_alt_outlined)),
-                Tab(icon: Icon(Icons.face_outlined)),
-              ],
-            ),
-            title: const Text('The Buzz'),
-          ),
-          body: TabBarView(
-            children: [
-              MyHomePage(title: 'The Buzz Idea Page', session: session),
-              MyProfilePage(title: 'Profile Page',name: name, email: email),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

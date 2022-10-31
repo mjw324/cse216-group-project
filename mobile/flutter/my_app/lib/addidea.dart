@@ -57,7 +57,7 @@ class _AddIdeaWidgetState extends State<AddIdeaWidget> {
                     title: title,
                     message: idea,
                     votes: 0,
-                    createdAt: "backend does this",
+                    userId: routes.user_id,
                     userVotes: 0);
                 schedule.submitIdea =
                     newIdea; // submits idea and notifies list listeners
