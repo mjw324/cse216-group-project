@@ -10,7 +10,6 @@ import java.net.URISyntaxException;
 import java.net.URI;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Database {
     /**
@@ -93,7 +92,7 @@ public class Database {
  * interact with the fields directly.
  */
 
-public static abstract class DataRow{
+public static class DataRow{
 
 }
 
@@ -193,14 +192,12 @@ public static class CommentData extends DataRow{
     public int mCommentId;
     public String mUserId;
     public String mComment;
-    public final Date mCreated;
 
     CommentData(int postId, int commentId, String userId, String comment) {
         mPostId = postId;
         mCommentId = commentId;
         mUserId = userId;
         mComment = comment;
-        mCreated = new Date();
     }
 
     CommentData(CommentData data) {
@@ -208,7 +205,6 @@ public static class CommentData extends DataRow{
         mCommentId = data.mCommentId;
         mUserId = data.mUserId;
         mComment = data.mComment;
-        mCreated = data.mCreated;
     }
 }
 
@@ -216,20 +212,17 @@ public static class UserVotesData extends DataRow{
     public final int mPostId;
     public String mUserId;
     public int mVotes;
-    public final Date mCreated;
 
     UserVotesData(int postId, String userId, int votes) {
         mPostId = postId;
         mUserId = userId;
         mVotes = votes;
-        mCreated = new Date();
     }
 
     UserVotesData(UserVotesData data) {
         mPostId = data.mPostId;
         mUserId = data.mUserId;
         mVotes = data.mVotes;
-        mCreated = data.mCreated;
     }
 }
 
@@ -322,7 +315,7 @@ public static class UserVotesData extends DataRow{
             db.mSelectAllComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment FROM " + commentTable);
             db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, userid, votes FROM " + votesTable);
             
-            db.mSelectPostComments = db.mConnection.prepareStatement("SELECT * FROM " + commentTable + "WHERE postid = ?");
+            db.mSelectPostComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment FROM " + commentTable + " WHERE postid = ?");
             
             db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE postid=?");
             db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE userid=?");
@@ -332,7 +325,7 @@ public static class UserVotesData extends DataRow{
             db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE postid = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE postid = ? AND WHERE userid = ?");
             db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE " + userTable + " SET GI = ?, SO = ?, username = ?, note= ? WHERE userid = ?");
-            db.mUpdateOneComment= db.mConnection.prepareStatement("UPDATE " + commentTable + " SET comment = ? WHERE WHERE commentid = ?");
+            db.mUpdateOneComment = db.mConnection.prepareStatement("UPDATE commentTable SET comment = ? WHERE commentid = ?");
 
             db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + ? WHERE postid = ?");
             db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - ? WHERE postid = ?");
@@ -378,7 +371,7 @@ public static class UserVotesData extends DataRow{
      * 
      * @return The number of rows that were inserted
      */
-    int insertIdeaRow(String title, String message, String userid) {
+    int insertRowIdea(String title, String message, String userid) {
         int count = 0;
         try {
             mInsertOnePost.setString(1, title);
@@ -399,12 +392,12 @@ public static class UserVotesData extends DataRow{
      * 
      * @return The number of rows that were inserted
      */
-    int insertCommentRow(String userId, int postId, String comment) {
+    int insertRowComment(String userId, int postId, String comment) {
         int count = 0;
         try {
-            mInsertOnePost.setString(1, userId);
-            mInsertOnePost.setInt(2, postId);
-            mInsertOnePost.setString(3, comment);
+            mInsertOneComment.setString(1, userId);
+            mInsertOneComment.setInt(2, postId);
+            mInsertOneComment.setString(3, comment);
             count += mInsertOneComment.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -428,26 +421,12 @@ public static class UserVotesData extends DataRow{
         return count;
     }
 
-    int insertRowComment(int postid, int commentid, String userid, String comment) {
-        int count = 0;
-        try {
-            mInsertOneProfile.setInt(1, postid);
-            mInsertOneProfile.setInt(2, commentid);
-            mInsertOneProfile.setString(3, userid);
-            mInsertOneProfile.setString(4, comment);
-            count += mInsertOneProfile.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return count;
-    }
-
     int insertRowVote(int postid, String userid, int vote) {
         int count = 0;
         try {
-            mInsertOneProfile.setInt(1, postid);
-            mInsertOneProfile.setString(2, userid);
-            mInsertOneProfile.setInt(3, vote);
+            mInsertOneVote.setInt(1, postid);
+            mInsertOneVote.setString(2, userid);
+            mInsertOneVote.setInt(3, vote);
             count += mInsertOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -765,11 +744,11 @@ public static class UserVotesData extends DataRow{
     int updateOneProfile(String userid, String GI, String SO, String username, String note) {
         int res = -1;
         try {
-            mUpdateOneProfile.setString(5, userid);
             mUpdateOneProfile.setString(1, GI);
             mUpdateOneProfile.setString(2, SO);
             mUpdateOneProfile.setString(3, username);
             mUpdateOneProfile.setString(4, note);
+            mUpdateOneProfile.setString(5, userid);
             res = mUpdateOneProfile.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -784,12 +763,12 @@ public static class UserVotesData extends DataRow{
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOneComment(int commentid, String comment) {
+    int updateOneComment(int id, String comment) {
         int res = -1;
         try {
-            mUpdateOneComment.setInt(2, commentid);
             mUpdateOneComment.setString(1, comment);
-            res = mUpdateOneVote.executeUpdate();
+            mUpdateOneComment.setInt(2, id);
+            res = mUpdateOneComment.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

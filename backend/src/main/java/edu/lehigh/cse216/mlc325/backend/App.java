@@ -27,8 +27,8 @@ import java.util.Map;
 public class App {
     public static void main(String[] args) {
         Map<String, String> env = System.getenv();
-        String db_url = env.get("DATABASE_URL");
-        // String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
+        // String db_url = env.get("DATABASE_URL");
+        String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
 
         //key generated session id, value is google user id
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
@@ -140,39 +140,36 @@ public class App {
                 return gson.toJson(new StructuredResponse("error", "could not parse int from route", null));
             }
             int sesId;
-            try {
-                sesId = Integer.parseInt(request.headers("Session-ID"));
-            } catch (Exception e) {
-                return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
-            }
+            sesId = Integer.parseInt(request.headers("Session-ID"));
             if(!usersHT.containsKey(sesId)){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
-            }
+            } 
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            ArrayList<Database.DataRow> output = new ArrayList<>();
-            try {
-                Database.PostData post = db.selectOnePost(idx);
-                output.add(post);
-            } catch (Exception e) {
-                return gson.toJson(new StructuredResponse("error", "error adding post", db.selectOnePost(idx)));
-            }
-            ArrayList<Database.CommentData> comments;
-            try {
-                comments = db.selectPostComments(idx);
-                
-            } catch (Exception e) {
-                return gson.toJson(new StructuredResponse("error", "error selecting comments", null));
-            }
-            try {
-                for (Database.CommentData com : comments) {
-                    output.add((Database.DataRow)com);
-                }
-            } catch (Exception e) {
-                return gson.toJson(new StructuredResponse("error", "error adding comments to list", null));
-            }
-            return gson.toJson(new StructuredResponse("ok", null, output));
+
+            // ArrayList<Database.DataRow> output;
+            // output = new ArrayList<>();
+            // Database.PostData post = db.selectOnePost(idx);
+            // if(post == null){
+            //     return gson.toJson(new StructuredResponse("error", "null post", null));
+            // }
+            // output.add(post);
+            // ArrayList<Database.CommentData> comments;
+            // comments = db.selectPostComments(idx);
+            // int added = -1;
+            // if(comments != null){
+            //     added = 0;
+            //     try {
+            //         for (Database.CommentData com : comments) {
+            //             output.add((Database.DataRow)com);
+            //             added++;
+            //         }
+            //     } catch (Exception e) {
+            //         return gson.toJson(new StructuredResponse("error", "error adding comments to list. Size: " + comments.size(), null));
+            //     }
+            // }
+            return gson.toJson(new StructuredResponse("ok", null, db.selectPostComments(idx)));
         });
 
         // GET route that returns someone's profile information
@@ -234,7 +231,12 @@ public class App {
             //ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            int result = db.updateOneProfile(id, req.mGI, req.mSO, req.mUsername, req.mNote);
+            int result;
+            try {
+                result = db.updateOneProfile(id, req.mGI, req.mSO, req.mUsername, req.mNote);
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error", "error updating", null));
+            }
             if (result<0) {
                 return gson.toJson(new StructuredResponse("error", id + " not found", null));
             } else {
@@ -260,7 +262,7 @@ public class App {
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int result = db.insertIdeaRow(req.mTitle, req.mMessage, userId);
+            int result = db.insertRowIdea(req.mTitle, req.mMessage, userId);
             //System.out.println(newId);
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
@@ -304,11 +306,10 @@ public class App {
                     
                     Integer userSession = (int)(Math.random()*Integer.MAX_VALUE);
                     while(usersHT.containsKey(userSession)){ //make sure session ID is unique
-                    userSession = (int)(Math.random()*Integer.MAX_VALUE);
-                }
-                usersHT.put(userSession, userId);
-                
-                return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
+                        userSession = (int)(Math.random()*Integer.MAX_VALUE);
+                    }
+                    usersHT.put(userSession, userId);
+                    return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
             } else {
                 return gson.toJson(new StructuredResponse("error", "user could not be verified", null));
             }
@@ -329,31 +330,40 @@ public class App {
             //     describes the error.
             response.status(200);
             response.type("application/json");
-            int result = db.insertCommentRow(userId, postId, req.mCommment);
-            //System.out.println(newId);
-            if (result == -1) {
+            int result;
+            try {
+                result = db.insertRowComment(userId, postId, req.mCommment);
+            } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "error inserting comment", null));
+            }
+            if (result == -1) {
+                return gson.toJson(new StructuredResponse("error", "problem inserting comment", null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", "" + result, null));
             }
         });
 
         // PUT route for modifying a comment from its comment id
-        Spark.put("/comment/:id", (request, response) -> {
-            int postId = Integer.parseInt(request.params("id"));
+        Spark.put("/comment", (request, response) -> {
+            //int postId = Integer.parseInt(request.params("id"));
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
-            String userId = usersHT.get(req.mSessionId);
-            if(userId==null){
-                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
-            }
+            // String userId = usersHT.get(req.mSessionId);
+            // if(userId==null){
+            //     return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            // }
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
             //     describes the error.
             response.status(200);
             response.type("application/json");
-            int result = db.updateOneComment(req.mCommentId, req.mCommment);
+            int result;
+            try {
+                result = db.updateOneComment(req.mCommentId, req.mCommment);
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error","error updating",  null));
+            }
             //System.out.println(newId);
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "error updating comment: " + req.mCommentId, null));
@@ -384,7 +394,7 @@ public class App {
             }
         });
 
-        Spark.put("/messages/:id/upvotes", (request, response) -> {
+        Spark.put("/messages/:id/upvote", (request, response) -> {
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
@@ -417,7 +427,7 @@ public class App {
             }
         });
 
-        Spark.put("/messages/:id/downvotes", (request, response) -> {
+        Spark.put("/messages/:id/downvote", (request, response) -> {
             // If we can't get an ID or can't parse the JSON, Spark will send
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
