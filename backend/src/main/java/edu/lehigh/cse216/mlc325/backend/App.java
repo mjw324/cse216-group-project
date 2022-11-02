@@ -310,7 +310,7 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                result = db.insertRowComment(userId, postId, req.mCommment);
+                result = db.insertRowComment(userId, postId, req.mComment);
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "error inserting comment", null));
             }
@@ -323,7 +323,6 @@ public class App {
 
         // PUT route for modifying a comment from its comment id
         Spark.put("/comment", (request, response) -> {
-            int postId = Integer.parseInt(request.params("id"));
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
@@ -338,7 +337,7 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                result = db.updateOneComment(req.mCommentId, req.mCommment);
+                result = db.updateOneComment(req.mCommentId, req.mComment);
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error","error updating",  null));
             }
