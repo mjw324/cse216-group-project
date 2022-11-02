@@ -267,18 +267,11 @@ public class App {
                 String email = payload.getEmail();
                 //boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
                 String name = (String) payload.get("name");
-                //String pictureUrl = (String) payload.get("picture");
-                //String locale = (String) payload.get("locale");
-                // String familyName = (String) payload.get("family_name");
-                // String givenName = (String) payload.get("given_name");
                 if(db.selectOneProfile(userId)==null){
-                    db.insertRowProfile(userId, "Not specified", "not specifed", email, name, "");
+                    db.insertRowProfile(userId, "Not specified", "Not specifed", email, name, "");
                 }
                 
                 if(!db.safeUser(userId)){
-                    // if(db.selectOneProfile(userId)==null){
-                        //     return gson.toJson(new StructuredResponse("error", "Could not find userid: " + userId, null));
-                        // }
                         return gson.toJson(new StructuredResponse("error", "User blocked by administrator", null));
                     }
                     
@@ -325,10 +318,16 @@ public class App {
         Spark.put("/comment", (request, response) -> {
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
-            CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
-            String userId = usersHT.get(req.mSessionId);
-            if(userId==null){
-                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            CommentRequest req;
+            String userId;
+            try {
+                req = gson.fromJson(request.body(), CommentRequest.class);
+                userId = usersHT.get(req.mSessionId);
+                if(userId==null){
+                    return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+                }
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error","error getting and validating request: " + request.body(),  null));
             }
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
@@ -337,7 +336,11 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                result = db.updateOneComment(req.mCommentId, req.mComment);
+                if(userId.equals(db.selectOneComment(req.mCommentId).mUserId)){ //user that made comment
+                    result = db.updateOneComment(req.mCommentId, req.mComment);
+                }else{
+                    return gson.toJson(new StructuredResponse("error","can't edit someone else's comments",  null));
+                }
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error","error updating",  null));
             }
