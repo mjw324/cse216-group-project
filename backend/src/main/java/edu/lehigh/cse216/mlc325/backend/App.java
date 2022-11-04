@@ -18,6 +18,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 
 import java.util.Hashtable;
+import java.util.HashMap;
 //import java.sql.ResultSetMetaData;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public class App {
 
         //key generated session id, value is google user id
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
+        usersHT.put(-1, "107590165278581716154"); //TODO remove later
 
         final String CLIENT_ID_1 = "429689065020-h43s75d9jahb8st0jq8cieb9bctjg850.apps.googleusercontent.com";
         final String CLIENT_ID_2 = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
@@ -253,6 +255,7 @@ public class App {
         Spark.post("/signin", (request, response) -> {
             TokenRequest req = gson.fromJson(request.body(), TokenRequest.class);
             String tokenString = req.mToken;
+            Map<String,String> map = new HashMap<String, String>();
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
@@ -267,11 +270,18 @@ public class App {
                 String email = payload.getEmail();
                 //boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
                 String name = (String) payload.get("name");
+                //String pictureUrl = (String) payload.get("picture");
+                //String locale = (String) payload.get("locale");
+                // String familyName = (String) payload.get("family_name");
+                // String givenName = (String) payload.get("given_name");
                 if(db.selectOneProfile(userId)==null){
-                    db.insertRowProfile(userId, "Not specified", "Not specifed", email, name, "");
+                    db.insertRowProfile(userId, "", "", email, name, "");
                 }
                 
                 if(!db.safeUser(userId)){
+                    // if(db.selectOneProfile(userId)==null){
+                        //     return gson.toJson(new StructuredResponse("error", "Could not find userid: " + userId, null));
+                        // }
                         return gson.toJson(new StructuredResponse("error", "User blocked by administrator", null));
                     }
                     
@@ -280,7 +290,9 @@ public class App {
                         userSession = (int)(Math.random()*Integer.MAX_VALUE);
                     }
                     usersHT.put(userSession, userId);
-                    return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
+                    map.put("User-ID", userId);
+                    map.put("Session-ID", userSession.toString());
+                    return gson.toJson(new StructuredResponse("ok", "Signed in " + name, map));
             } else {
                 return gson.toJson(new StructuredResponse("error", "user could not be verified", null));
             }
@@ -336,11 +348,7 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                if(userId.equals(db.selectOneComment(req.mCommentId).mUserId)){ //user that made comment
-                    result = db.updateOneComment(req.mCommentId, req.mComment);
-                }else{
-                    return gson.toJson(new StructuredResponse("error","can't edit someone else's comments",  null));
-                }
+                result = db.updateOneComment(req.mCommentId, req.mComment);
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error","error updating",  null));
             }
