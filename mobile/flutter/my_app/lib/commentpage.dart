@@ -7,7 +7,6 @@ import 'routes.dart';
 import 'commentlist.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
-import 'profilepage.dart';
 import 'addcomment.dart';
 
 class MyCommentPage extends StatefulWidget{

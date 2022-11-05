@@ -45,12 +45,15 @@ class _AddIdeaWidgetState extends State<AddIdeaWidget> {
           alignment: Alignment.centerLeft,
           child: MaterialButton(
             onPressed: () {
+              addIdea(title, idea);
               // checks if both title and idea field are filled before adding
               if (_titleController.text != '' && _ideaController.text != '') {
                 title = _titleController.text;
                 idea = _ideaController.text;
                 // Currently this string cant be used because it always returns 1. Backend needs to return id of newIdea
-                Future<String> idofNewIdea = addIdea(title, idea);
+           
+                addIdea(title, idea);
+                print('After adding an idea'+ routes.user_id + '.');
                 // This is temporary, until backend POST /messages route can return the id of the new Idea so we can GET idea by id
                 IdeaObj newIdea = IdeaObj(
                     id: 0000,
@@ -59,12 +62,14 @@ class _AddIdeaWidgetState extends State<AddIdeaWidget> {
                     votes: 0,
                     userId: routes.user_id,
                     userVotes: 0);
-                schedule.submitIdea =
-                    newIdea; // submits idea and notifies list listeners
+                    
+                print('After adding an idea'+ routes.user_id + '.');
+                schedule.submitIdea = newIdea; // submits idea and notifies list listeners
                 _ideaController.clear();
                 _titleController.clear();
               }
             },
+            
             color: Colors.brown,
             child: const Text('Add', style: TextStyle(color: Colors.white)),
           ),

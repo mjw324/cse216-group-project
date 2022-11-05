@@ -42,6 +42,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                   color: widget.liked == 1 ? Colors.red[300] : Colors.grey[850],
                   child: const Icon(Icons.arrow_upward_outlined, size: 30, color: Colors.white),
                   onPressed: () => {
+                    print(widget.liked),
                     setState(() => {
                           if (widget.liked == -1)
                             {
@@ -51,6 +52,8 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                               voteIdea(widget.idx, true, 2),
                               // this updates the Votes on the schedule idea list
                               schedule.setVotes(widget.idx, 2,widget.liked),
+                              
+                              print(widget.liked),
                             }
                           else if (widget.liked == 1)
                             {
@@ -58,6 +61,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                               widget.liked = 0,
                               voteIdea(widget.idx, false, 1),
                               schedule.setVotes(widget.idx, -1,widget.liked),
+                              print(widget.liked),
                             }
                           else
                             {
@@ -65,7 +69,8 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                               widget.liked = 1,
                               voteIdea(widget.idx, true, 1),
                               schedule.setVotes(widget.idx,
-                                  1,widget.liked), // updates schedule idea list so count updates
+                                  1,widget.liked),
+                                print(widget.liked), // updates schedule idea list so count updates
                             }
                         })
                   },
@@ -82,6 +87,7 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                       : Colors.grey[850],
                   child: const Icon(Icons.arrow_downward_outlined, size: 30, color: Colors.white),
                   onPressed: () => {
+                    print(widget.liked),
                     setState(() => {
                           if (widget.liked == 1)
                             {
@@ -89,20 +95,26 @@ class _VoteButtonWidgetState extends State<VoteButtonWidget> {
                               widget.liked = -1,
                               voteIdea(widget.idx, false, 2),
                               schedule.setVotes(widget.idx, -2, widget.liked),
+                              
+                    print(widget.liked),
                             }
                           else if (widget.liked == -1)
                             {
                               // Will remove downvote if already downvoted
-                              widget.liked == 0,
+                              widget.liked = 0,
                               voteIdea(widget.idx, true, 0),
                               schedule.setVotes(widget.idx, 1,widget.liked),
+                              
+                    print(widget.liked),
                             }
                           else
                             {
                               // Will downvote if it hasn't been downvoted or upvoted
-                              widget.liked == -1,
+                              widget.liked = -1,
                               voteIdea(widget.idx, false, 1),
                               schedule.setVotes(widget.idx, -1,widget.liked),
+                              
+                    print(widget.liked),
                             }
                         })
                   },

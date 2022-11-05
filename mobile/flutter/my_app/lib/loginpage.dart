@@ -5,7 +5,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
-import 'dart:convert' show json;
+import 'dart:convert' show base64Decode, json;
 import 'ideapage.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
@@ -59,7 +59,7 @@ class SignInState extends State<SignIn> {
 
   
 
- 
+
 
   Future<int> _handleSignIn() async {
     
@@ -73,7 +73,7 @@ class SignInState extends State<SignIn> {
     final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
     //print (googleAuth.idToken);
     Future<int> session;
-    Future<int> sessionId;
+    Future<Map> sessionId;
     int sessionID_int = 0;
      _googleSignIn.signIn().then((result){
           result?.authentication.then((googleKey){
@@ -82,11 +82,13 @@ class SignInState extends State<SignIn> {
               //final schedule = Provider.of<MySchedule>(context,listen: true);
               print('this is before send token');
               sessionId = sendToken(googleAuth.idToken);
+              print(routes.sessionId);
+              sessionID_int = routes.sessionId;
               //int actualsessionId;
               //print(addIdea('title', 'message'));
              // session= sendToken(googleKey.idToken!);
              // session.then((value) => print(value));
-              sessionId.then((value) =>  {sessionID_int = value});
+              //sessionId.then((value) =>  {sessionID_int = value});
               //print(actualsessionId);
               
           }).catchError((err){
@@ -111,17 +113,21 @@ class SignInState extends State<SignIn> {
     if (user != null) {
       String e = user.email;
       String? name = user.displayName;
+      String? url = user.photoUrl;
+      print(user.photoUrl);
       String username= e.substring(0, e.indexOf('@')) + " and Name: " + name!;
       //sendToken(user._idToken);
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
-          ListTile(
-            leading: GoogleUserCircleAvatar(
-              identity: user,
-            ),
+           ListTile(
+          //   leading: GoogleUserCircleAvatar(
+          //     identity: user,
+          //     placeholderPhotoUrl: user.photoUrl,
+          //   ),
             title: Text(user.displayName ?? ''),
             subtitle: Text(user.email),
+            
           ),
           const Text('Signed in successfully.'),
           ElevatedButton(

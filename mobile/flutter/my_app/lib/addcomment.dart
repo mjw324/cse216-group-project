@@ -46,6 +46,7 @@ class _AddCommentWidget extends State<AddCommentWidget> {
               if (_commentController.text != '' ) {
                 comment = _commentController.text;
                 // Currently this string cant be used because it always returns 1. Backend needs to return id of newIdea
+                print(id);
                 Future<String> idofNewComment = addComment(comment, id);
                 // This is temporary, until backend POST /messages route can return the id of the new Idea so we can GET idea by id
                 newComment = CommentObj(
@@ -111,6 +112,7 @@ class _EditCommentWidget extends State<EditCommentWidget> {
                 Ncomment = _commentController.text;
                 // Currently this string cant be used because it always returns 1. Backend needs to return id of newIdea
                 Future<String> idofNewComment = editComment(Ncomment, id, commentId);
+                print(editComment(Ncomment, id, commentId));
                 // This is temporary, until backend POST /messages route can return the id of the new Idea so we can GET idea by id
                  _AddCommentWidget(id: id).newComment.comment = Ncomment;
                   

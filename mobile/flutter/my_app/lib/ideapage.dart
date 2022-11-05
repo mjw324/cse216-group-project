@@ -7,6 +7,7 @@ import 'ideaslist.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
 import 'profilepage.dart';
+import 'profileinfo.dart';
 
 class MyHomePage extends StatefulWidget {
   int session;
@@ -48,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
             body: CustomScrollView(
               // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
               slivers: <Widget>[
-                AddIdeaWidget(),
+                const AddIdeaWidget(),
                 IdeasListWidget(sessionId: session),
               ],
             )));
@@ -81,7 +82,8 @@ class TabBarDemo extends StatelessWidget {
           body: TabBarView(
             children: [
               MyHomePage(title: 'The Buzz Idea Page', session: session),
-              MyProfilePage(title: 'Profile Page',name: name, email: email),
+              AddProfileWidget(name: name, email: email),
+              //MyProfilePage(title: 'Profile Page',name: name, email: email),
             ],
           ),
         ),

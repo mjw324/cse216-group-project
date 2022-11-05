@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'schedule.dart';
 import 'commentlist.dart';
 import 'addcomment.dart';
+import 'commentpage.dart';
 
 class CommentListWidget extends StatefulWidget {
   int id; 
@@ -53,10 +54,12 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                             comment.comment,
                             style: _biggerFont,
                           ),
-                          trailing: 
+                          trailing:
                                 ElevatedButton(
                                 child:const Icon(Icons.edit, size: 30, color: Colors.white),
-                                onPressed: () => showDialog<String>(
+                                onPressed: (){ 
+                                  if(routes.user_id == comment.userId){
+                                showDialog<String>(
                               context: context, 
                               builder: (BuildContext context) => AlertDialog(
                                 title: const Text('Edit Comment'),
@@ -68,7 +71,23 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                                 ),
                               ],
                               ),
-                            ),
+                            );
+                                }
+                                else{
+                                  showDialog<String>(
+                                    context: context, 
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Can not Edit another user comment Comment'),
+                                actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                                  )
+                                  );
+                                }
+                                }
                                 ),
                           ),
                       const Divider(height: 1.0),
@@ -102,6 +121,41 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                             comment.comment,
                             style: _biggerFont,
                           ),
+                              trailing:
+                                ElevatedButton(
+                                child:const Icon(Icons.edit, size: 30, color: Colors.white),
+                                onPressed: (){ 
+                                  if(routes.user_id == comment.userId){
+                                showDialog<String>(
+                              context: context, 
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Edit Comment'),
+                                content: EditCommentWidget( id: id,commentId: comment.commentId),
+                                actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                              ),
+                            );
+                                }
+                                else{
+                                  showDialog<String>(
+                                    context: context, 
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Can not Edit another user comment Comment'),
+                                actions: <Widget>[
+                                 TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                                  )
+                                  );
+                                }
+                                }
+                                )
                           ),
                       const Divider(height: 1.0),
                     ],

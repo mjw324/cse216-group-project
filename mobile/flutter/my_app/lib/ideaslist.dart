@@ -5,7 +5,7 @@ import 'ideaobj.dart';
 import 'routes.dart'; // is this necessary?
 import 'package:provider/provider.dart';
 import 'schedule.dart';
-import 'commentlist.dart';
+import 'profilepage.dart';
 import 'commentpage.dart';
 
 class IdeasListWidget extends StatefulWidget {
@@ -40,6 +40,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
 */
   @override
   Widget build(BuildContext context) {
+    
     // We need to create a schedule in order to access MySchedule (check to see if instance of Consumer and Provider concurrently is code smell)
     final schedule = Provider.of<MySchedule>(context);
     print('this is from idea list page');
@@ -59,10 +60,14 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                   delegate: SliverChildBuilderDelegate(
                 (context, i) {
                   IdeaObj idea = scheduleList[i];
+                 // ProfileWidget(title: 'title', userId: idea.userId);
+               //print('we are in idea list');
+                  // print(routes.email);
                   return Column(
                     children: <Widget>[
                       ListTile(
-                        trailing: ElevatedButton(
+                        trailing: 
+                        ElevatedButton(
                           child:const Icon(Icons.comment, size: 30, color: Colors.white),
                           onPressed: (){
                             Navigator.of(context).push( MaterialPageRoute(builder: (context) => MyCommentPage(title: 'Comment Page', id: idea.id) ));
@@ -82,19 +87,9 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                               idea.title + ' by ' + idea.userId,
                               style: _biggerFont,
                             ),
-                            onPressed: () => showDialog<String>(
-                              context: context, 
-                              builder: (BuildContext context) => AlertDialog(
-                                title: const Text('Profile Information'),
-                                content: Text('Name: '+ ideasList.fetchProfile(idea.userId)[0] + '    Email:' + ideasList.fetchProfile(idea.userId)[1]),
-                                actions: <Widget>[
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, 'OK'),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                              ),
-                            ),
+                            onPressed: () {
+                              Navigator.of(context).push( MaterialPageRoute(builder: (context) => ProfileWidget(title: 'Profile Page', userId: idea.userId) ));
+                          },
                             
                             ), 
                           subtitle: Text(
@@ -121,7 +116,10 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                       delegate: SliverChildBuilderDelegate(
                     (context, i) {
                       IdeaObj idea = list[i];
-                      
+                  // ProfileWidget(title: 'title', userId: idea.userId);
+                  // print('we are in idea list');
+                  // print(routes.email);
+                      //routes.fetchProfileInfo(idea.userId);
                       return Column(
                         children: <Widget>[
                           ListTile(
@@ -139,20 +137,9 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                                   idea.title + ' by ' + idea.userId,
                                   style: _biggerFont,
                                 ),
-                                onPressed: () => showDialog<String>(
-                                  context: context, 
-                                  builder: (BuildContext context) => AlertDialog(
-                                    title: const Text('Profile Information'),
-                                    content: Text(
-                                      'Name: '+ ideasList.fetchProfile(idea.userId)[0] + '     Email:' + ideasList.fetchProfile(idea.userId)[1]),
-                                    actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context, 'OK'),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                  ),
-                                ),
+                                onPressed: (){
+                                    Navigator.of(context).push( MaterialPageRoute(builder: (context) => ProfileWidget(title: 'Profile Page', userId: idea.userId) ));
+                          },
                                 ), 
                             subtitle: Text(
                                 idea.message,

@@ -3,7 +3,7 @@
 class ProfileObj {
   
   // The int representation of the idea id
-  final String username;
+  late final String username;
 
   // The String representation of the idea title
   final  String email;
