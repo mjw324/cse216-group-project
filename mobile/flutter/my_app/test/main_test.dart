@@ -17,6 +17,7 @@ void main() {
     String createdAt = "Nov 30, 2022, 5:19:48 PM";
     int userVotes = 1;
     String userId = '1234';
+    String username = 'abc123';
    
 
     // Act
@@ -27,7 +28,8 @@ void main() {
         votes: votes,
         //createdAt: createdAt,
         userId: userId,
-        userVotes: userVotes);
+        userVotes: userVotes,
+        username:username );
 
 
     // Assert
@@ -73,6 +75,7 @@ void main() {
     int commentId = 123;
     String comments = 'comment';
     String userId = '1234';
+    String username = 'abc123';
 
 
 
@@ -81,7 +84,8 @@ void main() {
       postId: postId, 
       commentId: commentId, 
       userId: userId, 
-      comment: comments);
+      comment: comments,
+      username: username);
 
     // Assert
     expect(comment.postId, postId);

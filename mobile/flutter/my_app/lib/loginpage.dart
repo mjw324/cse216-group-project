@@ -1,11 +1,5 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// ignore_for_file: public_member_api_docs
-
 import 'dart:async';
-import 'dart:convert' show json;
+import 'dart:convert' show base64Decode, json;
 import 'ideapage.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'routes.dart';
-
+class SignInToGetUsername{
+  static String username = ''; 
+}
+// This dart file takes care of the login page with Google
 GoogleSignIn _googleSignIn = GoogleSignIn(
 
    
@@ -59,7 +56,7 @@ class SignInState extends State<SignIn> {
 
   
 
- 
+
 
   Future<int> _handleSignIn() async {
     
@@ -73,21 +70,15 @@ class SignInState extends State<SignIn> {
     final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
     //print (googleAuth.idToken);
     Future<int> session;
-    Future<int> sessionId;
+    Map sessionId;
     int sessionID_int = 0;
      _googleSignIn.signIn().then((result){
-          result?.authentication.then((googleKey){
+          result?.authentication.then((googleKey) async {
               print(_googleSignIn.currentUser!.displayName);
               print(googleKey.idToken);
-              //final schedule = Provider.of<MySchedule>(context,listen: true);
-              print('this is before send token');
-              sessionId = sendToken(googleAuth.idToken);
-              //int actualsessionId;
-              //print(addIdea('title', 'message'));
-             // session= sendToken(googleKey.idToken!);
-             // session.then((value) => print(value));
-              sessionId.then((value) =>  {sessionID_int = value});
-              //print(actualsessionId);
+              //Need to include the term await to wait for the server's response
+              sessionId = await sendToken(googleAuth.idToken);
+              sessionID_int = routes.sessionId;
               
           }).catchError((err){
             print(err);
@@ -100,7 +91,7 @@ class SignInState extends State<SignIn> {
       return sessionID_int;
   }
   
-
+  // Handles sign out of the user
   Future<void> _handleSignOut() => _googleSignIn.disconnect();
 
   Widget _buildBody(BuildContext context) {
@@ -109,32 +100,42 @@ class SignInState extends State<SignIn> {
 
     final GoogleSignInAccount? user = _currentUser;
     if (user != null) {
+      //Once the user has signed in, the email and display name is shown
+      // Was getting errors with the image
       String e = user.email;
+      SignInToGetUsername.username = e;
       String? name = user.displayName;
+      String? url = user.photoUrl;
       String username= e.substring(0, e.indexOf('@')) + " and Name: " + name!;
-      //sendToken(user._idToken);
+
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
-          ListTile(
-            leading: GoogleUserCircleAvatar(
-              identity: user,
-            ),
+          //the user profile gave errors thus it is commented out
+           ListTile(
+          //   leading: GoogleUserCircleAvatar(
+          //     identity: user,
+          //     placeholderPhotoUrl: user.photoUrl,
+          //   ),
             title: Text(user.displayName ?? ''),
             subtitle: Text(user.email),
+            
           ),
           const Text('Signed in successfully.'),
           ElevatedButton(
             onPressed: _handleSignOut,
-            child: const Text('SIGN OUT'),
+            style: ElevatedButton.styleFrom( backgroundColor: Colors.brown.shade600),
+            child: const Text('SIGN OUT')
+            
           ),
-          
+          //Once signed in, there is a button that takes the user to the 
+          //home page of the The Buzz. Send the username, email, and sessionId
           ElevatedButton(
+            style: ElevatedButton.styleFrom( backgroundColor: Colors.brown.shade600),
           child: const Text('The Buzz Homepage'),
           onPressed: () {
-            print('this is from the elevated button');
-           routes.sessionId = schedule.sessionId; 
-            print(schedule.sessionId);
+            schedule.sessionId= routes.sessionId; 
+            //print(schedule.sessionId);
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) =>  TabBarDemo(
@@ -155,6 +156,7 @@ class SignInState extends State<SignIn> {
         children: <Widget>[
           const Text('You are not currently signed in.'),
           ElevatedButton(
+            style: ElevatedButton.styleFrom( backgroundColor: Colors.brown),
             onPressed: ()=> {
                number =  _handleSignIn(),
                number.then((value) => {schedule.sessionId = value, print(value)}),
@@ -172,7 +174,7 @@ class SignInState extends State<SignIn> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('The Buzz Google Sign In'),
-          shadowColor: Colors.brown,
+          backgroundColor: Colors.brown.shade600,
         ),
         body: ConstrainedBox(
           constraints: const BoxConstraints.expand(),

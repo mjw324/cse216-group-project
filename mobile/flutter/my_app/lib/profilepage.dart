@@ -1,59 +1,85 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-// Provides functions which use REST calls and interprets responses
-import 'routes.dart';
-import 'profileinfo.dart';
-import 'ideaslist.dart';
-import 'schedule.dart';
+import 'package:my_app/commentobj.dart';
+import 'routes.dart'; // is this necessary?
 import 'package:provider/provider.dart';
+import 'schedule.dart';
+import 'commentlist.dart';
+import 'addcomment.dart';
+import 'profileobj.dart';
 
-class MyProfilePage extends StatefulWidget {
-  String name;
-  String email; 
-
-  MyProfilePage({super.key, required this.title, required this.name, required this.email});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class ProfileWidget extends StatefulWidget {
+    final String title;
+  String userId; 
+  ProfileWidget({Key? key, required this.title, required this.userId}) : super(key: key);
 
   @override
-  // ignore: no_logic_in_create_state
-  State<MyProfilePage> createState() => _MyProfilePage(name: name, email: email);
+  State<ProfileWidget> createState() => _ProfileWidgetState(userId: userId);
 }
 
-class _MyProfilePage extends State<MyProfilePage> {
-  late String name;
-  late String email; 
-  _MyProfilePage({required this.name, required this.email});
+class _ProfileWidgetState extends State<ProfileWidget> {
+
+ 
+  late Future<List<ProfileObj>> _listProfile;
+  String userId;
+  _ProfileWidgetState({required this.userId}); 
+  final _biggerFont = const TextStyle(fontSize: 16);
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return ChangeNotifierProvider(
-        create: (context) => MySchedule(),
-        child: Scaffold(
-            appBar: AppBar(
-              // Here we take the value from the MyHomePage object that was created by
-              // the App.build method, and use it to set our appbar title.
-              title: Text(widget.title),
-            ),
-            body: CustomScrollView(
-              // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
-              slivers: <Widget>[
-                AddProfileWidget(name: name, email: email),
-                
-              ],
-            )));
+    // We need to create a schedule in order to access MySchedule (check to see if instance of Consumer and Provider concurrently is code smell)
+    final schedule = Provider.of<MySchedule>(context);
+    // Creates scheduleList to access current profile list stored in schedule
+    List<ProfileObj> scheduleList = schedule.profile;
+     //we get the user's information from the routes by sending the userId to backend and getting 
+      return FutureBuilder<List<ProfileObj>>(
+              future: _listProfile= routes.fetchProfileInfo(userId),
+              builder: ((BuildContext context,
+                  AsyncSnapshot<List<ProfileObj>> snapshot) {
+                Widget child;
+                if (snapshot.hasData) {
+                  List<ProfileObj> list = snapshot.data!;
+                  schedule.profileList = list;
+                      ProfileObj prof = list[0];
+                      return Scaffold(
+                        appBar: AppBar(title: const 
+                        Text(
+                            "User's Profile!",
+                          ),
+                          backgroundColor: Colors.brown,
+                          ),
+                          body: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Text(
+                                style: const TextStyle(height: 1, fontSize: 20),
+                                'Username: ${prof.username}'
+                              ),
+                              Text(
+                                style: const TextStyle(height: 1, fontSize: 20),
+                                'Email: ${prof.email}'
+                              ),
+                              Text(
+                                  style: const TextStyle(height: 1, fontSize: 20),
+                                'Note: ${prof.note}' 
+                              ),
+                            ]
+                          )
+                          ));
+                    
+               
+  } else if (snapshot.hasError) {
+                  child =  Text('${snapshot.error}');
+                } else {
+                  child = const Center(
+                          child: SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: CircularProgressIndicator()));
+                }
+                return child;
+ }));
+
   }
-} 
+}
+
