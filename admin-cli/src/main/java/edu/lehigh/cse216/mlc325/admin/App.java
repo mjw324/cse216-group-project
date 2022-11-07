@@ -514,8 +514,8 @@ public class App {
     }
 
     public static int updateRowProfile(Database db, BufferedReader in){
-        int id = getInt(in, "Enter the row ID :> ");
-        if (id == -1)
+        String id = getString(in, "Enter the row ID :> ");
+        if (id.equals(""))
         return -1;
         String newSO = getString(in, "Enter your SO: ");
         String newGI = getString(in, "Enter your GI: ");

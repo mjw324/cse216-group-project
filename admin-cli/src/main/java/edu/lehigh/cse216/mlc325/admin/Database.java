@@ -650,12 +650,12 @@ public static class UserVotesData {
         return res;
     }
 
-    int updateOneProfile(int id, String SO, String GI, String email, String username, String note, int safe) {
+    int updateOneProfile(String id, String SO, String GI, String email, String username, String note, int safe) {
         int res = -1;
         try {
             mUpdateOneProfile.setString(1, SO);
             mUpdateOneProfile.setInt(6, safe);
-            mUpdateOneProfile.setInt(7, id);
+            mUpdateOneProfile.setString(7, id);
             mUpdateOneProfile.setString(2, GI);
             mUpdateOneProfile.setString(3, email);
             mUpdateOneProfile.setString(4, username);
