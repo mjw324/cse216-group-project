@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'routes.dart';
 import 'schedule.dart';
 import 'ideaobj.dart';
+import 'loginpage.dart';
 
 class AddIdeaWidget extends StatefulWidget {
   const AddIdeaWidget({super.key});
@@ -61,7 +62,8 @@ class _AddIdeaWidgetState extends State<AddIdeaWidget> {
                     message: idea,
                     votes: 0,
                     userId: routes.user_id,
-                    userVotes: 0);
+                    userVotes: 0,
+                    username: SignInToGetUsername.username.substring(0,SignInToGetUsername.username.indexOf('@') ));
                     
                 print('After adding an idea'+ routes.user_id + '.');
                 schedule.submitIdea = newIdea; // submits idea and notifies list listeners

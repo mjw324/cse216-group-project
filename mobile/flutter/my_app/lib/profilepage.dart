@@ -44,12 +44,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   List<ProfileObj> list = snapshot.data!;
                   schedule.profileList = list;
                       ProfileObj prof = list[0];
-                      routes.userName(prof.email);
                       return Scaffold(
                         appBar: AppBar(title: const 
                         Text(
                             "User's Profile!",
                           ),
+                          backgroundColor: Colors.brown,
                           ),
                           body: Center(
                           child: Column(

@@ -8,42 +8,30 @@ import 'profileobj.dart';
 import 'dart:core';
 
 class routes{
+  //these are static variables to be acessed in all the dart files
   static int sessionId = 1;
   static String user_id = ""; 
   static http.Client client = http.Client();
-  static String email = "";
-  static String name = "";
-  static String note = "";
-  static void userName(String email1){
-    email.replaceAll(email, email1);
-  }
+
+  //sends request to backend by specifying the path, Need to use headers as we send the sessionId to make
+  //sure the ideas, comments, and profile are all user based
   static Future<dynamic> sendRequest(String method, String path, {String? body}) async{
-    print('now in sendRequest');
     final request = http.Request(method, Uri.parse('https://whispering-sands-78580.herokuapp.com$path'));
-    print('now after Request');
     request.headers["Session-ID"] = sessionId.toString();
-    //request.body = "{mSessionId :$sessionId}";
-    print(request.headers);
-    //print(request.body);
     if(body != null){
       request.body = body;
     }
-    
     final response = await http.Response.fromStream(await client.send(request));
-    print('response');
-    print(response.headers);
     if(response.statusCode != 200){
       statusCode: response.statusCode; message: response.body;
     }
     return jsonDecode(response.body);
   }
 
-
+  //Fetch all the posts from the backend
   static Future<List<IdeaObj>> fetchPosts() async{
-    //print('this is from fetch posts');
     print(routes.sessionId);
     final data = await sendRequest("GET", "/messages");
-   // print('now after send request');
     print(data['mData']);
     
     final List<IdeaObj> returnData;
@@ -57,15 +45,13 @@ class routes{
           .log('ERROR: Unexpected json response type (was not a List or Map).');
       returnData = List.empty();
     }
-    //print('res');
-   // print(data);
-    //print(returnData);
     return returnData;
   
   }
+
+  //Fetch profile information from backend of the user logged in 
     static Future<List<ProfileObj>> fetchProfile() async{
     final data = await sendRequest("GET", '/profile');
-    //print(data);
      final List<ProfileObj> returnData;
      var ideas = data['mData'];
       print(ideas);
@@ -75,14 +61,14 @@ class routes{
     }else if (ideas is Map) {
       returnData = <ProfileObj>[ProfileObj.fromJson(ideas as Map<String, dynamic>)];
     } else {
-      //print('here 3');
       developer
           .log('ERROR: Unexpected json response type (was not a List or Map).');
       returnData = List.empty();
     }
     return returnData;
-
   }
+
+  //Fetches profile information of the other user depending on the user ID
    static Future<List<ProfileObj>> fetchProfileInfo(String id) async{
     print('in fetchProfile info: $id');
     final data = await sendRequest("GET", '/profile/$id');
@@ -103,14 +89,10 @@ class routes{
           .log('ERROR: Unexpected json response type (was not a List or Map).');
       returnData = List.empty();
     }
-   // print('here 4');
-   email = returnData[0].email;
-   name = returnData[0].username;
-   note = returnData[0].note;
-    print(returnData[0].email);
     return returnData;
 
   }
+  //Fetches all the comments from backend 
   static Future<List<CommentObj>> fetchComments(int id) async{
     print(id);
     final data = await sendRequest("GET", '/comments/$id');
@@ -127,21 +109,15 @@ class routes{
           .log('ERROR: Unexpected json response type (was not a List or Map).');
       returnData = List.empty();
     }
-    print('res');
-    print(data);
-    print(returnData);
     
     return returnData;
     
 
   }
 
-
-
-  
-
 }
 
+//Uses the post method to add an idea by sending the title, message and sessionId
   Future<String> addIdea(String title, String message) async {
   final response = await http.post(
     Uri.parse('https://whispering-sands-78580.herokuapp.com/messages'),
@@ -152,7 +128,7 @@ class routes{
   return res['mData'];
 
 }
-//Post-> sends the id_token to backend
+//Post-> sends the id_token to backend and gets a session Id and user ID
 Future<Map> sendToken(String? mToken) async {
   print('mToken');
   print(mToken);
@@ -161,19 +137,14 @@ Future<Map> sendToken(String? mToken) async {
     body: jsonEncode(<String, String?>{'mToken': mToken}),
   );
   //developer.log(response.body);
-  
-  //print(response.body);
   var res = jsonDecode(response.body);
   /*
   developer.log('json decode: $res');
   developer.log('The keys are: ${res.keys}');
   developer.log('The values are: ${res.values}');
-  print('hi');
-  print(res);
-   print('hi');
    */ 
   //print(res['mData']);
-  routes.sessionId = int.parse(res['mData']['Session-ID'])!;
+  routes.sessionId = int.parse(res['mData']['Session-ID']);
   routes.user_id = res['mData']['User-ID'];
   print('this is in sendIdtoken');
   print(res['mData']['Session-ID']);  
@@ -221,6 +192,7 @@ Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
   return res['mData'];
 }
 
+//Takes care of the upvote of an idea
 Future<int> upVote(int idx) async{
   final response = await http.put(Uri.parse(
         'https://whispering-sands-78580.herokuapp.com/messages/$idx'),
@@ -232,19 +204,20 @@ Future<int> upVote(int idx) async{
 }
 
 
-// POST /messages route given a new idea with title and messages, should return String of new ID
+// POST /comment/id route add a comment to a post given the postId
 Future<String> addComment(String comment, int id ) async {
-  print("post ID: $id");
   final response = await http.post(
     Uri.parse('https://whispering-sands-78580.herokuapp.com/comment/$id'),
     body: jsonEncode(<String, String>{'mCommentId': '-1', 'mComment': comment, 'mSessionId' :routes.sessionId.toString()}),
   );
   var res = jsonDecode(response.body);
+  //Once added, should print res{mStatus: ok, mMessage: 1}, if 0, there is an error on frontend
   print("res$res");
-  print('userId');
   return res['mMessage'];
 
 }
+
+//PUT on the /comment route-> edits a comment given that it was from the same user
 Future<String> editComment(String comment, int id, int commentId) async {
   print("post ID: $id");
   final response = await http.put(
@@ -253,59 +226,24 @@ Future<String> editComment(String comment, int id, int commentId) async {
   );
   print(commentId);
   var res = jsonDecode(response.body);
+  //should print res Edit{mStatus: ok, mMessage: 1} once the edit has been made
   print("res Edit$res");
   print('userId');
   return res['mMessage'];
 
 }
-
+//PUT on the /profile route -> Sends the editted profile to backend
 Future<int> sendProfile(String username, String SO, String GI, String note) async{
    final response = await http.put(
     Uri.parse('https://whispering-sands-78580.herokuapp.com/profile'),
     body: jsonEncode(<String, String>{'mSessionId' :routes.sessionId.toString(), 'mGI': GI, 'mSO' : SO,  'mUsername': username.substring(0, username.indexOf(' and')),'mNote': note }),
   );
   var res = jsonDecode(response.body);
+  //RES should be res{mStatus: ok, mData: 1} if it is all sent correctly
   print("res$res");
   return res['mData'];
 }
-// Perform GET on /ideas route, retrieves JSON response and converts it into a list of Idea Objects
-Future<List<IdeaObj>> fetchIdeas(int SessionId) async {
-  routes.sessionId = SessionId;
-  print('this is from fetchideas');
-  print(routes.sessionId);
-  final response = await http.get(
-    Uri.parse('https://whispering-sands-78580.herokuapp.com/messages'),
-    //body: jsonEncode(<String?, int>{'mSessionId': SessionId}),
-  );
-  if (response.statusCode == 200) {
-    // If the server did return a 200 OK response, then parse the JSON.
-    final List<IdeaObj> returnData;
-    var res = jsonDecode(response.body);
-    // Coded out lines are to debug/print response
-    //developer.log(response.body);
-    //developer.log('json decode: $res');
-    //developer.log('The keys are: ${res.keys}');
-    //developer.log('The values are: ${res.values}');
-    print('ideas');
-    var ideas = res['mData'];
-    if (ideas is List) {
-      returnData = ideas.map((x) => IdeaObj.fromJson(x)).toList();
-    } else if (ideas is Map) {
-      returnData = <IdeaObj>[IdeaObj.fromJson(res as Map<String, dynamic>)];
-    } else {
-      developer
-          .log('ERROR: Unexpected json response type (was not a List or Map).');
-      returnData = List.empty();
-    }
-    print('res');
-    print(res);
-    return returnData;
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('Did not receive success status code from request.');
-  }
-}
+
 
 // Returns how many votes an idea has. This could probably be removed given the refactoring
 Future<String> voteCounter(int idx) async {
@@ -318,57 +256,3 @@ Future<String> voteCounter(int idx) async {
 }
 
 
-// Future<String> sendSessionId(String? mSessionId) async {
-//   final response = await http.post(
-//     Uri.parse('https://whispering-sands-78580.herokuapp.com/signin/mSessionId'),
-//     body: jsonEncode(<String?, String?>{'mSessionid': mSessionId}),
-//   );
-//   var res = jsonDecode(response.body);
-//   return res['mStatus'];
-// }
-
-/*Returns the username of the user id_token
-Future<String> fetchUsername(String? id_token) async {
-  final response = await http.get(
-      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/username/$id_token'));
-  var res = jsonDecode(response.body);
-  print(res);
-  return res['mData'];
-}
-
-//Returns the email of the user id_token
-Future<String> fetchEmail(String? id_token) async {
-  final response = await http.get(
-      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/email/$id_token'));
-  var res = jsonDecode(response.body);
-  print(res);
-  return res['mData'];
-}
-
-//Adds SI of the user id_token
-Future<String> addSI(String? id_token, String SI) async {
-  final response = await http.post(
-      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/SI'),
-      body: jsonEncode(<String, String?>{'id_token': id_token, 'SI': SI}),
-  );
-  var res = jsonDecode(response.body);
-  return res['mMessage'];
-}
-
-Future<String> addGO(String? id_token, String GO) async {
-  final response = await http.post(
-      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/GO'),
-      body: jsonEncode(<String, String?>{'id_token': id_token, 'GO': GO}),
-  );
-  var res = jsonDecode(response.body);
-  return res['mMessage'];
-}
-Future<String> addnote(String? id_token, String note) async {
-  final response = await http.post(
-      Uri.parse('https://whispering-sands-78580.herokuapp.com/profile/note'),
-      body: jsonEncode(<String, String?>{'id_token': id_token, 'note': note}),
-  );
-  var res = jsonDecode(response.body);
-  return res['mMessage'];
-}
-*/

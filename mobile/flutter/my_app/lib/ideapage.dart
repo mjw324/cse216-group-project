@@ -42,6 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
         create: (context) => MySchedule(),
         child: Scaffold(
             appBar: AppBar(
+              backgroundColor: Colors.brown,
               // Here we take the value from the MyHomePage object that was created by
               // the App.build method, and use it to set our appbar title.
               title: Text(widget.title),
@@ -71,8 +72,10 @@ class TabBarDemo extends StatelessWidget {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
+            backgroundColor: Colors.brown,
             bottom: const TabBar(
               tabs: [
+
                 Tab(icon:Icon(Icons.list_alt_outlined)),
                 Tab(icon: Icon(Icons.face_outlined)),
               ],

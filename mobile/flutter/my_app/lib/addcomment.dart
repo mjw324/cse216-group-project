@@ -3,8 +3,9 @@ import 'package:my_app/commentobj.dart';
 import 'package:provider/provider.dart';
 import 'routes.dart';
 import 'schedule.dart';
-import 'ideaobj.dart';
+import 'loginpage.dart';
 
+//This is the method to add comments 
 class AddCommentWidget extends StatefulWidget {
   int id; 
   AddCommentWidget({Key? key, required this.id}) : super(key: key);
@@ -18,7 +19,7 @@ class _AddCommentWidget extends State<AddCommentWidget> {
   // title and idea controller are used to manage text input in respective fields
   final _commentController = TextEditingController();
   String comment = '';
-  late CommentObj newComment = CommentObj(postId: id, commentId: 000, userId: 'userId', comment: comment); 
+  late CommentObj newComment = CommentObj(postId: id, commentId: 000, userId: 'userId', comment: comment, username: 'asd'); 
 
   int id;
   _AddCommentWidget({required this.id});
@@ -48,12 +49,13 @@ class _AddCommentWidget extends State<AddCommentWidget> {
                 // Currently this string cant be used because it always returns 1. Backend needs to return id of newIdea
                 print(id);
                 Future<String> idofNewComment = addComment(comment, id);
-                // This is temporary, until backend POST /messages route can return the id of the new Idea so we can GET idea by id
+                // This is when it another comment is added
                 newComment = CommentObj(
                   postId: id, 
                   commentId: 0000, 
                   userId: routes.user_id, 
-                  comment: comment);
+                  comment: comment,
+                  username: SignInToGetUsername.username.substring(0,SignInToGetUsername.username.indexOf('@') ));
 
                 schedule.submitComment = newComment; // submits idea and notifies list listeners
                 _commentController.clear();
@@ -69,6 +71,8 @@ class _AddCommentWidget extends State<AddCommentWidget> {
 }
 
 
+
+//This is the method to edit comments. Need to include the parameters of the comment id and userId
 class EditCommentWidget extends StatefulWidget {
   int id; 
   int commentId;

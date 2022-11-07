@@ -20,9 +20,6 @@ class _AddProfileWidget extends State<AddProfileWidget> {
   String name;
   String userEmail; 
   _AddProfileWidget({required this.name, required this.userEmail});
-  // title and idea controller are used to manage text input in respective fields
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
   final _siController = TextEditingController();
   final _goController = TextEditingController();
   final _noteController = TextEditingController();
@@ -38,7 +35,7 @@ class _AddProfileWidget extends State<AddProfileWidget> {
     'Queer',
     'Pansexual',
     'Questioning',
-    'Something else; please specify:',
+    'Something else',
     'Don’t know',
     'Decline to answer',];
   
@@ -49,13 +46,14 @@ class _AddProfileWidget extends State<AddProfileWidget> {
     'Transgender man/Trans man',
     'Transgender woman/trans woman',
     'Genderqueer/gender nonconforming neither exclusively male nor female',
-    'Additional gender category (or other); please specify:'
+    'Additional gender category (or other)',
     'Decline to answer',
     ];
 
   @override
  
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) 
+  {
      final schedule1 = Provider.of<MySchedule>(context);
     // Creates scheduleList to access current ideas list stored in schedule
     List<ProfileObj> scheduleList = schedule1.profile;
@@ -68,9 +66,8 @@ class _AddProfileWidget extends State<AddProfileWidget> {
                     List<ProfileObj> list = snapshot.data!;
                   schedule1.profileList = list;
                       ProfileObj prof = list[0];
-                        String value1 = prof.GI;
+                      String value1 = prof.GI;
     String value2 = prof.SO;
-    print(value1 + ' ' + value2);
     String username = name;
     String email = userEmail;
     String SO = 'Sexual Orientation';
@@ -79,9 +76,11 @@ class _AddProfileWidget extends State<AddProfileWidget> {
   String sexualOrientation = 'Sexual Orientation';  
   String genderIdentityVal = 'Gender Identity';
     return Scaffold(
+
       appBar: AppBar(title: const Text(
           "Edit your Profile!",
         ),
+        backgroundColor: Colors.brown,
         centerTitle: true,
       ),
       body: Center(
@@ -109,17 +108,6 @@ class _AddProfileWidget extends State<AddProfileWidget> {
                 genderIdentityVal = val as String;
                 print(genderIdentityVal);
                 value1 = val;
-                if(val == 'Additional gender category (or other); please specify:'){
-                  TextField(
-                    controller: _goController,
-                    decoration: const InputDecoration(
-                      hintText: 'What is your Gender Identity',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLength: 128, // max amount of characters accepted is 128
-                  );
-                 genderIdentityVal = _goController.text;
-                }
                 (value1) =>val;
                   print(value1);
                   print(val);
@@ -140,17 +128,6 @@ class _AddProfileWidget extends State<AddProfileWidget> {
                 sexualOrientation = val as String;
                 print(sexualOrientation);
                 value2 = val;
-                if(val == 'Something else; please specify:'){
-                  TextField(
-                    controller: _goController,
-                    decoration: const InputDecoration(
-                      hintText: 'What is your Sexual Orientation',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLength: 128, // max amount of characters accepted is 128
-                  );
-                  sexualOrientation = _siController.text;
-                }
                 sexualOrientation = val as String;
                   (value2) => val;
                   print(value2);
@@ -170,7 +147,7 @@ class _AddProfileWidget extends State<AddProfileWidget> {
           ),
           maxLength: 1024, // max amount of characters accepted is 128
         ),
- Align(
+      Align(
           alignment: Alignment.centerLeft,
           child: MaterialButton(
             onPressed: () {
@@ -201,16 +178,16 @@ class _AddProfileWidget extends State<AddProfileWidget> {
           
     ));
 
-                  }else if (snapshot.hasError) {
-                  child =  Text('${snapshot.error}');
-                } else {
-                  child = const Center(
-                          child: SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: CircularProgressIndicator()));
-                }
-                return child;
+          }else if (snapshot.hasError) {
+          child =  Text('${snapshot.error}');
+        } else {
+          child = const Center(
+                  child: SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator()));
+        }
+        return child;
    } 
    )
   );

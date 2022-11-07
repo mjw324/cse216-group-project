@@ -14,6 +14,7 @@ class IdeaObj {
   int votes;
 
   String userId;
+  String username;
 
 
   // The String representation of the amount of votes
@@ -30,7 +31,8 @@ class IdeaObj {
       required this.message,
       required this.votes,
       required this.userId,
-      required this.userVotes});
+      required this.userVotes,
+      required this.username});
 
   factory IdeaObj.fromJson(Map<String, dynamic> json) {
     // Map's String dynamic pair is the JSON key value pair
@@ -44,6 +46,7 @@ class IdeaObj {
       votes: json['mVotes'],
       userId: json['mUserId'],
       userVotes: 0,
+      username: json['mUsername'] ??'No username',
     );
   }
 }

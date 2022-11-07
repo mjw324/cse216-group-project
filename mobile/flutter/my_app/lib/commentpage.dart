@@ -9,8 +9,11 @@ import 'schedule.dart';
 import 'package:provider/provider.dart';
 import 'addcomment.dart';
 
+//This is similar to idea page except with comments.
 class MyCommentPage extends StatefulWidget{
+  //The title for the title of the new page -> "comment page"
   final String title;
+  //post id-> to associate the comments with the specific posts
   int id; 
   MyCommentPage({super.key, required this.title, required this.id});
 
