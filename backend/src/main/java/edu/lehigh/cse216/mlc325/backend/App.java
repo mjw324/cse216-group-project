@@ -33,7 +33,7 @@ public class App {
 
         //key generated session id, value is google user id
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
-        usersHT.put(-1, "107590165278581716154"); //TODO remove later
+        usersHT.put(-1, "107590165278581716154"); //TODO remove later, for testing purposes only
 
         final String CLIENT_ID_1 = "429689065020-h43s75d9jahb8st0jq8cieb9bctjg850.apps.googleusercontent.com";
         final String CLIENT_ID_2 = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
@@ -319,7 +319,7 @@ public class App {
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "error inserting comment", null));
             }
-            if (result == -1) {
+            if (result == 0) {
                 return gson.toJson(new StructuredResponse("error", "problem inserting comment", null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", "" + result, null));
