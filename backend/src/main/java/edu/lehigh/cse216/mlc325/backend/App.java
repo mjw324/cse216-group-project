@@ -18,6 +18,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 
 import java.util.Hashtable;
+import java.util.HashMap;
 //import java.sql.ResultSetMetaData;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public class App {
 
         //key generated session id, value is google user id
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
+        usersHT.put(-1, "107590165278581716154"); //TODO remove later, for testing purposes only
 
         final String CLIENT_ID_1 = "429689065020-h43s75d9jahb8st0jq8cieb9bctjg850.apps.googleusercontent.com";
         final String CLIENT_ID_2 = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
@@ -253,6 +255,7 @@ public class App {
         Spark.post("/signin", (request, response) -> {
             TokenRequest req = gson.fromJson(request.body(), TokenRequest.class);
             String tokenString = req.mToken;
+            Map<String,String> map = new HashMap<String, String>();
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
@@ -272,7 +275,7 @@ public class App {
                 // String familyName = (String) payload.get("family_name");
                 // String givenName = (String) payload.get("given_name");
                 if(db.selectOneProfile(userId)==null){
-                    db.insertRowProfile(userId, "Not specified", "not specifed", email, name, "");
+                    db.insertRowProfile(userId, "", "", email, name, "");
                 }
                 
                 if(!db.safeUser(userId)){
@@ -287,7 +290,9 @@ public class App {
                         userSession = (int)(Math.random()*Integer.MAX_VALUE);
                     }
                     usersHT.put(userSession, userId);
-                    return gson.toJson(new StructuredResponse("ok", "Signed in " + name, userSession));
+                    map.put("User-ID", userId);
+                    map.put("Session-ID", userSession.toString());
+                    return gson.toJson(new StructuredResponse("ok", "Signed in " + name, map));
             } else {
                 return gson.toJson(new StructuredResponse("error", "user could not be verified", null));
             }
@@ -310,11 +315,11 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                result = db.insertRowComment(userId, postId, req.mCommment);
+                result = db.insertRowComment(userId, postId, req.mComment);
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "error inserting comment", null));
             }
-            if (result == -1) {
+            if (result == 0) {
                 return gson.toJson(new StructuredResponse("error", "problem inserting comment", null));
             } else {
                 return gson.toJson(new StructuredResponse("ok", "" + result, null));
@@ -323,13 +328,18 @@ public class App {
 
         // PUT route for modifying a comment from its comment id
         Spark.put("/comment", (request, response) -> {
-            int postId = Integer.parseInt(request.params("id"));
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
-            CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
-            String userId = usersHT.get(req.mSessionId);
-            if(userId==null){
-                return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+            CommentRequest req;
+            String userId;
+            try {
+                req = gson.fromJson(request.body(), CommentRequest.class);
+                userId = usersHT.get(req.mSessionId);
+                if(userId==null){
+                    return gson.toJson(new StructuredResponse("error", "invalid user session", null));
+                }
+            } catch (Exception e) {
+                return gson.toJson(new StructuredResponse("error","error getting and validating request: " + request.body(),  null));
             }
             // ensure status 200 OK, with a MIME type of JSON
             // NB: even on error, we return 200, but with a JSON object that
@@ -338,7 +348,7 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                result = db.updateOneComment(req.mCommentId, req.mCommment);
+                result = db.updateOneComment(req.mCommentId, req.mComment);
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error","error updating",  null));
             }

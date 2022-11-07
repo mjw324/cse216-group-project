@@ -4,7 +4,7 @@ public class CommentRequest {
 
     public int mCommentId;
 
-    public String mCommment;
+    public String mComment;
 
     public int mSessionId;
 }
