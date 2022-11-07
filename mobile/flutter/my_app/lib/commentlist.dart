@@ -43,59 +43,65 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                   return Column(
                     children: <Widget>[
                       ListTile( 
-                                            
-                          leading: ElevatedButton(
-                              style:ElevatedButton.styleFrom(
-                                backgroundColor: Colors.brown,
+                          //deals with the userId and makes sure other users can see who posted the message                  
+                          leading: 
+                            ElevatedButton(
+                              style:
+                                ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.brown,
+                                ),
+                              child:
+                                Text(
+                                  comment.userId,
+                                ),
+                                onPressed: () 
+                                {
+                                  Navigator.of(context).push( MaterialPageRoute(builder: (context) => ProfileWidget(title: 'Profile Page', userId: comment.userId) ));
+                                },
+                            ),    
+                            title: 
+                              Text(
+                              comment.comment,
+                              style: _biggerFont,
                               ),
-                            child:Text(
-                              comment.userId,
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).push( MaterialPageRoute(builder: (context) => ProfileWidget(title: 'Profile Page', userId: comment.userId) ));
-                            },
-                            
-                          ),    
-                          title: Text(
-                            comment.comment,
-                            style: _biggerFont,
-                          ),
+                          //Deals with user editting a comment
                           trailing:
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom( backgroundColor: Colors.brown),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom( backgroundColor: Colors.brown),
                                 child:const Icon(Icons.edit, size: 30, color: Colors.white),
                                 onPressed: (){ 
+                                  //checks to make sure only the user who posted the message can edit it
                                   if(routes.user_id == comment.userId){
-                                showDialog<String>(
-                              context: context, 
-                              builder: (BuildContext context) => AlertDialog(
-                                title: const Text('Edit Comment'),
-                                content: EditCommentWidget( id: id,commentId: comment.commentId),
-                                actions: <Widget>[
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, 'OK'),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                              ),
-                            );
-                                }
-                                else{
-                                  showDialog<String>(
-                                    context: context, 
-                              builder: (BuildContext context) => AlertDialog(
-                                title: const Text('Can not Edit another user comment Comment'),
-                                actions: <Widget>[
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, 'OK'),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                                  )
-                                  );
-                                }
-                                }
-                                ),
+                                    showDialog<String>(
+                                      context: context, 
+                                      builder: (BuildContext context) => AlertDialog(
+                                        title: const Text('Edit Comment'),
+                                        content: EditCommentWidget( id: id,commentId: comment.commentId),
+                                        actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, 'OK'),
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                      ),
+                                    );
+                                  }
+                                  else{
+                                    showDialog<String>(
+                                      context: context, 
+                                      builder: (BuildContext context) => AlertDialog(
+                                        title: const Text('Can not Edit another user comment Comment'),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, 'OK'),
+                                            child: const Text('OK'),
+                                          ),
+                                        ],
+                                      )
+                                    );
+                                  }
+                              }
+                            ),
                           ),
                       const Divider(height: 1.0),
                     ],
@@ -137,42 +143,43 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                             comment.comment,
                             style: _biggerFont,
                           ),
-                              trailing:
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom( backgroundColor: Colors.brown),
-                                  child:const Icon(Icons.edit, size: 30, color: Colors.white),
-                                  onPressed: (){ 
-                                    if(routes.user_id == comment.userId){
-                                      showDialog<String>(
-                                      context: context, 
-                                      builder: (BuildContext context) => AlertDialog(
-                                        title: const Text('Edit Comment'),
-                                        content: EditCommentWidget( id: id,commentId: comment.commentId),
-                                        actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, 'OK'),
-                                          child: const Text('OK'),
-                                        ),
-                                      ],
-                                      ),
-                            );
-                                }
-                                else{
+                          //Deals with user editting a comment
+                          trailing:
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom( backgroundColor: Colors.brown),
+                              child:const Icon(Icons.edit, size: 30, color: Colors.white),
+                              onPressed: (){ 
+                                if(routes.user_id == comment.userId){
                                   showDialog<String>(
-                                    context: context, 
-                              builder: (BuildContext context) => AlertDialog(
-                                title: const Text('Can not Edit another user comment Comment'),
-                                actions: <Widget>[
-                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, 'OK'),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                                  )
-                                  );
-                                }
-                                }
+                                  context: context, 
+                                  builder: (BuildContext context) => AlertDialog(
+                                    title: const Text('Edit Comment'),
+                                    content: EditCommentWidget( id: id,commentId: comment.commentId),
+                                    actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, 'OK'),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                  ),
+                              );
+                              }
+                              else{
+                                showDialog<String>(
+                                  context: context, 
+                                  builder: (BuildContext context) => AlertDialog(
+                                    title: const Text('Can not Edit another user comment Comment'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                      onPressed: () => Navigator.pop(context, 'OK'),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
                                 )
+                                );
+                              }
+                              }
+                              )
                           ),
                       const Divider(height: 1.0),
                     ],

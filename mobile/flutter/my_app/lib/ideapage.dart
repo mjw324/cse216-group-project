@@ -56,6 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
             )));
   }
 } 
+
+//This deals with the tabs above the homepage with the profile and ideas page
 class TabBarDemo extends StatelessWidget {
   String name, email; 
   int session; 
@@ -65,8 +67,6 @@ class TabBarDemo extends StatelessWidget {
   Widget build(BuildContext context) {
     final schedule = Provider.of<MySchedule>(context);
     schedule.sessionId = session;
-    print('this is from the tabbardemo');
-    print(session);
     return MaterialApp(
       home: DefaultTabController(
         length: 2,

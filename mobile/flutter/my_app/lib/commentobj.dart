@@ -16,10 +16,6 @@ class CommentObj {
    //The String representation of the username
    String username;
 
- 
-
-
-
 
   CommentObj(
       {required this.postId,
@@ -36,6 +32,7 @@ class CommentObj {
       commentId: json['mCommentId'],
       userId: json['mUserId'],
       comment: json['mComment'],
+      //the ?? 'No username' is to deal with the Unit Tests having no username
       username: json['mUsername'] ??'No username'
     );
   }

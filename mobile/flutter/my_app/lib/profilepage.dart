@@ -28,13 +28,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   Widget build(BuildContext context) {
     // We need to create a schedule in order to access MySchedule (check to see if instance of Consumer and Provider concurrently is code smell)
     final schedule = Provider.of<MySchedule>(context);
-    // Creates scheduleList to access current ideas list stored in schedule
+    // Creates scheduleList to access current profile list stored in schedule
     List<ProfileObj> scheduleList = schedule.profile;
-     // This is called when IdeasListWidget is first initialized. The _listIdeas variable is initialized with fetchIdeas() in routes.dart
-  
-    // If it isn't empty, we create our IdeasListWidget from the scheduleList.
-    // This will need to be refactored because schedule.ideas only updates when 1) it is initialized in else block 2) we make updates to it on app
-    // *It does not take into account new ideas from other clients after it has been initialized*
+     //we get the user's information from the routes by sending the userId to backend and getting 
       return FutureBuilder<List<ProfileObj>>(
               future: _listProfile= routes.fetchProfileInfo(userId),
               builder: ((BuildContext context,
