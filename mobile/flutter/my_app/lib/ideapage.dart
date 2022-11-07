@@ -7,6 +7,7 @@ import 'ideaslist.dart';
 import 'schedule.dart';
 import 'package:provider/provider.dart';
 import 'profilepage.dart';
+import 'profileinfo.dart';
 
 class MyHomePage extends StatefulWidget {
   int session;
@@ -41,6 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
         create: (context) => MySchedule(),
         child: Scaffold(
             appBar: AppBar(
+              backgroundColor: Colors.brown,
               // Here we take the value from the MyHomePage object that was created by
               // the App.build method, and use it to set our appbar title.
               title: Text(widget.title),
@@ -48,12 +50,14 @@ class _MyHomePageState extends State<MyHomePage> {
             body: CustomScrollView(
               // This is the optimized version of ListView, where slivers don't need to be rendered when not on screen (in viewport)
               slivers: <Widget>[
-                AddIdeaWidget(),
+                const AddIdeaWidget(),
                 IdeasListWidget(sessionId: session),
               ],
             )));
   }
 } 
+
+//This deals with the tabs above the homepage with the profile and ideas page
 class TabBarDemo extends StatelessWidget {
   String name, email; 
   int session; 
@@ -63,15 +67,15 @@ class TabBarDemo extends StatelessWidget {
   Widget build(BuildContext context) {
     final schedule = Provider.of<MySchedule>(context);
     schedule.sessionId = session;
-    print('this is from the tabbardemo');
-    print(session);
     return MaterialApp(
       home: DefaultTabController(
         length: 2,
         child: Scaffold(
           appBar: AppBar(
+            backgroundColor: Colors.brown,
             bottom: const TabBar(
               tabs: [
+
                 Tab(icon:Icon(Icons.list_alt_outlined)),
                 Tab(icon: Icon(Icons.face_outlined)),
               ],
@@ -81,7 +85,8 @@ class TabBarDemo extends StatelessWidget {
           body: TabBarView(
             children: [
               MyHomePage(title: 'The Buzz Idea Page', session: session),
-              MyProfilePage(title: 'Profile Page',name: name, email: email),
+              AddProfileWidget(name: name, email: email),
+              //MyProfilePage(title: 'Profile Page',name: name, email: email),
             ],
           ),
         ),

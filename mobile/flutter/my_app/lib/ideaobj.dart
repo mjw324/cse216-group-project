@@ -12,15 +12,12 @@ class IdeaObj {
 
   // The int representation of the amount of votes. This is not final because vote count can change
   int votes;
-
+  //This String representation of the userId associated with the post
   String userId;
+  //This string representation of the username associated with the post
+  String username;
 
 
-  // The String representation of the amount of votes
-  // Possible technical debt - this is a question of type Date vs type String
-  //final String createdAt;
-
-  // This attribute will need to change when adding functionality for multiple users.
   // This tracks if the current user has upvoted (1), downvoted (-1), or not voted (0) on an idea
   int userVotes;
 
@@ -30,7 +27,8 @@ class IdeaObj {
       required this.message,
       required this.votes,
       required this.userId,
-      required this.userVotes});
+      required this.userVotes,
+      required this.username});
 
   factory IdeaObj.fromJson(Map<String, dynamic> json) {
     // Map's String dynamic pair is the JSON key value pair
@@ -44,6 +42,7 @@ class IdeaObj {
       votes: json['mVotes'],
       userId: json['mUserId'],
       userVotes: 0,
+      username: json['mUsername'] ??'No username',
     );
   }
 }
