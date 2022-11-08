@@ -4,34 +4,49 @@ package edu.lehigh.cse216.mlc325.backend;
 // create an HTTP GET route
 import spark.Spark;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 
 // Import Google's JSON library
 import com.google.gson.*;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-
+import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
 
 import java.util.Hashtable;
 import java.util.HashMap;
 //import java.sql.ResultSetMetaData;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+
 /**
  * For now, our app creates an HTTP server that can only get and add data.
  */
 public class App {
     public static void main(String[] args) {
+        // Retrieves a key value map of Config Vars from Heroku
         Map<String, String> env = System.getenv();
-        // String db_url = env.get("DATABASE_URL");
-        String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
+        // Receives Postgres Database URL from Heroku Config Vars (found in settings of Heroku app)
+        String db_url = env.get("DATABASE_URL");
 
         //key generated session id, value is google user id
+        // This will be replaced with a caching solution 
         Hashtable<Integer, String> usersHT = new Hashtable<>(); 
         usersHT.put(-1, "107590165278581716154"); //TODO remove later, for testing purposes only
 
@@ -75,11 +90,11 @@ public class App {
             enableCORS(acceptCrossOriginRequestsFrom, acceptedCrossOriginRoutes, supportedRequestHeaders);
         }
 
-        // Set up a route for serving the main page
-        Spark.get("/", (req, res) -> {
-            res.redirect("/index.html");
-            return "";
-        });
+        // // Set up a route for serving the main page
+        // Spark.get("/", (req, res) -> {
+        //     res.redirect("/index.html");
+        //     return "";
+        // });
 
         // GET route that returns all message titles and Ids.  All we do is get 
         // the data, embed it in a StructuredResponse, turn it into JSON, and 
@@ -242,8 +257,37 @@ public class App {
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
+            // TODO: Caching file into database?
             int result = db.insertRowIdea(req.mTitle, req.mMessage, userId);
-            //System.out.println(newId);
+            if(req.mBase64Image != null) {
+                // Decoding Base64 file from HTTP Request
+                byte[] fileBytes = Base64.getDecoder().decode(req.mBase64Image);
+                java.io.File filePath = new java.io.File("files/photo.jpg");
+                FileUtils.writeByteArrayToFile(filePath, fileBytes);
+                // Building new authorized API client service for Google Drive
+                InputStream google_service_secret = new ByteArrayInputStream(env.get("GOOGLE_SERVICE_ACCOUNT_SECRET").getBytes(StandardCharsets.UTF_8));
+                GoogleCredentials credentials = GoogleCredentials.fromStream(google_service_secret).createScoped(Arrays.asList(DriveScopes.DRIVE_FILE));
+                HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+                Drive service = new Drive.Builder(new NetHttpTransport(), 
+                    GsonFactory.getDefaultInstance(),
+                    requestInitializer)
+                    .setApplicationName("Drive Upload")
+                    .build();
+                // Upload File to Drive
+                File fileMetadata = new File();
+                fileMetadata.setName("photo.jpg"); // What the file will be stored as
+                FileContent mediaContent = new FileContent("image/jpeg", filePath);
+                try { 
+                    File file = service.files().create(fileMetadata, mediaContent)
+                        .setFields("id")
+                        .execute();
+                    System.out.println("File ID: " + file.getId());
+                } catch(GoogleJsonResponseException e) {
+                    System.err.println("Unable to upload file: " + e.getDetails());
+                }
+                
+
+            }
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
