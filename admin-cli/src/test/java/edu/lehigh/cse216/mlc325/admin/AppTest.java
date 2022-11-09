@@ -54,7 +54,7 @@ public class AppTest
     /**
      * Ensure that removing an entry works correctly
      */
-    /*public void testRemoveEntry()
+    public void testRemoveEntry()
     {
         ArrayList<Database.DataRow> res = db.selectAllPosts();
         int id = 0;
@@ -65,9 +65,9 @@ public class AppTest
         Reader inputString = new StringReader(test);
         BufferedReader input = new BufferedReader(inputString);
         assertTrue(App.deleteRowPost(db, input) == 1);
-    }*/
+    }
 
-    /*public void testAddEntryProfile()
+    public void testAddEntryProfile()
     {
         assertFalse(db==null);
         String test = "1\nUnit test SO \nUnit test GI \nUnit Test email \nunit test username \nunit test note";
@@ -88,7 +88,7 @@ public class AppTest
         Reader inputString = new StringReader(test);
         BufferedReader input = new BufferedReader(inputString);
         assertTrue(App.deleteRowProfile(db, input) == 1);
-    }*/
+    }
 
     /**
      * Ensure that the constructor populates every field of the object it
