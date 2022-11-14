@@ -2,7 +2,7 @@
 ## Authors
 - Aarushi Singh
     - aas620
-- Mattias Culbertson
+- Matthias Culbertson
     - mlc325
 - Micah Worth
     - mjw324
@@ -67,34 +67,53 @@ So I can see what my colleagues think of the idea (manual)
 
 9. As an authenticated user
 I want to be able to sign in with my google account
-So I can access the buzz app
+So I can access the buzz app (manual)
 
-10. As an admin
+10. As an authenticated user
+I want to be able to add file attachments to my posts
+So I can communicate a wider variety of information (manual)
+
+11. As an authenticated user
+I want to be able to add file attachments to my comments
+So I can communicate a wider variety of information (manual)
+
+12. As an admin
 I want to be able to create or delete tables
 So that I can set up or clear the app (automated)
 
-11. As an admin
+13. As an admin
 I want to be able to remove entries
 So I can remove inappropriate ideas (automated)
 
-12. As an admin
+14. As an admin
 I want to be able to associate comments with the respective user and idea
-So I can manage comments
+So I can manage comments (automated)
 
+15. As an admin
+I want to be able to remove attached content
+So I can stay under storage quotas or remove inappropriate content (automated)
+
+16. As an admin
+I want to be able to view and sort attached files
+So I can optimally manage the file storage quota (automated)
+
+17. As an admin
+I want to be able to perform admin responsibilities from within the app
+So I do not need additional interfaces (manual)
 
 
 
 ## Mock Web/Mobile UI
-![Artifacts-1](artifacts/Artifacts-1.jpg)
+![Artifacts-1](artifacts/Artifacts-1.PNG)
 
 ## System Architecture Diagram
-![Artifacts-2](artifacts/Artifacts-2.jpg)
+![Artifacts-2](artifacts/Artifacts-2.PNG)
 
 ### State Machine of Authenticated User Interface
-![Artifacts-3](artifacts/Artifacts-3.jpg)
+![Artifacts-3](artifacts/Artifacts-3.PNG)
 
 ## State Machine of Idea Functionality
-![Artifacts-4](artifacts/Artifacts-4.jpg)
+![Artifacts-4](artifacts/Artifacts-4.PNG)
 
 ## ER Diagram
 ![Artifacts-5](artifacts/Artifacts-5.jpg)
@@ -115,6 +134,7 @@ So I can manage comments
 - Connects to postgres
 - User with lehigh.edu google account passes authorization
 - Make sure POST routes successfully add comments
+- MemCachier stores and return correct values
 
 ### Frontend:
 - Add button on press -> goes to text field
@@ -124,9 +144,11 @@ So I can manage comments
 - Downvote button does not subtract from vote counter for no votes
 - Comment button adds comment on idea
 - Edit profile buttons successfully change fields that were edited
+- Added files are displayed properly
 
 ### Admin:
 - Test that database was created correctly
 - Test that database was deleted correctly
 - Test that rows were removed correctly
+- Test that list of files is correct
 
