@@ -11,7 +11,6 @@ import java.net.URI;
 
 import java.util.ArrayList;
 
-import org.checkerframework.checker.units.qual.min;
 
 public class Database {
     /**
@@ -123,7 +122,7 @@ public static class PostData extends DataRow{
     public String mUserId;
     public String mUsername;
     public int mSafePost;
-    public String mBase64Image;
+    public String mLink;
 
     /**
      * Create a new DataRow with the provided id and title/message, and a 
@@ -200,14 +199,16 @@ public static class CommentData extends DataRow{
     public String mUserId;
     public String mComment;
     public int mSafeComment;
+    public String mCommentLink;
 
 
-    CommentData(int postId, int commentId, String userId, String comment, int safeComment) {
+    CommentData(int postId, int commentId, String userId, String comment, String commentLink, int safeComment) {
         mPostId = postId;
         mCommentId = commentId;
         mUserId = userId;
         mComment = comment;
         mSafeComment = safeComment;
+        mCommentLink = commentLink;
     }
 
     CommentData(CommentData data) {
@@ -216,6 +217,7 @@ public static class CommentData extends DataRow{
         mUserId = data.mUserId;
         mComment = data.mComment;
         mSafeComment = data.mSafeComment;
+        mCommentLink = data.mCommentLink;
     }
 }
 
@@ -299,19 +301,19 @@ public static class UserVotesData extends DataRow{
             //For reference only, don't need to create in backend
             db.mCreatePostTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + ideaTable + " (postid SERIAL PRIMARY KEY, title VARCHAR(128) "
-                + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL, userid VARCHAR(1024) NOT NULL, safe INT NOT NULL)");
+                + "NOT NULL, message VARCHAR(1024) NOT NULL, votes INT NOT NULL, userid VARCHAR(1024) NOT NULL, link VARCHAR(1024), safe INT NOT NULL)");
             db.mCreateProfileTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + userTable + " (userid VARCHAR(128), SO VARCHAR(128) "
                 + "NOT NULL, GI VARCHAR(1024) NOT NULL, email VARCHAR(1024) NOT NULL, username VARCHAR(1024) NOT NULL, note VARCHAR(1024) NOT NULL, safeP INT NOT NULL)");
                 db.mCreateCommentTable = db.mConnection.prepareStatement(
                     "CREATE TABLE commentTable (commentid SERIAL PRIMARY KEY, userid VARCHAR(128) "
-                    + "NOT NULL, postid INT NOT NULL, comment VARCHAR(1024) NOT NULL, safe INT NOT NULL)");
+                    + "NOT NULL, postid INT NOT NULL, comment VARCHAR(1024) NOT NULL, link VARCHAR(1024), safe INT NOT NULL)");
             db.mCreateVotesTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + votesTable + " (postid INT NOT NULL userid VARCHAR(1024) "
                 + "NOT NULL, votes INT NOT NULL)");
             db.mCreateLinkTable = db.mConnection.prepareStatement(
-                "CREATE TABLE " + votesTable + " (postid INT NOT NULL userid VARCHAR(1024) "
-                + "NOT NULL, link VARCHAR(1024) NOT NULL, last_accessed VARCHAR(1024))");
+                "CREATE TABLE " + votesTable + " (postid INT NOT NULL, userid VARCHAR(1024) "
+                + "NOT NULL, last_accessed VARCHAR(1024))");
 
             // Standard CRUD operations
             db.mDeleteOnePost = db.mConnection.prepareStatement("DELETE FROM " + ideaTable + " WHERE postid = ?");
@@ -321,15 +323,15 @@ public static class UserVotesData extends DataRow{
 
             db.mInsertOnePost = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0) RETURNING *");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (?, ?, ?, ?, ?, ?, 0)");
-            db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?, 0)");
+            db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?, ?, 0)");
             db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
 
             db.mSelectAllPost = db.mConnection.prepareStatement("SELECT postid, title, message, votes, " + ideaTable + ".userid, username, safe FROM " + ideaTable + " LEFT JOIN " + userTable + " ON " + ideaTable + ".userid = " + userTable + ".userid");
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note FROM " + userTable);
-            db.mSelectAllComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment, safe FROM " + commentTable);
+            db.mSelectAllComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment, link, safe FROM " + commentTable);
             db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, userid, votes FROM " + votesTable);
             
-            db.mSelectPostComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment, safe FROM " + commentTable + " WHERE postid = ?");
+            db.mSelectPostComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment, link, safe FROM " + commentTable + " WHERE postid = ?");
             
             db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE postid=?");
             db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE userid=?");
@@ -339,7 +341,7 @@ public static class UserVotesData extends DataRow{
             db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE postid = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE postid = ? AND WHERE userid = ?");
             db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE " + userTable + " SET GI = ?, SO = ?, username = ?, note= ? WHERE userid = ?");
-            db.mUpdateOneComment = db.mConnection.prepareStatement("UPDATE " + commentTable + " SET comment = ?, safe = ? WHERE commentid = ?");
+            db.mUpdateOneComment = db.mConnection.prepareStatement("UPDATE " + commentTable + " SET comment = ?, link = ?, safe = ? WHERE commentid = ?");
 
             db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + ? WHERE postid = ?");
             db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - ? WHERE postid = ?");
@@ -411,12 +413,13 @@ public static class UserVotesData extends DataRow{
      * 
      * @return The number of rows that were inserted
      */
-    int insertRowComment(String userId, int postId, String comment) {
+    int insertRowComment(String userId, int postId, String comment, String link) {
         int count = 0;
         try {
             mInsertOneComment.setString(1, userId);
             mInsertOneComment.setInt(2, postId);
             mInsertOneComment.setString(3, comment);
+            mInsertOneComment.setString(4, link);
             count += mInsertOneComment.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -497,7 +500,7 @@ public static class UserVotesData extends DataRow{
         try {
             ResultSet rs = mSelectAllComments.executeQuery();
             while (rs.next()) {
-                CommentData comment = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"), rs.getInt("safe"));
+                CommentData comment = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"), rs.getString("link"), rs.getInt("safe"));
                 if(safeUser(comment.mUserId))
                     res.add(comment);
             }
@@ -530,7 +533,7 @@ public static class UserVotesData extends DataRow{
             mSelectPostComments.setInt(1, postId);
             ResultSet rs = mSelectPostComments.executeQuery();
             while (rs.next()) {
-                CommentData comment = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"), rs.getInt("safe"));
+                CommentData comment = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"), rs.getString("link"), rs.getInt("safe"));
                 //if(safeUser(comment.mUserId))
                 res.add(comment);
             }
@@ -586,7 +589,7 @@ public static class UserVotesData extends DataRow{
             mSelectOneComment.setInt(1, id);
             ResultSet rs = mSelectOneComment.executeQuery();
             if (rs.next()) {
-                res = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"), rs.getInt("safe"));
+                res = new CommentData(rs.getInt("postid"), rs.getInt("commentid"), rs.getString("userid"), rs.getString("comment"), rs.getString("link"), rs.getInt("safe"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -782,11 +785,12 @@ public static class UserVotesData extends DataRow{
      * 
      * @return The number of rows that were updated.  -1 indicates an error.
      */
-    int updateOneComment(int id, String comment, int safe) {
+    int updateOneComment(int id, String comment, String link, int safe) {
         int res = -1;
         try {
             mUpdateOneComment.setString(1, comment);
-            mUpdateOneComment.setInt(2, id);
+            mUpdateOneComment.setString(2, link);
+            mUpdateOneComment.setInt(4, id);
             mUpdateOneComment.setInt(3, safe);
             res = mUpdateOneComment.executeUpdate();
         } catch (SQLException e) {

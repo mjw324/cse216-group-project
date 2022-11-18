@@ -7,4 +7,6 @@ public class CommentRequest {
     public String mComment;
 
     public int mSessionId;
+
+    public String mBase64Image;
 }
