@@ -11,7 +11,7 @@ public class IdeaRequest {
      */
     public String mMessage;
 
-    public byte[] mBase64Image;
+    public String mBase64Image;
 
     public int mSessionId;
 }

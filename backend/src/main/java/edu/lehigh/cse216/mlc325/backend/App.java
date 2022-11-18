@@ -5,7 +5,9 @@ package edu.lehigh.cse216.mlc325.backend;
 import spark.Spark;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +29,10 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.Permission;
+
+import org.apache.log4j.*;
+
 
 import java.util.Hashtable;
 import java.util.HashMap;
@@ -39,9 +45,13 @@ import org.apache.commons.io.FileUtils;
  * For now, our app creates an HTTP server that can only get and add data.
  */
 public class App {
+    final private static Logger logger = LogManager.getLogger(App.class);
     public static void main(String[] args) {
+        BasicConfigurator.configure();
         // Retrieves a key value map of Config Vars from Heroku
         Map<String, String> env = System.getenv();
+
+        HashMap<Integer, String> postIDfileIDMap = new HashMap<>();
         // Receives Postgres Database URL from Heroku Config Vars (found in settings of Heroku app)
         String db_url = env.get("DATABASE_URL");
 
@@ -141,6 +151,26 @@ public class App {
             response.status(200);
             response.type("application/json");
             Database.PostData data = db.selectOnePost(idx);
+            if(postIDfileIDMap.containsKey(data.mId)) {
+                String fileID = postIDfileIDMap.get(data.mId);
+                InputStream google_service_secret = new ByteArrayInputStream(env.get("GOOGLE_SERVICE_ACCOUNT_SECRET").getBytes(StandardCharsets.UTF_8));
+                GoogleCredentials credentials = GoogleCredentials.fromStream(google_service_secret).createScoped(Arrays.asList(DriveScopes.DRIVE_FILE));
+                HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+                Drive service = new Drive.Builder(new NetHttpTransport(), 
+                    GsonFactory.getDefaultInstance(),
+                    requestInitializer)
+                    .setApplicationName("Drive Upload")
+                    .build();
+                try {
+                    OutputStream outputStream = new ByteArrayOutputStream();
+                    service.files().get(fileID)
+                        .executeMediaAndDownloadTo(outputStream);
+                        
+                    } catch (GoogleJsonResponseException e) {
+                    logger.info("Unable to move file: " + e.getDetails());
+                    throw e;
+                    }
+            }
             if (data == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
@@ -244,6 +274,7 @@ public class App {
         // object, extract the title and message, insert them, and return the 
         // ID of the newly created row.
         Spark.post("/messages", (request, response) -> {
+            String link = "";
             // NB: if gson.Json fails, Spark will reply with status 500 Internal 
             // Server Error
             IdeaRequest req = gson.fromJson(request.body(), IdeaRequest.class);
@@ -258,11 +289,13 @@ public class App {
             response.type("application/json");
             // NB: createEntry checks for null title and message
             // TODO: Caching file into database?
-            int result = db.insertRowIdea(req.mTitle, req.mMessage, userId);
+            int postid = db.insertRowIdea(req.mTitle, req.mMessage, userId);
             if(req.mBase64Image != null) {
+                logger.info("Decoding and uploading Base64image...");
                 // Decoding Base64 file from HTTP Request
                 byte[] fileBytes = Base64.getDecoder().decode(req.mBase64Image);
                 java.io.File filePath = new java.io.File("files/photo.jpg");
+                // saving file content to files/___.jpg
                 FileUtils.writeByteArrayToFile(filePath, fileBytes);
                 // Building new authorized API client service for Google Drive
                 InputStream google_service_secret = new ByteArrayInputStream(env.get("GOOGLE_SERVICE_ACCOUNT_SECRET").getBytes(StandardCharsets.UTF_8));
@@ -273,25 +306,35 @@ public class App {
                     requestInitializer)
                     .setApplicationName("Drive Upload")
                     .build();
+                logger.info("JSON of current files in service account: \n\n" + service.files().list().execute());
                 // Upload File to Drive
                 File fileMetadata = new File();
                 fileMetadata.setName("photo.jpg"); // What the file will be stored as
                 FileContent mediaContent = new FileContent("image/jpeg", filePath);
                 try { 
                     File file = service.files().create(fileMetadata, mediaContent)
-                        .setFields("id")
+                        .setFields("id, webViewLink")
                         .execute();
-                    System.out.println("File ID: " + file.getId());
+                    Permission newPermission = new Permission();
+                    newPermission.setType("anyone");
+                    newPermission.setRole("reader");
+                    service.permissions().create(file.getId(), newPermission).execute();
+                    logger.info("File ID: " + file.getId());
+                    logger.info("Link: "+ file.getWebViewLink());
+                    link = file.getWebViewLink();
+                    // Adds the mapping between a postID and the fileID on the drive
+                    postIDfileIDMap.put(postid, file.getId());
+                    
                 } catch(GoogleJsonResponseException e) {
-                    System.err.println("Unable to upload file: " + e.getDetails());
+                    logger.error("Unable to upload file: " + e.getDetails());
                 }
                 
 
             }
-            if (result == -1) {
+            if (postid == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", "" + result, userId));
+                return gson.toJson(new StructuredResponse("ok", "" + postid, link));
             }
         });
         
@@ -392,7 +435,7 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                result = db.updateOneComment(req.mCommentId, req.mComment);
+                result = db.updateOneComment(req.mCommentId, req.mComment, 0);
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error","error updating",  null));
             }
