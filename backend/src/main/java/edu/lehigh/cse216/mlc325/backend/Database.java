@@ -138,7 +138,7 @@ public static class PostData extends DataRow{
      * 
      * @param votes The number of votes for this row of data
      */
-    PostData(int postId, String title, String message, int votes, String userId, String username, int safePost) {
+    PostData(int postId, String title, String message, int votes, String userId, String username, int safePost, String link) {
         mId = postId;
         mTitle = title;
         mMessage = message;
@@ -146,6 +146,7 @@ public static class PostData extends DataRow{
         mUserId = userId;
         mSafePost = safePost;
         mUsername = username;
+        mLink = link;
     }
 
     /**
@@ -160,6 +161,7 @@ public static class PostData extends DataRow{
         mUserId = data.mUserId;
         mSafePost = data.mSafePost;
         mUsername = data.mUsername;
+        mLink = data.mLink;
     }
 }
 
@@ -321,12 +323,12 @@ public static class UserVotesData extends DataRow{
             db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM " + commentTable + " WHERE commentid = ?");
             db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM " + votesTable + " WHERE postid = ? AND WHERE userid=?");
 
-            db.mInsertOnePost = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0) RETURNING *");
+            db.mInsertOnePost = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0, ?) RETURNING *");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (?, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?, ?, 0)");
             db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
 
-            db.mSelectAllPost = db.mConnection.prepareStatement("SELECT postid, title, message, votes, " + ideaTable + ".userid, username, safe FROM " + ideaTable + " LEFT JOIN " + userTable + " ON " + ideaTable + ".userid = " + userTable + ".userid");
+            db.mSelectAllPost = db.mConnection.prepareStatement("SELECT postid, title, message, votes, " + ideaTable + ".userid, username, safe, link FROM " + ideaTable + " LEFT JOIN " + userTable + " ON " + ideaTable + ".userid = " + userTable + ".userid");
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note FROM " + userTable);
             db.mSelectAllComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment, link, safe FROM " + commentTable);
             db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, userid, votes FROM " + votesTable);
@@ -387,12 +389,13 @@ public static class UserVotesData extends DataRow{
      * 
      * @return The postID from the new row
      */
-    int insertRowIdea(String title, String message, String userid) {
+    int insertRowIdea(String title, String message, String userid, String link) {
         int postID = -1;
         try {
             mInsertOnePost.setString(1, title);
             mInsertOnePost.setString(2, message);
             mInsertOnePost.setString(3, userid);
+            mInsertOnePost.setString(4, link);
             ResultSet result = mInsertOnePost.executeQuery();
             if(result.next()) {
                 postID = result.getInt(1);
@@ -466,7 +469,7 @@ public static class UserVotesData extends DataRow{
         try {
             ResultSet rs = mSelectAllPost.executeQuery();
             while (rs.next()) {
-                PostData row = new PostData(rs.getInt("postid"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"), rs.getString("username"), rs.getInt("safe"));
+                PostData row = new PostData(rs.getInt("postid"), rs.getString("title"), rs.getString("message"), rs.getInt("votes"), rs.getString("userid"), rs.getString("username"), rs.getInt("safe"), rs.getString("link"));
                 if(row.mSafePost==0) //safe post
                     res.add(row);
             }
@@ -558,7 +561,7 @@ public static class UserVotesData extends DataRow{
             mSelectOnePost.setInt(1, id);
             ResultSet rs = mSelectOnePost.executeQuery();
             if (rs.next()) {
-                res = new PostData(rs.getInt("postid"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"), rs.getString("username"), rs.getInt("safe"));
+                res = new PostData(rs.getInt("postid"), rs.getString("title"), rs.getString("message"),rs.getInt("votes"),rs.getString("userid"), rs.getString("username"), rs.getInt("safe"), rs.getString("link"));
                 if (res.mSafePost != 0){ //unsafe post
                     return null;
                 }
