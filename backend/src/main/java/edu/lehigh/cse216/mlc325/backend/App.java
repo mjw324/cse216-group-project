@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Date;
 
 // Import Google's JSON library
 import com.google.gson.*;
@@ -274,6 +275,7 @@ public class App {
                 postid = db.insertRowIdea(req.mTitle, req.mMessage, userId, null);
             } else {
                 postid = db.insertRowIdea(req.mTitle, req.mMessage, userId, link);
+                db.insertRowLink(userId, postid, new Date().toString());
             }
             if (postid == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
@@ -346,6 +348,7 @@ public class App {
             response.type("application/json");
             if(req.mBase64Image != null) {
                 link = GoogleDriveUpload(req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
+                //db.insertRowLink(userId, )
             }
             int result;
             try {

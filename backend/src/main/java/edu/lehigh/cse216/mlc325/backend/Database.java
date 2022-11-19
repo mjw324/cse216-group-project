@@ -26,6 +26,7 @@ public class Database {
     private PreparedStatement mSelectAllProfile;
     private PreparedStatement mSelectAllComments;
     private PreparedStatement mSelectAllVote;
+    private PreparedStatement mSelectAllLinks;
 
     /**
      * A prepared statement for getting one row from the database
@@ -34,8 +35,8 @@ public class Database {
     private PreparedStatement mSelectOneProfile;
     private PreparedStatement mSelectOneComment;
     private PreparedStatement mSelectOneVote;
-    
     private PreparedStatement mSelectPostComments;
+    private PreparedStatement mSelectOneLink;
 
     /**
      * A prepared statement for deleting a row from the database
@@ -44,6 +45,7 @@ public class Database {
     private PreparedStatement mDeleteOneProfile;
     private PreparedStatement mDeleteOneComment;
     private PreparedStatement mDeleteOneVote;
+    private PreparedStatement mDeleteOneLink;
 
     /**
      * A prepared statement for inserting into the database
@@ -52,6 +54,7 @@ public class Database {
     private PreparedStatement mInsertOneProfile;
     private PreparedStatement mInsertOneComment;
     private PreparedStatement mInsertOneVote;
+    private PreparedStatement mInsertOneLink;
 
     /**
      * A prepared statement for updating a single row in the database
@@ -70,6 +73,7 @@ public class Database {
      * A prepared statement for updating a single row in the comment database
      */
     private PreparedStatement mUpdateOneComment;
+    private PreparedStatement mUpdateOneLink;
 
     private PreparedStatement mDislikeNum;
     private PreparedStatement mLikeNum;
@@ -81,7 +85,7 @@ public class Database {
     private PreparedStatement mCreateProfileTable;
     private PreparedStatement mCreateCommentTable;
     private PreparedStatement mCreateVotesTable;
-    private PreparedStatement mCreateLinkTable;
+    private PreparedStatement mCreateLinksTable;
 
 
     /**
@@ -223,6 +227,26 @@ public static class CommentData extends DataRow{
     }
 }
 
+public static class LinkData{
+    public final int mLinkId;
+    public int mPostId;
+    public int mUserId;
+    public final String mDate;
+
+    LinkData(int linkId, int postId, int userId, String date){
+        mLinkId = linkId;
+        mPostId = postId;
+        mUserId = userId;
+        mDate = date;
+    }
+    LinkData(LinkData data){
+        mLinkId = data.mLinkId;
+        mPostId = data.mPostId;
+        mUserId = data.mUserId;
+        mDate = data.mDate;
+    }
+}
+
 public static class UserVotesData extends DataRow{
     public final int mPostId;
     public String mUserId;
@@ -313,7 +337,7 @@ public static class UserVotesData extends DataRow{
             db.mCreateVotesTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + votesTable + " (postid INT NOT NULL userid VARCHAR(1024) "
                 + "NOT NULL, votes INT NOT NULL)");
-            db.mCreateLinkTable = db.mConnection.prepareStatement(
+            db.mCreateLinksTable = db.mConnection.prepareStatement(
                 "CREATE TABLE " + votesTable + " (postid INT NOT NULL, userid VARCHAR(1024) "
                 + "NOT NULL, last_accessed VARCHAR(1024))");
 
@@ -322,28 +346,32 @@ public static class UserVotesData extends DataRow{
             db.mDeleteOneProfile = db.mConnection.prepareStatement("DELETE FROM " + userTable + " WHERE userid = ?");
             db.mDeleteOneComment = db.mConnection.prepareStatement("DELETE FROM " + commentTable + " WHERE commentid = ?");
             db.mDeleteOneVote = db.mConnection.prepareStatement("DELETE FROM " + votesTable + " WHERE postid = ? AND WHERE userid=?");
+            db.mDeleteOneLink = db.mConnection.prepareStatement("DELETE FROM linksTable WHERE linkid = ?");
 
             db.mInsertOnePost = db.mConnection.prepareStatement("INSERT INTO " + ideaTable + " VALUES (default, ?, ?, 0, ?, 0, ?) RETURNING *");
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (?, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?, ?, 0)");
             db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
+            db.mInsertOneLink = db.mConnection.prepareStatement("INSERT INTO linksTable VALUES (default, ?, ?, ?)");
 
             db.mSelectAllPost = db.mConnection.prepareStatement("SELECT postid, title, message, votes, " + ideaTable + ".userid, username, safe, link FROM " + ideaTable + " LEFT JOIN " + userTable + " ON " + ideaTable + ".userid = " + userTable + ".userid");
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note FROM " + userTable);
             db.mSelectAllComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment, link, safe FROM " + commentTable);
             db.mSelectAllVote = db.mConnection.prepareStatement("SELECT postid, userid, votes FROM " + votesTable);
-            
             db.mSelectPostComments = db.mConnection.prepareStatement("SELECT commentid, userid, postid, comment, link, safe FROM " + commentTable + " WHERE postid = ?");
-            
+            db.mSelectAllLinks = db.mConnection.prepareStatement("SELECT linkid, userid, postid, recentActivity FROM linksTable");
+
             db.mSelectOnePost = db.mConnection.prepareStatement("SELECT * from " + ideaTable + " WHERE postid=?");
             db.mSelectOneProfile = db.mConnection.prepareStatement("SELECT * from " + userTable + " WHERE userid=?");
             db.mSelectOneComment = db.mConnection.prepareStatement("SELECT * from " + commentTable + " WHERE commentid=?");
             db.mSelectOneVote = db.mConnection.prepareStatement("SELECT * from " + votesTable + " WHERE postid=? AND WHERE userid=?");
+            db.mSelectOneLink = db.mConnection.prepareStatement("SELECT * from linksTable WHERE linkid=?");
 
             db.mUpdateOneIdea = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET message = ?, votes ? WHERE postid = ?");
             db.mUpdateOneVote = db.mConnection.prepareStatement("UPDATE " + votesTable + " SET votes = ? WHERE postid = ? AND WHERE userid = ?");
             db.mUpdateOneProfile = db.mConnection.prepareStatement("UPDATE " + userTable + " SET GI = ?, SO = ?, username = ?, note= ? WHERE userid = ?");
             db.mUpdateOneComment = db.mConnection.prepareStatement("UPDATE " + commentTable + " SET comment = ?, link = ?, safe = ? WHERE commentid = ?");
+            db.mUpdateOneLink = db.mConnection.prepareStatement("UPDATE linksTable SET userid = ?, postid = ?, recentActivity = ? WHERE linkid = ?");
 
             db.mLikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes + ? WHERE postid = ?");
             db.mDislikeNum = db.mConnection.prepareStatement("UPDATE " + ideaTable + " SET votes = votes - ? WHERE postid = ?");
@@ -459,6 +487,19 @@ public static class UserVotesData extends DataRow{
         return count;
     }
 
+    int insertRowLink(int userid, int postid, String recentActivity) {
+        int count = 0;
+        try {
+            mInsertOneLink.setInt(1, userid);
+            mInsertOneLink.setInt(2, postid);
+            mInsertOneLink.setString(3, recentActivity);
+            count += mInsertOneLink.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
     /**
      * Query the database for a list of all titles and their IDs
      * 
@@ -547,6 +588,20 @@ public static class UserVotesData extends DataRow{
             return null;
         }
     }
+    ArrayList<LinkData> selectAllLinks() {
+        ArrayList<LinkData> res = new ArrayList<LinkData>();
+        try {
+            ResultSet rs = mSelectAllLinks.executeQuery();
+            while (rs.next()) {
+                res.add(new LinkData(rs.getInt("linkid"), rs.getInt("userid"), rs.getInt("postid"), rs.getString("recentActivity")));
+            }
+            rs.close();
+            return res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     /**
      * Get all data for a specific row, by ID
@@ -608,6 +663,20 @@ public static class UserVotesData extends DataRow{
             ResultSet rs = mSelectOneVote.executeQuery();
             if (rs.next()) {
                 res = new UserVotesData(rs.getInt("postid"), rs.getString("userid"), rs.getInt("votes"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    LinkData selectOneLink(int id) {
+        LinkData res = null;
+        try {
+            mSelectOneLink.setInt(1, id);
+            ResultSet rs = mSelectOneComment.executeQuery();
+            if (rs.next()) {
+                res = new LinkData(rs.getInt("linkid"), rs.getInt("userid"), rs.getInt("postid"), rs.getString("recentActivity"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -718,6 +787,17 @@ public static class UserVotesData extends DataRow{
         return res;
     }
 
+    int deleteRowLink(int id) {
+        int res = -1;
+        try {
+            mDeleteOneLink.setInt(1, id);
+            res = mDeleteOneLink.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
     /**
      * Update the message for a row in the database
      * 
@@ -796,6 +876,20 @@ public static class UserVotesData extends DataRow{
             mUpdateOneComment.setInt(4, id);
             mUpdateOneComment.setInt(3, safe);
             res = mUpdateOneComment.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    int updateOneLink(int id, int userId, int postId, String recentActivity) {
+        int res = -1;
+        try {
+            mUpdateOneLink.setInt(1, userId);
+            mUpdateOneLink.setInt(2, postId);
+            mUpdateOneLink.setString(3, recentActivity);
+            mUpdateOneLink.setInt(4, id);
+            res = mUpdateOneLink.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
