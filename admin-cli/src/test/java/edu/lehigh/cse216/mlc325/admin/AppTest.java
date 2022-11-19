@@ -76,19 +76,19 @@ public class AppTest
         assertTrue( App.addRowProfile(db, input) == 1 );
     }
 
-    public void testRemoveProfile()
-    {
-        ArrayList<Database.ProfileData> res = db.selectAllProfile();
-        String id = "";
-        for (Database.ProfileData dr : res) {
-            id = dr.mUserId;
-        }
-        //System.out.println(id);
-        String test = "" + id;
-        Reader inputString = new StringReader(test);
-        BufferedReader input = new BufferedReader(inputString);
-        assertTrue(App.deleteRowProfile(db, input) == 1);
-    }
+    // public void testRemoveProfile()
+    // {
+    //     ArrayList<Database.ProfileData> res = db.selectAllProfile();
+    //     String id = "";
+    //     for (Database.ProfileData dr : res) {
+    //         id = dr.mUserId;
+    //     }
+    //     //System.out.println(id);
+    //     String test = "" + id;
+    //     Reader inputString = new StringReader(test);
+    //     BufferedReader input = new BufferedReader(inputString);
+    //     assertTrue(App.deleteRowProfile(db, input) == 1);
+    // }
 
     /**
      * Ensure that the constructor populates every field of the object it
