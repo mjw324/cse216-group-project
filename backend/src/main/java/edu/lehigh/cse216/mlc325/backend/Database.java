@@ -352,7 +352,7 @@ public static class UserVotesData extends DataRow{
             db.mInsertOneProfile = db.mConnection.prepareStatement("INSERT INTO " + userTable + " VALUES (?, ?, ?, ?, ?, ?, 0)");
             db.mInsertOneComment = db.mConnection.prepareStatement("INSERT INTO " + commentTable + " VALUES (default, ?, ?, ?, ?, 0)");
             db.mInsertOneVote = db.mConnection.prepareStatement("INSERT INTO " + votesTable + " VALUES (?, ?, ?)");
-            db.mInsertOneLink = db.mConnection.prepareStatement("INSERT INTO linksTable VALUES (default, ?, ?, ?)");
+            db.mInsertOneLink = db.mConnection.prepareStatement("INSERT INTO linksTable VALUES (?, ?, ?, ?, ?, ?)");
 
             db.mSelectAllPost = db.mConnection.prepareStatement("SELECT postid, title, message, votes, " + ideaTable + ".userid, username, safe, link FROM " + ideaTable + " LEFT JOIN " + userTable + " ON " + ideaTable + ".userid = " + userTable + ".userid");
             db.mSelectAllProfile = db.mConnection.prepareStatement("SELECT userid, SO, GI, email, username, note FROM " + userTable);
@@ -487,12 +487,19 @@ public static class UserVotesData extends DataRow{
         return count;
     }
 
-    int insertRowLink(int userid, int postid, String recentActivity) {
+    int insertRowLink(String link, String fileid, String userid, int postid, String recentActivity, int commentid) {
         int count = 0;
         try {
-            mInsertOneLink.setInt(1, userid);
-            mInsertOneLink.setInt(2, postid);
-            mInsertOneLink.setString(3, recentActivity);
+            mInsertOneLink.setString(1, link);
+            mInsertOneLink.setString(2, fileid);
+            mInsertOneLink.setString(3, userid);
+            mInsertOneLink.setInt(4, postid);
+            mInsertOneLink.setString(6, recentActivity);
+            if(commentid == -1) {
+                mInsertOneLink.setNull(5, java.sql.Types.INTEGER);
+            } else {
+                mInsertOneLink.setInt(5, commentid);
+            }
             count += mInsertOneLink.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
