@@ -23,41 +23,49 @@ public class App {
         System.out.println("  [P] Create profileTable");
         System.out.println("  [C] Create commentTable");
         System.out.println("  [V] Create votesTable");
+        System.out.println("  [F] Create linksTable");
         //System.out.println("\n");
+        System.out.println("  [A] Alter table");
 
         System.out.println("  [;] Drop All Tables");
         System.out.println("  [D] Drop ideasTable");
         System.out.println("  [U] Drop profileTable");
         System.out.println("  [S] Drop commentTable");
         System.out.println("  [K] Drop votesTable");
+        System.out.println("  [I] Drop linksTable");
         //System.out.println("\n");
 
         System.out.println("  [1] Query for a specific row of ideasTable");
         System.out.println("  [2] Query for a specific row of profileTable");
         System.out.println("  [3] Query for a specific row of commentTable");
         System.out.println("  [4] Query for a specific row of votesTable");
+        System.out.println("  [5] Query for a specific row of linksTable");
         //System.out.println("\n");
 
         System.out.println("  [*] Query for all rows: ideasTable");
         System.out.println("  [&] Query for all rows: profileTable");
         System.out.println("  [$] Query for all rows: commentTable");
         System.out.println("  [!] Query for all rows: votesTable");
+        System.out.println("  [%] Query for all rows: linksTable");
         //System.out.println("\n");
 
         System.out.println("  [-] Delete a row: ideasTable");
         System.out.println("  [M] Delete a row: profileTable");
         System.out.println("  [N] Delete a row: commentTable");
         System.out.println("  [B] Delete a row: votesTable");
+        System.out.println("  [E] Delete a row: linksTable");
 
         System.out.println("  [+] Insert a new row: ideasTable");
         System.out.println("  [X] Insert a new row: profileTable");
         System.out.println("  [Z] Insert a new row: commentTable");
         System.out.println("  [L] Insert a new row: votesTable");
+        System.out.println("  [Y] Insert a new row: linksTable");
 
         System.out.println("  [~] Update a row: ideasTable");
         System.out.println("  [J] Update a row: profileTable");
         System.out.println("  [H] Update a row: commentTable");
         System.out.println("  [G] Update a row: votesTable");
+        System.out.println("  [O] Update a row: linksTable");
 
         System.out.println("  [q] Quit Program");
         System.out.println("  [?] Help (this message)");
@@ -72,7 +80,7 @@ public class App {
      */
     static char prompt(BufferedReader in) {
         // The valid actions:
-        String actions = ":TPCV;DUSK1234*&$!-MNB+XZL~JHGq?";
+        String actions = ":TPCVAF;DUSKI12345*&$!%-MNBE+XZLY~JHGOq?";
 
         // We repeat until a valid single-character option is selected        
         while (true) {
@@ -174,6 +182,10 @@ public class App {
                 createCommentTable(db);
             } else if (action == 'V') {
                 createVotesTable(db);
+            }else if (action == 'F') {
+                createLinksTable(db);
+            } else if(action == 'A'){
+                alterTable(db);
             } else if (action == ';') {
                 dropTables(db);
             } else if (action == 'D') {
@@ -184,6 +196,8 @@ public class App {
                 dropCommentTable(db);
             } else if (action == 'K') {
                 dropVotesTable(db);
+            } else if (action == 'I') {
+                dropLinksTable(db);
             } else if (action == '1') {
                 queryPost(db, in);
             } else if (action == '2') {
@@ -192,6 +206,8 @@ public class App {
                 queryComment(db, in);
             } else if (action == '4') {
                 queryVote(db, in);
+            }else if (action == '5') {
+                queryLink(db, in);
             } else if (action == '*') {
                 queryAllPosts(db);
             } else if (action == '&') {
@@ -200,7 +216,9 @@ public class App {
                 queryAllComment(db);
             } else if (action == '!') {
                 queryAllVotes(db);
-            } else if (action == '-') {
+            } else if (action == '%') {
+                queryAllLinks(db);
+            }else if (action == '-') {
                 deleteRowPost(db, in);
             } else if (action == 'M') {
                 deleteRowProfile(db, in);
@@ -208,6 +226,8 @@ public class App {
                 deleteRowComment(db, in);
             } else if (action == 'B') {
                 deleteRowVote(db, in);
+            } else if (action == 'E') {
+                deleteRowLink(db, in);
             } else if (action == '+') {
                 addRow(db, in);
             } else if (action == 'X') {
@@ -216,6 +236,8 @@ public class App {
                 addRowComment(db, in);
             } else if (action == 'L') {
                 addRowVote(db, in);
+            } else if (action == 'Y') {
+                addRowLink(db, in);
             } else if (action == '~') {
                 updateRow(db, in);
             } else if (action == 'J') {
@@ -224,6 +246,9 @@ public class App {
                 updateRowComment(db, in);
             } else if (action == 'G') {
                 updateRowVote(db, in);
+            }
+            else if (action == 'O') {
+                updateRowLink(db, in);
             }
         }
         // Always remember to disconnect from the database when the program 
@@ -245,6 +270,7 @@ public class App {
         db.createProfileTable();
         db.createCommentTable();
         db.createVotesTable();
+        db.createLinksTable();
     }
     public static void createPostTable(Database db){
         db.createPostTable();
@@ -258,6 +284,12 @@ public class App {
     public static void createVotesTable(Database db){
         db.createVotesTable();
     }
+    public static void createLinksTable(Database db){
+        db.createLinksTable();
+    }
+    public static void alterTable(Database db){
+        db.AlterTable();
+    }
 
     /**
      * DROP TABLES
@@ -270,6 +302,7 @@ public class App {
         db.dropProfileTable();
         db.dropCommentTable();
         db.dropVotesTable();
+        db.dropLinksTable();
     }
     public static void dropPostTable(Database db){
         db.dropPostTable();
@@ -283,7 +316,9 @@ public class App {
     public static void dropVotesTable(Database db){
         db.dropVotesTable();
     }
-
+    public static void dropLinksTable(Database db){
+        db.dropLinksTable();
+    }
     //class DataRow, ProfileData, CommentData, UserVotesData
     
     /**
@@ -327,6 +362,7 @@ public class App {
             System.out.println("  [" + res.mCommentId + "] " + res.mPostId);
             System.out.println("  --> " + res.mComment);
             System.out.println("  UserId: " + res.mUserId);
+            System.out.println("    Link:" + res.mCommentLink);
         }
     }
     public static void queryVote(Database db, BufferedReader in){
@@ -338,6 +374,18 @@ public class App {
             System.out.println("  [" + res.mPostId + "] " + res.mUserId);
             //System.out.println("  --> " + res.mMessage);
             System.out.println("  votes: " + res.mVotes);
+        }
+    }
+    public static void queryLink(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return;
+        Database.LinkData res = db.selectOneLink(id);
+        if (res != null) {
+            System.out.println("  [" + res.mLinkId + "] " + res.mPostId);
+            //System.out.println("  --> " + res.mMessage);
+            System.out.println("  user: " + res.mUserId);
+            System.out.println("  recent activity: "+ res.mDate);
         }
     }
 
@@ -391,6 +439,26 @@ public class App {
         }
     }
 
+    public static void queryAllLinks(Database db){
+        ArrayList<Database.LinkData> res = db.selectAllLinks();
+        if (res == null)
+            return;
+        System.out.println("  Current LinkTable Contents");
+        System.out.println("  -------------------------");
+        for (Database.LinkData dr : res) {
+            System.out.println("  [" + dr.mLinkId + "] " + dr.mDate);
+        }
+    }
+
+    // public static int alterRow(Database db , BufferedReader in){
+    //     String table = getString(in, "Enter the name of the table you want to alter");
+    //     int option = getInt(in, "Enter which you would like to do: 1) ADD /n 2) MODIFY /n3) DELETE");
+    //     if(option == 1){
+
+    //     }
+
+    //     return 1;
+    // }
     /**
      * Delete a row from the database 
      * 
@@ -438,6 +506,16 @@ public class App {
         return res;
     }
 
+    public static int deleteRowLink(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the row ID");
+        if (id == -1)
+            return-1;
+        int res = db.deleteRowLink(id);
+        if (res != -1) 
+            System.out.println("  " + res + " rows deleted");
+        return res;
+    }
+
     /**
      * Add a row from the database 
      * 
@@ -449,9 +527,10 @@ public class App {
         String title = getString(in, "Enter the title");
         String message = getString(in, "Enter the message");
         String userid = getString(in, "Enter userid");
+        String link = getString(in, "Enter the link");
         if (title.equals("") || message.equals("") || userid.equals(""))
             return -1;
-        int res = db.insertRow(title, message, userid);
+        int res = db.insertRow(title, message, userid, link);
         System.out.println(res + " rows added");
         return res;
     }
@@ -472,12 +551,12 @@ public class App {
 
     public static int addRowComment(Database db, BufferedReader in){
         int postid = getInt(in, "Enter postId");
-        int commentid = getInt(in, "Enter commentId");
         int userid = getInt(in, "Enter userId");
         String comment = getString(in, "Enter comment");
-        if (postid<0 || commentid<0 || userid<0 || comment.equals(""))
+        String link = getString(in, "Enter link ");
+        if (postid<0 || userid<0 || comment.equals(""))
             return -1;
-        int res = db.insertRowComment(postid,commentid,userid,comment);
+        int res = db.insertRowComment(userid, postid,comment, link);
         System.out.println(res + " rows added");
         return res;
     }
@@ -489,6 +568,17 @@ public class App {
         if (postid<0 || userid<0 || votes<0)
             return -1;
         int res = db.insertRowVote(postid,userid,votes);
+        System.out.println(res + " rows added");
+        return res;
+    }
+
+    public static int addRowLink(Database db, BufferedReader in){
+        int userId = getInt(in, "Enter userId");
+        int postId = getInt(in, "Enter postId");
+        String recentActivity = getString(in, "Enter recent Activity Date");
+        if (userId<0 || postId<0 )
+            return -1;
+        int res = db.insertRowLink(userId,postId,recentActivity);
         System.out.println(res + " rows added");
         return res;
     }
@@ -536,7 +626,9 @@ public class App {
         int postId = getInt(in, "Enter postId: ");
         int userId = getInt(in, "Enter userId: ");
         String newComment = getString(in, "Enter new comment: ");
-        int res = db.updateOneComment(id, postId, userId, newComment);
+        String link = getString(in, "Enter new link");
+        int safe = getInt(in, "Update 0 for safe, 1 for not safe comment");
+        int res = db.updateOneComment(id, postId, userId, newComment, link, safe);
         if (res != -1)
             System.out.println("  " + res + " rows updated");
         return res;
@@ -549,6 +641,19 @@ public class App {
         int userId = getInt(in, "Enter userId: ");
         int votes = getInt(in, "Enter votes: ");
         int res = db.updateOneVotes(id, userId, votes);
+        if (res != -1)
+            System.out.println("  " + res + " rows updated");
+        return res;
+    }
+
+    public static int updateRowLink(Database db, BufferedReader in){
+        int id = getInt(in, "Enter the vote row ID :> ");
+        if (id == -1)
+        return -1;
+        int userId = getInt(in, "Enter userId: ");
+        int postId = getInt(in, "Enter postId: ");
+        String recentActivity = getString(in, "Enter recent activity");
+        int res = db.updateOneLink(id, userId, postId, recentActivity);
         if (res != -1)
             System.out.println("  " + res + " rows updated");
         return res;
