@@ -17,6 +17,11 @@ allprojects {
         mavenCentral()
     }
 }
+                                                                                                                                              
+defaultConfig {                                                                                                                                         
+    minSdkVersion 21                                                                                                                                
+}                                                                                                                                                       
+    
 
 rootProject.buildDir = '../build'
 subprojects {

@@ -17,6 +17,8 @@ class IdeaObj {
   //This string representation of the username associated with the post
   String username;
 
+  String link;
+
 
   // This tracks if the current user has upvoted (1), downvoted (-1), or not voted (0) on an idea
   int userVotes;
@@ -25,6 +27,7 @@ class IdeaObj {
       {required this.id,
       required this.title,
       required this.message,
+      required this.link,
       required this.votes,
       required this.userId,
       required this.userVotes,
@@ -39,6 +42,7 @@ class IdeaObj {
       id: json['mId'],
       title: json['mTitle'],
       message: json['mMessage'],
+      link: json['mLink'],
       votes: json['mVotes'],
       userId: json['mUserId'],
       userVotes: 0,
