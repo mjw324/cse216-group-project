@@ -16,8 +16,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:io';  
-import 'dart:math';
-import 'package:flutter/material.dart';
+//import 'dart:math';
+//import 'package:flutter/material.dart';
 //import 'package:open_file/open_file.dart';
 
 class AddIdeaWidget extends StatefulWidget {

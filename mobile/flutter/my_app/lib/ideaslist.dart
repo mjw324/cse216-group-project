@@ -134,7 +134,8 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                               // shows the message
                               subtitle:
                                 Text(
-                                  idea.message, //+ ' ' + idea.link,
+                                  idea.link != null ? idea.message + ' ' + idea.link :
+                                  idea.message,
                                 )
                             ),
                           const Divider(height: 1.0),
