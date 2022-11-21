@@ -478,7 +478,7 @@ public class App {
         System.out.println("  Current LinkTable Contents");
         System.out.println("  -------------------------");
         for (Database.LinkData dr : res) {
-            System.out.println("  [" + dr.mLinkId + "] " + dr.mDate);
+            System.out.println(" [" + dr.mLinkId + "]" +" ["+dr.mFileId+ "] "+ dr.mUserId+"  "+   dr.mDate);
         }
     }
 
