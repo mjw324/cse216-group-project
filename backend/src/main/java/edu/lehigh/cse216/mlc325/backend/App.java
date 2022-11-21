@@ -4,43 +4,98 @@ package edu.lehigh.cse216.mlc325.backend;
 // create an HTTP GET route
 import spark.Spark;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Date;
 
 // Import Google's JSON library
 import com.google.gson.*;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-
+import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.Permission;
+
+import org.apache.log4j.*;
+
 
 import java.util.Hashtable;
 import java.util.HashMap;
-//import java.sql.ResultSetMetaData;
 import java.util.Map;
 
-/**
- * For now, our app creates an HTTP server that can only get and add data.
- */
+import org.apache.commons.io.FileUtils;
+
+import net.rubyeye.xmemcached.MemcachedClient;
+import net.rubyeye.xmemcached.MemcachedClientBuilder;
+import net.rubyeye.xmemcached.XMemcachedClientBuilder;
+import net.rubyeye.xmemcached.auth.AuthInfo;
+import net.rubyeye.xmemcached.command.BinaryCommandFactory;
+import net.rubyeye.xmemcached.utils.AddrUtil;
+import java.util.List;
+
+
+
 public class App {
+    // This logger is used across the App class, providing debug and other useful information in the Heroku log
+    final private static Logger logger = LogManager.getLogger(App.class);
     public static void main(String[] args) {
+        // Basic Configuration for log4j logger
+        BasicConfigurator.configure();
+        // Retrieves a key value map of Config Vars from Heroku
         Map<String, String> env = System.getenv();
-        // String db_url = env.get("DATABASE_URL");
-        String db_url = "postgres://xgdepqsdstmfkm:a8aac1d03b480b99c72a4820929f6e7e68c71df4f0a5477bb6f1c5a44bf35039@ec2-3-220-207-90.compute-1.amazonaws.com:5432/d9a3fbla0rorpl";
+        // Receives Postgres Database URL from Heroku Config Vars (found in settings of Heroku app)
+        String db_url = env.get("DATABASE_URL");
 
-        //key generated session id, value is google user id
-        Hashtable<Integer, String> usersHT = new Hashtable<>(); 
-        usersHT.put(-1, "107590165278581716154"); //TODO remove later, for testing purposes only
+        // Initializing MemCachier service
+        List<InetSocketAddress> servers =
+        AddrUtil.getAddresses(env.get("MEMCACHIER_SERVERS").replace(",", " "));
+        AuthInfo authInfo =
+        AuthInfo.plain(env.get("MEMCACHIER_USERNAME"),
+                       env.get("MEMCACHIER_PASSWORD"));
+        MemcachedClientBuilder builder = new XMemcachedClientBuilder(servers);
+        // Configure SASL auth for each server
+        for(InetSocketAddress server : servers) {
+            builder.addAuthInfo(server, authInfo);
+        }
+        // Use binary protocol
+        builder.setCommandFactory(new BinaryCommandFactory());
+        // Connection timeout in milliseconds (default: )
+        builder.setConnectTimeout(1000);
+        // Reconnect to servers (default: true)
+        builder.setEnableHealSession(true);
+        // Delay until reconnect attempt in milliseconds (default: 2000)
+        builder.setHealSessionInterval(2000);
+        try {
+        MemcachedClient mc = builder.build();
+        
 
+        // Key - Session ID | Value - User ID
+        mc.set("-1", 0, "107590165278581716154"); // TODO remove later, for testing purposes only
         final String CLIENT_ID_1 = "429689065020-h43s75d9jahb8st0jq8cieb9bctjg850.apps.googleusercontent.com";
         final String CLIENT_ID_2 = "429689065020-f2b4001eme5mmo3f6gtskp7qpbm8u5vv.apps.googleusercontent.com";
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2)).build();
 
         // Get a fully-configured connection to the database, or exit immediately
-        Database db = Database.getDatabase(db_url); 
+        Database db = Database.getDatabase(db_url);
         if (db == null)
             return;
 
@@ -75,11 +130,11 @@ public class App {
             enableCORS(acceptCrossOriginRequestsFrom, acceptedCrossOriginRoutes, supportedRequestHeaders);
         }
 
-        // Set up a route for serving the main page
-        Spark.get("/", (req, res) -> {
-            res.redirect("/index.html");
-            return "";
-        });
+        // // Set up a route for serving the main page
+        // Spark.get("/", (req, res) -> {
+        //     res.redirect("/index.html");
+        //     return "";
+        // });
 
         // GET route that returns all message titles and Ids.  All we do is get 
         // the data, embed it in a StructuredResponse, turn it into JSON, and 
@@ -92,7 +147,7 @@ public class App {
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
             }
-            if(!usersHT.containsKey(sesId)){
+            if(mc.get("" + sesId) == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session: " + sesId, null));
             }
             // ensure status 200 OK, with a MIME type of JSON
@@ -119,17 +174,18 @@ public class App {
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
             }
-            if(!usersHT.containsKey(sesId)){
+            if(mc.get("" + sesId) == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
             response.status(200);
             response.type("application/json");
-            Database.PostData data = db.selectOnePost(idx);
-            if (data == null) {
+            // Pulling record from ideas table
+            Database.PostData message = db.selectOnePost(idx);
+            if (message == null) {
                 return gson.toJson(new StructuredResponse("error", idx + " not found", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", null, data));
+                return gson.toJson(new StructuredResponse("ok", null, message));
             }
         });
 
@@ -143,7 +199,7 @@ public class App {
             }
             int sesId;
             sesId = Integer.parseInt(request.headers("Session-ID"));
-            if(!usersHT.containsKey(sesId)){
+            if(mc.get("" + sesId) == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             } 
             // ensure status 200 OK, with a MIME type of JSON
@@ -162,7 +218,7 @@ public class App {
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
             }
-            if(!usersHT.containsKey(sesId)){
+            if(mc.get("" + sesId) == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             String id = request.params("id");
@@ -186,7 +242,7 @@ public class App {
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "could not get sessionID, parse error on " + request.headers("Session-ID"), null));
             }
-            String id = usersHT.get(sesId);
+            String id = mc.get("" + sesId);
             if(id==null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
@@ -204,7 +260,7 @@ public class App {
         // Put route that updates someone's own profile information
         Spark.put("/profile", (request, response) -> {
             ProfileRequest req = gson.fromJson(request.body(), ProfileRequest.class);
-            String id = usersHT.get(req.mSessionId);
+            String id = mc.get("" + req.mSessionId);
             if(id==null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
@@ -229,25 +285,36 @@ public class App {
         // object, extract the title and message, insert them, and return the 
         // ID of the newly created row.
         Spark.post("/messages", (request, response) -> {
-            // NB: if gson.Json fails, Spark will reply with status 500 Internal 
-            // Server Error
+            String link = "";
+            UploadInfo info = new UploadInfo("", "", null);
+            // NB: if gson.Json fails, Spark will reply with status 500 Internal Server Error
             IdeaRequest req = gson.fromJson(request.body(), IdeaRequest.class);
-            String userId = usersHT.get(req.mSessionId);
+            String userId = mc.get("" + req.mSessionId);
             if(userId==null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
-            // NB: even on error, we return 200, but with a JSON object that
-            //     describes the error.
+            // NB: even on error, we return 200, but with a JSON object that describes the error.
             response.status(200);
             response.type("application/json");
             // NB: createEntry checks for null title and message
-            int result = db.insertRowIdea(req.mTitle, req.mMessage, userId);
-            //System.out.println(newId);
-            if (result == -1) {
+            int postid = -1;
+            if(req.mBase64Image != null) {
+                info = GoogleDriveUpload(req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
+                postid = db.insertRowIdea(req.mTitle, req.mMessage, userId, info.webViewLink);
+                db.insertRowLink(info.webViewLink, info.fileID, userId, postid, info.viewedbyMeTime.toStringRfc3339(), -1);
+                link = info.webViewLink;
+            } else if(req.mLink != null) {
+                postid = db.insertRowIdea(req.mTitle, req.mMessage, userId, req.mLink);
+                db.insertRowLink(req.mLink, "", userId, postid, "", -1);
+                link = req.mLink;
+            } else {
+                postid = db.insertRowIdea(req.mTitle, req.mMessage, userId, "");
+            }
+            if (postid == -1) {
                 return gson.toJson(new StructuredResponse("error", "error performing insertion", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", "" + result, userId));
+                return gson.toJson(new StructuredResponse("ok", "" + postid, link));
             }
         });
         
@@ -286,10 +353,10 @@ public class App {
                     }
                     
                     Integer userSession = (int)(Math.random()*Integer.MAX_VALUE);
-                    while(usersHT.containsKey(userSession)){ //make sure session ID is unique
+                    while(mc.get(userSession.toString()) != null){ //make sure session ID is unique
                         userSession = (int)(Math.random()*Integer.MAX_VALUE);
                     }
-                    usersHT.put(userSession, userId);
+                    mc.set("" + userSession, 0, userId);
                     map.put("User-ID", userId);
                     map.put("Session-ID", userSession.toString());
                     return gson.toJson(new StructuredResponse("ok", "Signed in " + name, map));
@@ -300,41 +367,53 @@ public class App {
         
         // POST route for adding a new comment to the database.
         Spark.post("/comment/:id", (request, response) -> {
+            // postId pulled from /comment/:id path
             int postId = Integer.parseInt(request.params("id"));
-            // NB: if gson.Json fails, Spark will reply with status 500 Internal 
-            // Server Error
+            UploadInfo info = new UploadInfo("", "", null);
+            // NB: if gson.Json fails, Spark will reply with status 500 Internal Server Error
             CommentRequest req = gson.fromJson(request.body(), CommentRequest.class);
-            String userId = usersHT.get(req.mSessionId);
+            String link = "";
+            String userId = mc.get("" + req.mSessionId);
             if(userId==null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
-            // NB: even on error, we return 200, but with a JSON object that
-            //     describes the error.
+            // NB: even on error, we return 200, but with a JSON object that describes the error.
             response.status(200);
             response.type("application/json");
-            int result;
+            int postid = -1;
             try {
-                result = db.insertRowComment(userId, postId, req.mComment);
+                if(req.mBase64Image != null) {
+                    info = GoogleDriveUpload(req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
+                    postid = db.insertRowComment(userId, postId, req.mComment, info.webViewLink);
+                    db.insertRowLink(info.webViewLink, info.fileID, userId, postid, info.viewedbyMeTime.toStringRfc3339(), -1);
+                    link = info.webViewLink;
+                } else if(req.mLink != null) {
+                    postid = db.insertRowComment(userId, postId, req.mComment, req.mLink);
+                    db.insertRowLink(req.mLink, "", userId, postid, "", -1);
+                    link = req.mLink;
+                } else {
+                    postid = db.insertRowComment(userId, postId, req.mComment, "");
+                }
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error", "error inserting comment", null));
             }
-            if (result == 0) {
+            if (postid == -1) {
                 return gson.toJson(new StructuredResponse("error", "problem inserting comment", null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", "" + result, null));
+                return gson.toJson(new StructuredResponse("ok", "" + postid, link));
             }
         });
 
         // PUT route for modifying a comment from its comment id
         Spark.put("/comment", (request, response) -> {
-            // NB: if gson.Json fails, Spark will reply with status 500 Internal 
-            // Server Error
             CommentRequest req;
             String userId;
+            String link = "";
+            // NB: if gson.Json fails, Spark will reply with status 500 Internal Server Error
             try {
                 req = gson.fromJson(request.body(), CommentRequest.class);
-                userId = usersHT.get(req.mSessionId);
+                userId = mc.get("" + req.mSessionId);
                 if(userId==null){
                     return gson.toJson(new StructuredResponse("error", "invalid user session", null));
                 }
@@ -348,15 +427,22 @@ public class App {
             response.type("application/json");
             int result;
             try {
-                result = db.updateOneComment(req.mCommentId, req.mComment);
+                if(req.mBase64Image != null) {
+                    UploadInfo info = GoogleDriveUpload(req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
+                }
+                if(link == ""){
+                    result = db.updateOneComment(req.mCommentId, req.mComment, null, 0);
+                } else{
+                    result = db.updateOneComment(req.mCommentId, req.mComment, link, 0);
+                }
+                
             } catch (Exception e) {
                 return gson.toJson(new StructuredResponse("error","error updating",  null));
             }
-            //System.out.println(newId);
             if (result == -1) {
                 return gson.toJson(new StructuredResponse("error", "error updating comment: " + req.mCommentId, null));
             } else {
-                return gson.toJson(new StructuredResponse("ok", "" + result, null));
+                return gson.toJson(new StructuredResponse("ok", "" + result, link));
             }
         });
 
@@ -367,7 +453,7 @@ public class App {
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
             IdeaRequest req = gson.fromJson(request.body(), IdeaRequest.class);
-            if(!usersHT.containsKey(req.mSessionId)){
+            if(mc.get("" + req.mSessionId) == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
             // ensure status 200 OK, with a MIME type of JSON
@@ -387,7 +473,7 @@ public class App {
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
             SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            String userId = usersHT.get(req.mSessionId);
+            String userId = mc.get("" + req.mSessionId);
             if(userId == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
@@ -420,7 +506,7 @@ public class App {
             // a status 500
             int idx = Integer.parseInt(request.params("id"));
             SessionRequest req = gson.fromJson(request.body(), SessionRequest.class);
-            String userId = usersHT.get(req.mSessionId);
+            String userId = mc.get("" + req.mSessionId);
             if(userId == null){
                 return gson.toJson(new StructuredResponse("error", "invalid user session", null));
             }
@@ -447,6 +533,10 @@ public class App {
                 return gson.toJson(new StructuredResponse("ok", null, result));
             }
         });
+
+    } catch(Exception e) {
+        logger.error(e);
+    }
 
     }
 
@@ -498,5 +588,57 @@ public class App {
             response.header("Access-Control-Request-Method", methods);
             response.header("Access-Control-Allow-Headers", headers);
         });
+    }
+    private static UploadInfo GoogleDriveUpload(String mBase64Image, String service_account_info) throws Exception {
+        logger.info("Decoding and uploading Base64 File...");
+        String[] fileParams = mBase64Image.split("-");
+        // Decoding Base64 file from HTTP Request
+        byte[] fileBytes = Base64.getDecoder().decode(fileParams[2]);
+        java.io.File filePath = new java.io.File("files/" + fileParams[1]);
+        // saving file content to files/___.___
+        FileUtils.writeByteArrayToFile(filePath, fileBytes);
+        // Building new authorized API client service for Google Drive
+        InputStream google_service_secret = new ByteArrayInputStream(service_account_info.getBytes(StandardCharsets.UTF_8));
+        GoogleCredentials credentials = GoogleCredentials.fromStream(google_service_secret).createScoped(Arrays.asList(DriveScopes.DRIVE_FILE));
+        HttpRequestInitializer requestInitializer = new HttpCredentialsAdapter(credentials);
+        Drive service = new Drive.Builder(new NetHttpTransport(), 
+            GsonFactory.getDefaultInstance(),
+            requestInitializer)
+            .setApplicationName("Drive Upload")
+            .build();
+        logger.info("JSON of current files in service account: \n\n" + service.files().list().execute());
+        // Upload File to Drive
+        File fileMetadata = new File();
+        fileMetadata.setName(fileParams[1]); // What the file will be stored as
+        FileContent mediaContent = new FileContent(fileParams[0], filePath);
+        try { 
+            File file = service.files().create(fileMetadata, mediaContent)
+                .setFields("id, webViewLink, viewedByMeTime")
+                .execute();
+            // Creating permission for anyone to read file at webViewLink
+            Permission newPermission = new Permission();
+            newPermission.setType("anyone");
+            newPermission.setRole("reader");
+            service.permissions().create(file.getId(), newPermission).execute();
+            logger.info("File ID: " + file.getId());
+            logger.info("Link: "+ file.getWebViewLink());
+            logger.info("Last viewed: " + file.getViewedByMeTime());
+            String date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(new Date());
+            return new UploadInfo(file.getId(), file.getWebViewLink(), DateTime.parseRfc3339(date));
+        } catch(GoogleJsonResponseException e) {
+            logger.error("Unable to upload file: " + e.getDetails());
+        }
+        return new UploadInfo(null, null, null); // Returns empty obj if failed
+    }
+
+    public static class UploadInfo {
+        String fileID;
+        String webViewLink;
+        DateTime viewedbyMeTime; 
+        UploadInfo(String fileid, String link, DateTime time) {
+            fileID = fileid;
+            webViewLink = link;
+            viewedbyMeTime = time;
+        }
     }
 }
