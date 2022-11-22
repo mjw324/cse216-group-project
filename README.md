@@ -104,19 +104,19 @@ So I do not need additional interfaces (manual)
 
 
 ## Mock Web/Mobile UI
-![Artifacts-1](artifacts/Artifacts-1.jpg)
+[Artifacts-1](artifacts/Artifacts-1.jpg)
 
 ## System Architecture Diagram
-![Artifacts-2](artifacts/Artifacts-2.jpg)
+[Artifacts-2](artifacts/Artifacts-2.jpg)
 
 ### State Machine of Authenticated User Interface
-![Artifacts-3](artifacts/Artifacts-3.jpg)
+[Artifacts-3](artifacts/Artifacts-3.jpg)
 
 ## State Machine of Idea Functionality
-![Artifacts-4](artifacts/Artifacts-4.jpg)
+[Artifacts-4](artifacts/Artifacts-4.jpg)
 
 ## ER Diagram
-![Artifacts-5](artifacts/Artifacts-5.jpg)
+[Artifacts-5](artifacts/Artifacts-5.jpg)
 
 ## Flutter State and Widget Management 
 ![Artifacts-6](artifacts/Artifacts-6.jpg)
