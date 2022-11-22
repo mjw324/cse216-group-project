@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:my_app/schedule.dart';
 import 'package:provider/provider.dart';
 import 'loginpage.dart';
+import 'package:flutter/material.dart';
+//import 'package:firebase_core/firebase_core.dart';
+//import 'firebase_options.dart';  
+//import 'screens/homepage.dart';  
+//import 'package:firebase_core/firebase_core.dart';  
 
 void main() async {
   //runApp(const MyApp());
+  //WidgetsFlutterBinding.ensureInitialized(); 
   runApp(
      ChangeNotifierProvider(
       create: (_) => MySchedule(),
@@ -39,3 +45,36 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+  
+/*void main() {  
+  WidgetsFlutterBinding.ensureInitialized();  
+  runApp(App());  
+}  */
+  
+/*class App1 extends StatelessWidget {  
+  // Create the initialization Future outside of `build`:  
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();  
+  
+  @override  
+  Widget build(BuildContext context) {  
+    return FutureBuilder(  
+      // Initialize FlutterFire:  
+  future: _initialization,  
+      builder: (context, snapshot) {  
+        // Check for errors  
+  if (snapshot.hasError) {  
+          return Text('Error in Firebase Initilisation');  
+        }  
+        // Once complete, show your application  
+  if (snapshot.connectionState == ConnectionState.done) {  
+          return MaterialApp(  
+            title: 'file',  
+            home: const SignIn(),  
+          );  
+        }  
+        // Otherwise, show something whilst waiting for initialization to complete  
+  return CircularProgressIndicator();  
+      },  
+    );  
+  }  
+}*/

@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:my_app/commentobj.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +24,7 @@ class _AddCommentWidget extends State<AddCommentWidget> {
   final _commentController = TextEditingController();
   String comment = '';
   late CommentObj newComment = CommentObj(postId: id, commentId: 000, userId: 'userId', comment: comment, username: 'asd'); 
+  String imageEncoded = '';
 
   int id;
   _AddCommentWidget({required this.id});
@@ -90,6 +95,7 @@ class _EditCommentWidget extends State<EditCommentWidget> {
   // title and idea controller are used to manage text input in respective fields
   final _commentController = TextEditingController();
   String Ncomment = '';
+  String imageEncoded1 = '';
   
 
   int id;
@@ -133,6 +139,29 @@ class _EditCommentWidget extends State<EditCommentWidget> {
       ],
     );
   }
+}
+
+Future uploadFile() async{
+  final result = await FilePicker.platform.pickFiles();
+  if (result == null) return '';
+  Uint8List uploadfile = result.files.single.bytes!;
+  String fileName = result.files.single.name;
+  String base64File = base64.encode(uploadfile);
+  String ext = fileName.split(".").last;
+  if(ext == 'jpeg'){
+    base64File = 'image/jpeg-$fileName-$base64File';
+  }
+  if(ext == 'pdf'){
+    base64File = 'application/pdf-$fileName-$base64File';
+  }
+  if(ext == 'mp3'){
+    base64File = 'audio/mpeg-$fileName-$base64File';
+  }
+  if(ext == 'mp4'){
+    base64File = 'video/mp4-$fileName-$base64File';
+  }
+  print(base64File);
+  return base64File;
 }
 
 

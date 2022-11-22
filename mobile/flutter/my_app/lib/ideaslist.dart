@@ -25,7 +25,6 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
  
   @override
   Widget build(BuildContext context) {
-    
     // We need to create a schedule in order to access MySchedule (check to see if instance of Consumer and Provider concurrently is code smart)
     final schedule = Provider.of<MySchedule>(context);
     // Creates scheduleList to access current ideas list stored in schedule
@@ -92,7 +91,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
       //Must include this type of format with builder, future for fetching from the routes
       return Consumer<MySchedule>(
           builder: (context, schedule, _) => FutureBuilder<List<IdeaObj>>(
-              future: _listIdeas= routes.fetchPosts(), 
+              future: _listIdeas= routes.fetchPosts(),
               builder: ((BuildContext context,
                   AsyncSnapshot<List<IdeaObj>> snapshot) {
                 Widget child;
@@ -133,8 +132,9 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                                  },
                               ), 
                               // shows the message
-                              subtitle: 
+                              subtitle:
                                 Text(
+                                  idea.link != null ? idea.message + ' ' + idea.link :
                                   idea.message,
                                 )
                             ),

@@ -11,6 +11,7 @@ class routes{
   //these are static variables to be acessed in all the dart files
   static int sessionId = 1;
   static String user_id = ""; 
+  static String link = ""; 
   static http.Client client = http.Client();
 
   //sends request to backend by specifying the path, Need to use headers as we send the sessionId to make
@@ -99,6 +100,7 @@ class routes{
     print("data:$data");
      final List<CommentObj> returnData;
      var ideas = data['mData'];
+     //print(data['mData']);
     if (ideas is List) {
       print('list');
       returnData = ideas.map((x) => CommentObj.fromJson(x)).toList();
@@ -109,7 +111,6 @@ class routes{
           .log('ERROR: Unexpected json response type (was not a List or Map).');
       returnData = List.empty();
     }
-    
     return returnData;
     
 
@@ -128,6 +129,21 @@ class routes{
   return res['mData'];
 
 }
+
+//Uses the post method to add an idea by sending the title, message and sessionId
+  Future<String> addIdeaMedia(String title, String message, String base64) async {
+  final response = await http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/messages'),
+    body: jsonEncode(<String, String>{'mTitle': title, 'mMessage': message, 'mBase64Image': base64, 'mSessionId' :routes.sessionId.toString()}),
+  );
+  var res = jsonDecode(response.body);
+  //print(res['mData']);
+  routes.link = res['mData'];
+  //print(routes.link);
+  print(res);
+  return res['mData'];
+}
+
 //Post-> sends the id_token to backend and gets a session Id and user ID
 Future<Map> sendToken(String? mToken) async {
   print('mToken');
@@ -174,7 +190,9 @@ Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
   String vote = isUpvote ? 'upvote' : 'downvote';
   // ignore: prefer_typing_uninitialized_variables
   final response;
-  if (voteCount > 1) {
+  response = await http.put(Uri.parse( 'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'), body: jsonEncode(<String, int?>{'mSessionId': routes.sessionId}),);
+
+  /*if (voteCount > 1) {
     // If front ends needs to increment/decrement votes more than once, we specify the route with an addition /voteCount
     response = await http.put(Uri.parse(
         'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'),
@@ -183,7 +201,7 @@ Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
     response = await http.put(Uri.parse(
         'https://whispering-sands-78580.herokuapp.com/messages/$idx/$vote'),
         body: jsonEncode(<String, int?>{'mSessionId': routes.sessionId}),);
-  }
+  }*/
 
 
   // res (response) should decode two key value pairs: mStatus and mData
@@ -193,7 +211,7 @@ Future<int> voteIdea(int idx, bool isUpvote, int voteCount) async {
 }
 
 //Takes care of the upvote of an idea
-Future<int> upVote(int idx) async{
+/*Future<int> upVote(int idx) async{
   final response = await http.put(Uri.parse(
         'https://whispering-sands-78580.herokuapp.com/messages/$idx'),
         body: jsonEncode(<String, int?>{'mSessionId': routes.sessionId}),);
@@ -201,7 +219,7 @@ Future<int> upVote(int idx) async{
   print(res);
   return res['mData'];
 
-}
+}*/
 
 
 // POST /comment/id route add a comment to a post given the postId
