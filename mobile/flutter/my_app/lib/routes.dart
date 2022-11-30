@@ -235,6 +235,18 @@ Future<String> addComment(String comment, int id ) async {
 
 }
 
+Future<String> addCommentMedia(String comment, int id, String base64Com) async {
+  final response = await http.post(
+    Uri.parse('https://whispering-sands-78580.herokuapp.com/comment/$id'),
+    body: jsonEncode(<String, String>{'mCommentId': '-1', 'mComment': comment, 'mBase64Image': base64Com, 'mSessionId' :routes.sessionId.toString()}),
+  );
+  var res = jsonDecode(response.body);
+  //Once added, should print res{mStatus: ok, mMessage: 1}, if 0, there is an error on frontend
+  print("res$res");
+  return res['mData'];
+}
+
+
 //PUT on the /comment route-> edits a comment given that it was from the same user
 Future<String> editComment(String comment, int id, int commentId) async {
   print("post ID: $id");

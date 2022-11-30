@@ -15,6 +15,7 @@ class CommentObj {
 
    //The String representation of the username
    String username;
+   String comlink;
 
 
   CommentObj(
@@ -22,6 +23,7 @@ class CommentObj {
       required this.commentId,
       required this.userId,
       required this.comment,
+      required this.comlink,
       required this.username});
 
   factory CommentObj.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class CommentObj {
       commentId: json['mCommentId'],
       userId: json['mUserId'],
       comment: json['mComment'],
+      comlink: json['mcomLink'],
       //the ?? 'No username' is to deal with the Unit Tests having no username
       username: json['mUsername'] ??'No username'
     );

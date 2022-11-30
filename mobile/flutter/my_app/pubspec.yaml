@@ -29,6 +29,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  #ink_text: ^0.2.0
   flutter:
     sdk: flutter
   google_sign_in: ^5.0.3

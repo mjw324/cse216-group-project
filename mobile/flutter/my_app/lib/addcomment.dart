@@ -23,8 +23,9 @@ class _AddCommentWidget extends State<AddCommentWidget> {
   // title and idea controller are used to manage text input in respective fields
   final _commentController = TextEditingController();
   String comment = '';
-  late CommentObj newComment = CommentObj(postId: id, commentId: 000, userId: 'userId', comment: comment, username: 'asd'); 
-  String imageEncoded = '';
+  late CommentObj newComment = CommentObj(postId: id, commentId: 000, userId: 'userId', comlink: '', comment: comment, username: 'asd'); 
+  String imageEncoded2 = '';
+  String idofNewCommentMedia = '';
 
   int id;
   _AddCommentWidget({required this.id});
@@ -40,29 +41,43 @@ class _AddCommentWidget extends State<AddCommentWidget> {
           TextField
           (
             controller: _commentController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'comment',
               border: OutlineInputBorder(),
-            ),
+              suffixIcon: IconButton(
+                onPressed: (() async {
+                  uploadFile().then((value) => {imageEncoded2 = value});
+              }),  
+              icon: Icon(Icons.camera_alt_outlined),
+            )),
             maxLength: 128, // max amount of characters accepted is 128
           ),
           Align
           (
             alignment: Alignment.centerLeft,
             child: MaterialButton(
-              onPressed: () {
+              onPressed: () async {
                 // checks if both title and idea field are filled before adding
                 if (_commentController.text != '' ) {
                   comment = _commentController.text;
                   // Currently this string cant be used because it always returns 1. Backend needs to return id of newIdea
                   print(id);
-                  Future<String> idofNewComment = addComment(comment, id);
+                  if(imageEncoded2 != ''){
+                    idofNewCommentMedia = await addCommentMedia(comment, id, imageEncoded2);
+                  }else{
+                    Future<String> idofNewComment = addComment(comment, id);
+                  }
+
+                  String comment1 = comment + ' ' + idofNewCommentMedia;
+                  print(comment1);
+
                   // This is when it another comment is added
                   newComment = CommentObj(
                     postId: id, 
                     commentId: 0000, 
+                    comlink: idofNewCommentMedia,
                     userId: routes.user_id, 
-                    comment: comment,
+                    comment: comment1,
                     username: SignInToGetUsername.username.substring(0,SignInToGetUsername.username.indexOf('@') ));
 
                   schedule.submitComment = newComment; // submits idea and notifies list listeners
@@ -107,12 +122,19 @@ class _EditCommentWidget extends State<EditCommentWidget> {
     // Instantiate schedule using Provider.of, this is so we can access methods from schedule
     final schedule = Provider.of<MySchedule>(context);
     return Column(
+        //child: Column(
       children: [
         TextField(
           controller: _commentController,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'new comment',
             border: OutlineInputBorder(),
+            suffixIcon: IconButton(
+              onPressed: (() async {
+                uploadFile().then((value) => {imageEncoded1 = value});
+              }),  
+              icon: Icon(Icons.camera_alt_outlined),
+            ),
           ),
           maxLength: 128, // max amount of characters accepted is 128
         ),

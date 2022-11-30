@@ -61,7 +61,8 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                             ),    
                             title: 
                               Text(
-                              comment.comment,
+                                comment.comment,
+                              //comment.comlink != null ? comment.comment + ' ' + comment.comlink : comment.comment,
                               style: _biggerFont,
                               ),
                           //Deals with user editting a comment
@@ -140,7 +141,9 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                             
                           ),
                           title: Text(
+                            //comment.comlink,
                             comment.comment,
+                            //comment.comlink == null ? comment.comment + ' ' + comment.comlink : comment.comment,
                             style: _biggerFont,
                           ),
                           //Deals with user editting a comment

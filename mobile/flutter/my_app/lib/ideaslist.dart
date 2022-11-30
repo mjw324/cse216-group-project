@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'votebutton.dart';
 import 'ideaobj.dart';
@@ -134,8 +135,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                               // shows the message
                               subtitle:
                                 Text(
-                                  idea.link != null ? idea.message + ' ' + idea.link :
-                                  idea.message,
+                                  idea.link != null ? idea.message + ' ' + idea.link : idea.message,
                                 )
                             ),
                           const Divider(height: 1.0),
