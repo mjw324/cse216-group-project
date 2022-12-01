@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'schedule.dart';
 import 'addcomment.dart';
 import 'profilepage.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 //This is for the list of comments
 class CommentListWidget extends StatefulWidget {
   int id; 
@@ -146,6 +148,7 @@ class _CommentListWidgetState extends State<CommentListWidget> {
                             //comment.comlink == null ? comment.comment + ' ' + comment.comlink : comment.comment,
                             style: _biggerFont,
                           ),
+                          //onTap: (() => _launchUrl('fff')),
                           //Deals with user editting a comment
                           trailing:
                             ElevatedButton(

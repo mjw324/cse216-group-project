@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'votebutton.dart';
 import 'ideaobj.dart';
 import 'routes.dart'; 
@@ -7,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'schedule.dart';
 import 'profilepage.dart';
 import 'commentpage.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 //This files is for showing the list of ideas in the Homepage
 class IdeasListWidget extends StatefulWidget {
   int sessionId; 
@@ -26,6 +28,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
  
   @override
   Widget build(BuildContext context) {
+    String mylink = '';
     // We need to create a schedule in order to access MySchedule (check to see if instance of Consumer and Provider concurrently is code smart)
     final schedule = Provider.of<MySchedule>(context);
     // Creates scheduleList to access current ideas list stored in schedule
@@ -112,9 +115,9 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                               //if the comment button is pressed, it goes to the comment page
                               trailing: 
                                 ElevatedButton(
-                                  style: ElevatedButton.styleFrom( backgroundColor: Colors.brown),
+                                  style: ElevatedButton.styleFrom( backgroundColor: Color.fromARGB(255, 195, 134, 206)),
                                 //style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-                                child:const Icon(Icons.comment, size: 30, color: Colors.white),
+                                child:const Icon(Icons.comment, size: 30, color: Colors.black),
                                 onPressed: (){
                                   Navigator.push(context, MaterialPageRoute(builder: (context) =>MyCommentPage(title: 'Comment Page', id: idea.id) ));
                                 },
@@ -126,7 +129,7 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                               title: ElevatedButton(
                                 child:Text(
                                   idea.title + ' by ' + idea.username,
-                                  style: _biggerFont,
+                                  style: _biggerFont, //color: Color.fromARGB(255, 5, 124, 175),
                                 ),
                                 onPressed: (){
                                     Navigator.of(context).push( MaterialPageRoute(builder: (context) => ProfileWidget(title: 'Profile Page', userId: idea.userId) ));
@@ -134,9 +137,25 @@ class _IdeasListWidgetState extends State<IdeasListWidget> {
                               ), 
                               // shows the message
                               subtitle:
-                                Text(
-                                  idea.link != null ? idea.message + ' ' + idea.link : idea.message,
-                                )
+                                Linkify(
+                                  onOpen: (link)  async {
+                                    if (await canLaunchUrl(Uri.parse(link.url))) {
+                                      await launchUrl(Uri.parse(link.url));
+                                      } else {
+                                        throw 'Could not launch $link';
+                                        }
+                                    //print("Linkify link = ${link.url}");
+                                    },
+                                    text: idea.link != null ? idea.message + ' ' + idea.link : idea.message, //"Linkify click -  https://www.youtube.com/channel/UCwxiHP2Ryd-aR0SWKjYguxw",
+                                    style: TextStyle(color: Colors.black),
+                                    linkStyle: TextStyle(color: Colors.green),
+                                    ),
+                                //Text(
+                                  //idea.link != null ? idea.message + ' ' + idea.link : idea.message,
+                                  //onTap: (() => launchUrl(Uri.parse(idea.link))),
+                                //),
+                              //mylink = idea.link,
+                              //onTap: (() => launchUrl(Uri.parse(idea.link))),
                             ),
                           const Divider(height: 1.0),
                         ],

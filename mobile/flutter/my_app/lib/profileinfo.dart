@@ -82,7 +82,7 @@ class _AddProfileWidget extends State<AddProfileWidget> {
                     appBar: AppBar(title: const Text(
                         "Edit your Profile!",
                       ),
-                      backgroundColor: Colors.brown,
+                      backgroundColor: Color.fromARGB(255, 195, 134, 206),//Colors.brown,
                       centerTitle: true,
                     ),
                     body: Center(

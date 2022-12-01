@@ -55,6 +55,8 @@ dependencies:
   camera:
   path_provider:
   path:
+  url_launcher: ^6.1.7
+  flutter_linkify: ^5.0.2
   #open_file: ^2.1.1
   #firebase_core: ^0.7.0
 

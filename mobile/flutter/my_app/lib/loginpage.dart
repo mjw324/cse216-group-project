@@ -124,14 +124,14 @@ class SignInState extends State<SignIn> {
           const Text('Signed in successfully.'),
           ElevatedButton(
             onPressed: _handleSignOut,
-            style: ElevatedButton.styleFrom( backgroundColor: Colors.brown.shade600),
+            style: ElevatedButton.styleFrom( backgroundColor: Color.fromARGB(255, 195, 134, 206)),//Colors.brown.shade600),
             child: const Text('SIGN OUT')
             
           ),
           //Once signed in, there is a button that takes the user to the 
           //home page of the The Buzz. Send the username, email, and sessionId
           ElevatedButton(
-            style: ElevatedButton.styleFrom( backgroundColor: Colors.brown.shade600),
+            style: ElevatedButton.styleFrom( backgroundColor: Color.fromARGB(255, 195, 134, 206)),//Colors.brown.shade600),
           child: const Text('The Buzz Homepage'),
           onPressed: () {
             schedule.sessionId= routes.sessionId; 
@@ -156,7 +156,7 @@ class SignInState extends State<SignIn> {
         children: <Widget>[
           const Text('You are not currently signed in.'),
           ElevatedButton(
-            style: ElevatedButton.styleFrom( backgroundColor: Colors.brown),
+            style: ElevatedButton.styleFrom( backgroundColor: Color.fromARGB(255, 195, 134, 206)),//Colors.brown),
             onPressed: ()=> {
                number =  _handleSignIn(),
                number.then((value) => {schedule.sessionId = value, print(value)}),
@@ -174,7 +174,7 @@ class SignInState extends State<SignIn> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('The Buzz Google Sign In'),
-          backgroundColor: Colors.brown.shade600,
+          backgroundColor: Color.fromARGB(255, 195, 134, 206),//Colors.brown.shade600,
         ),
         body: ConstrainedBox(
           constraints: const BoxConstraints.expand(),

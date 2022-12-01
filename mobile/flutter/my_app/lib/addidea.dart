@@ -110,7 +110,7 @@ class _AddIdeaWidgetState extends State<AddIdeaWidget> {
                 _titleController.clear();
               }
             },
-            color: Colors.brown,
+            color: Color.fromARGB(255, 195, 134, 206),
             child: const Text('Add', style: TextStyle(color: Colors.white)),
           ),
         ),
