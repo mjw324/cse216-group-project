@@ -86,8 +86,6 @@ public class App {
         builder.setHealSessionInterval(2000);
         try {
         MemcachedClient mc = builder.build();
-        
-
         // Key - Session ID | Value - User ID
         mc.set("-1", 0, "107590165278581716154"); // TODO remove later, for testing purposes only
         final String CLIENT_ID_1 = "429689065020-h43s75d9jahb8st0jq8cieb9bctjg850.apps.googleusercontent.com";
@@ -304,6 +302,7 @@ public class App {
                 postid = db.insertRowIdea(req.mTitle, req.mMessage, userId, info.webViewLink);
                 db.insertRowLink(info.webViewLink, info.fileID, userId, postid, info.viewedbyMeTime.toStringRfc3339(), -1);
                 link = info.webViewLink;
+
             } else if(req.mLink != null) {
                 postid = db.insertRowIdea(req.mTitle, req.mMessage, userId, req.mLink);
                 db.insertRowLink(req.mLink, "", userId, postid, "", -1);
@@ -384,7 +383,7 @@ public class App {
             int postid = -1;
             try {
                 if(req.mBase64Image != null) {
-                    info = GoogleDriveUpload(req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
+                    info = GoogleDriveUpload(mc, req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
                     postid = db.insertRowComment(userId, postId, req.mComment, info.webViewLink);
                     db.insertRowLink(info.webViewLink, info.fileID, userId, postid, info.viewedbyMeTime.toStringRfc3339(), -1);
                     link = info.webViewLink;
@@ -428,7 +427,7 @@ public class App {
             int result;
             try {
                 if(req.mBase64Image != null) {
-                    UploadInfo info = GoogleDriveUpload(req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
+                    UploadInfo info = GoogleDriveUpload(mc, req.mBase64Image, env.get("GOOGLE_SERVICE_ACCOUNT_SECRET"));
                 }
                 if(link == ""){
                     result = db.updateOneComment(req.mCommentId, req.mComment, null, 0);
@@ -589,7 +588,7 @@ public class App {
             response.header("Access-Control-Allow-Headers", headers);
         });
     }
-    private static UploadInfo GoogleDriveUpload(String mBase64Image, String service_account_info) throws Exception {
+    private static UploadInfo GoogleDriveUpload(MemcachedClient mc, String mBase64Image, String service_account_info) throws Exception {
         logger.info("Decoding and uploading Base64 File...");
         String[] fileParams = mBase64Image.split("-");
         // Decoding Base64 file from HTTP Request
@@ -620,6 +619,7 @@ public class App {
             newPermission.setType("anyone");
             newPermission.setRole("reader");
             service.permissions().create(file.getId(), newPermission).execute();
+            mc.set(file.getId(), 0, mBase64Image);
             logger.info("File ID: " + file.getId());
             logger.info("Link: "+ file.getWebViewLink());
             logger.info("Last viewed: " + file.getViewedByMeTime());
